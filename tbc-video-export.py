@@ -382,7 +382,7 @@ class TBCVideoExport:
             self.check_file_overwrites()
 
             # named pipes are only useful with chroma
-            if self.program_opts.blackandwhite:
+            if self.program_opts.luma_only:
                 self.run_cmds(luma_pipeline)
             else:
                 if self.use_named_pipes:
@@ -453,7 +453,7 @@ class TBCVideoExport:
                                   help='Use a different .tbc.json file.',
                                   type=str)
 
-        decoder_opts.add_argument('-b', '--blackandwhite',
+        decoder_opts.add_argument('--luma-only',
                                   help='Only output a luma video.',
                                   action='store_true',
                                   default=False)
@@ -639,12 +639,12 @@ class TBCVideoExport:
         print(*luma_pipeline.dropout_correct_cmd)
         print(*luma_pipeline.decoder_cmd)
 
-        if self.program_opts.blackandwhite or not self.use_named_pipes:
+        if self.program_opts.luma_only or not self.use_named_pipes:
             print(*luma_pipeline.ffmpeg_cmd)
 
         print('---\n')
 
-        if not self.program_opts.blackandwhite:
+        if not self.program_opts.luma_only:
             print('chroma:')
             print(*chroma_pipeline.dropout_correct_cmd)
             print(*chroma_pipeline.decoder_cmd)
@@ -672,7 +672,7 @@ class TBCVideoExport:
         chroma_decoder = subprocess.Popen(chroma_pipeline.decoder_cmd, stdin=chroma_dropout_correct.stdout)
 
         # ffmpeg proc
-        if self.program_opts.blackandwhite:
+        if self.program_opts.luma_only:
             ffmpeg = subprocess.Popen(luma_pipeline.ffmpeg_cmd)
             luma_decoder.communicate()
         else:
@@ -703,7 +703,7 @@ class TBCVideoExport:
         ]
 
         # we just pipe into ffmpeg if b/w
-        if self.use_named_pipes and not self.program_opts.blackandwhite:
+        if self.use_named_pipes and not self.program_opts.luma_only:
             decoder_cmd.append(self.pipe_luma)
         else:
             decoder_cmd.append('-')
@@ -839,12 +839,12 @@ class TBCVideoExport:
     def check_file_overwrites(self):
         """Check if files exist with named pipes off/on and b/w off/on."""
         if self.use_named_pipes:
-            if self.program_opts.blackandwhite:
+            if self.program_opts.luma_only:
                 self.check_file_overwrite(self.files.video_luma)
             else:
                 self.check_file_overwrite(self.files.video)
         else:
-            if self.program_opts.blackandwhite:
+            if self.program_opts.luma_only:
                 self.check_file_overwrite(self.files.video_luma)
             else:
                 self.check_file_overwrite(self.files.video_luma)
