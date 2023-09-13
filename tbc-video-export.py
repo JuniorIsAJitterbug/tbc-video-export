@@ -568,9 +568,6 @@ class TBCVideoExport:
 
         file = self.files.name + '_luma.' + self.ffmpeg_settings.profile_luma.get_container()
 
-        if os.path.isfile(file) and self.ffmpeg_settings.get_overwrite_opt() is None:
-            raise Exception(file + ' exists, use --ffmpeg-overwrite or move them')
-
         dropout_correct_cmd = [
             'ld-dropout-correct',
             '-i',
@@ -628,14 +625,14 @@ class TBCVideoExport:
             print('---\n')
 
         else:
+            if os.path.isfile(file) and self.ffmpeg_settings.get_overwrite_opt() is None:
+                raise Exception(file + ' exists, use --ffmpeg-overwrite or move them')
+
             self.run_cmds(dropout_correct_cmd, decoder_cmd, ffmpeg_cmd)
 
     def generate_chroma(self):
         """Generate the final video file."""
         file = self.files.name + '.' + self.ffmpeg_settings.profile.get_container()
-
-        if os.path.isfile(file) and self.ffmpeg_settings.get_overwrite_opt() is None:
-            raise Exception(file + ' exists, use --ffmpeg-overwrite or move them')
 
         dropout_correct_cmd = [
             'ld-dropout-correct',
@@ -697,6 +694,9 @@ class TBCVideoExport:
             print(*self.flatten(ffmpeg_cmd))
             print('---\n')
         else:
+            if os.path.isfile(file) and self.ffmpeg_settings.get_overwrite_opt() is None:
+                raise Exception(file + ' exists, use --ffmpeg-overwrite or move them')
+
             self.run_cmds(dropout_correct_cmd, decoder_cmd, ffmpeg_cmd)
 
     def get_video_system(self, json_file):
