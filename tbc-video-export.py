@@ -249,7 +249,7 @@ class FFmpegSettings:
             data = json.load(file)
 
         if (('isWidescreen' in data['videoParameters'] and data['videoParameters']['isWidescreen'])
-                or self.program_opts.ffmpeg_force_animorphic):
+                or self.program_opts.ffmpeg_force_anamorphic):
             return ['-aspect', '16:9']
 
         return ['-aspect', '4:3']
@@ -517,7 +517,7 @@ class TBCVideoExport:
                                  type=int,
                                  default=1024)
 
-        ffmpeg_opts.add_argument('--ffmpeg-force-animorphic',
+        ffmpeg_opts.add_argument('--ffmpeg-force-anamorphic',
                                  help='Force widescreen aspect ratio.',
                                  action='store_true',
                                  default=False)
