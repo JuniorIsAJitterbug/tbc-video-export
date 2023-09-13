@@ -8,6 +8,7 @@ import json
 import os
 import subprocess
 import pathlib
+import tempfile
 from enum import Enum
 from shutil import which
 
@@ -339,6 +340,13 @@ class FFmpegSettings:
         return ['-thread_queue_size', str(self.program_opts.ffmpeg_thread_queue_size)]
 
 
+class DecodePipeline:
+    def __init__(self, dropout_correct_cmd=None, decoder_cmd=None, ffmpeg_cmd=None):
+        self.dropout_correct_cmd = dropout_correct_cmd
+        self.decoder_cmd = decoder_cmd
+        self.ffmpeg_cmd = ffmpeg_cmd
+
+
 class TBCVideoExport:
     def __init__(self):
         self.check_paths()
@@ -358,14 +366,38 @@ class TBCVideoExport:
                                               self.ffmpeg_profile_luma, self.files.tbc_json, self.video_system)
 
     def run(self):
-        self.generate_luma(self.program_opts.blackandwhite)
+        try:
+            self.setup_pipes()
 
-        if self.program_opts.blackandwhite is not True:
-            self.generate_chroma()
+            luma_pipeline = self.get_luma_cmds()
+            chroma_pipeline = self.get_chroma_cmds()
+
+            luma_pipeline.ffmpeg_cmd = self.get_luma_ffmepg_cmd()
+            chroma_pipeline.ffmpeg_cmd = self.get_chroma_ffmpeg_cmd()
+
+            if self.program_opts.what_if:
+                self.print_cmds(luma_pipeline, chroma_pipeline)
+                return
+
+            self.check_file_overwrites()
+
+            # named pipes are only useful with chroma
+            if self.program_opts.blackandwhite:
+                self.run_cmds(luma_pipeline)
+            else:
+                if self.use_named_pipes:
+                    self.run_named_pipe_cmds(luma_pipeline, chroma_pipeline)
+                else:
+                    self.run_cmds(luma_pipeline)
+                    self.run_cmds(chroma_pipeline)
+
+        finally:
+            if self.use_named_pipes:
+                self.cleanup_pipes()
 
     def parse_opts(self, ffmpeg_profiles):
         parser = argparse.ArgumentParser(
-            description='vhs-decode video generation script',
+            description='tbc-video-export - vhs-decode video generation script',
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
         global_opts = parser.add_argument_group('global')
@@ -381,6 +413,11 @@ class TBCVideoExport:
                                  help='Show what commands would be ran without running them.',
                                  action='store_true',
                                  default=False)
+
+        global_opts.add_argument('--skip-named-pipes',
+                                 help='Skip using named pipes and instead use a two-step process.',
+                                 action='store_true',
+                                 default=os.name != 'posix')
 
         global_opts.add_argument('-t', '--threads',
                                  help='Specify the number of concurrent threads.',
@@ -566,20 +603,85 @@ class TBCVideoExport:
                 rt.append(i)
         return rt
 
-    def run_cmds(self, dropout_correct_cmd, decoder_cmd, ffmpeg_cmd):
+    def cleanup_pipes(self):
+        """Cleanup named pipes and any temp dirs."""
+        if os.name == 'posix':
+            try:
+                os.unlink(self.pipe_luma)
+                os.unlink(self.pipe_chroma)
+                os.rmdir(self.pipe_tmp_dir)
+            except:
+                raise Exception('unable to cleanup')
+
+    def setup_pipes(self):
+        """Create named pipes for FFmpeg."""
+        if not self.program_opts.skip_named_pipes:
+            if os.name == 'posix':
+                try:
+                    self.use_named_pipes = True
+                    self.pipe_tmp_dir = tempfile.mkdtemp(prefix="tbc-video-export", suffix="")
+                    self.pipe_luma = os.path.join(self.pipe_tmp_dir, 'luma')
+                    self.pipe_chroma = os.path.join(self.pipe_tmp_dir, 'chroma')
+
+                    os.mkfifo(self.pipe_luma)
+                    os.mkfifo(self.pipe_chroma)
+                except:
+                    cleanup_pipes()
+                    raise Exception('unable to create pipes')
+            else:
+                raise Exception('named pipes not implemented for ' + os.name)
+        else:
+            self.use_named_pipes = False
+
+    def print_cmds(self, luma_pipeline, chroma_pipeline):
+        """Print the full command arguments when using --what-if"""
+        print('luma:')
+        print(*luma_pipeline.dropout_correct_cmd)
+        print(*luma_pipeline.decoder_cmd)
+
+        if self.program_opts.blackandwhite or not self.use_named_pipes:
+            print(*luma_pipeline.ffmpeg_cmd)
+
+        print('---\n')
+
+        if not self.program_opts.blackandwhite:
+            print('chroma:')
+            print(*chroma_pipeline.dropout_correct_cmd)
+            print(*chroma_pipeline.decoder_cmd)
+            print(*chroma_pipeline.ffmpeg_cmd)
+            print('---\n')
+
+    def run_cmds(self, pipeline):
         """Run ld-dropout-correct, ld-chroma-decoder and ffmpeg."""
-        dropout_correct = subprocess.Popen(self.flatten(dropout_correct_cmd), stdout=subprocess.PIPE)
-        decoder = subprocess.Popen(self.flatten(decoder_cmd), stdin=dropout_correct.stdout, stdout=subprocess.PIPE)
-        ffmpeg = subprocess.Popen(self.flatten(ffmpeg_cmd), stdin=decoder.stdout)
+        dropout_correct = subprocess.Popen(pipeline.dropout_correct_cmd, stdout=subprocess.PIPE)
+        decoder = subprocess.Popen(pipeline.decoder_cmd, stdin=dropout_correct.stdout, stdout=subprocess.PIPE)
+        ffmpeg = subprocess.Popen(pipeline.ffmpeg_cmd, stdin=decoder.stdout)
 
         ffmpeg.communicate()
 
-    def generate_luma(self, add_audio):
-        """Generate the luma file.
-        This has to be a 2 step process as we're unable to easily use multiple pipes to ffmpeg."""
+    def run_named_pipe_cmds(self, luma_pipeline, chroma_pipeline):
+        """Run ld-dropout-correct, ld-chroma-decoder and ffmpeg using a combination
+        of subprocess pipes and named pipes. This allows us to use multiple pipes to
+        ffmpeg and prevents a two-step process of merging luma and chroma."""
+        # luma decoder procs
+        luma_dropout_correct = subprocess.Popen(luma_pipeline.dropout_correct_cmd, stdout=subprocess.PIPE)
+        luma_decoder = subprocess.Popen(luma_pipeline.decoder_cmd, stdin=luma_dropout_correct.stdout)
 
-        file = self.files.name + '_luma.' + self.ffmpeg_settings.profile_luma.get_container()
+        # chroma decoder procs
+        chroma_dropout_correct = subprocess.Popen(chroma_pipeline.dropout_correct_cmd, stdout=subprocess.PIPE)
+        chroma_decoder = subprocess.Popen(chroma_pipeline.decoder_cmd, stdin=chroma_dropout_correct.stdout)
 
+        # ffmpeg proc
+        if self.program_opts.blackandwhite:
+            ffmpeg = subprocess.Popen(luma_pipeline.ffmpeg_cmd)
+            luma_decoder.communicate()
+        else:
+            ffmpeg = subprocess.Popen(chroma_pipeline.ffmpeg_cmd)
+            luma_decoder.communicate()
+            chroma_decoder.communicate()
+
+    def get_luma_cmds(self):
+        """Return ld-dropout-correct and ld-chroma-decode arguments for luma."""
         dropout_correct_cmd = [
             'ld-dropout-correct',
             '-i',
@@ -598,54 +700,18 @@ class TBCVideoExport:
             '--input-json',
             self.files.tbc_json,
             '-',
-            '-'
         ]
 
-        ffmpeg_cmd = [
-            'ffmpeg',
-            '-hide_banner',
-            self.ffmpeg_settings.get_overwrite_opt(),
-            self.ffmpeg_settings.get_thread_queue_size_opt(),
-            '-i',
-            '-'
-        ]
-
-        if add_audio:
-            ffmpeg_cmd.append([
-                self.ffmpeg_settings.get_audio_opts(),
-                '-map',
-                '0',
-                self.ffmpeg_settings.get_audio_map_opts(1),
-            ])
-
-        ffmpeg_cmd.append([
-            self.ffmpeg_settings.get_metadata_opts(),
-            self.ffmpeg_settings.get_rate_opt(),
-            self.ffmpeg_settings.profile_luma.get_video_opts(),
-            '-pass',
-            '1',
-            file
-        ])
-
-        self.files.video_luma = file
-
-        if self.program_opts.what_if:
-            print('luma:')
-            print(*self.flatten(dropout_correct_cmd))
-            print(*self.flatten(decoder_cmd))
-            print(*self.flatten(ffmpeg_cmd))
-            print('---\n')
-
+        # we just pipe into ffmpeg if b/w
+        if self.use_named_pipes and not self.program_opts.blackandwhite:
+            decoder_cmd.append(self.pipe_luma)
         else:
-            if os.path.isfile(file) and self.ffmpeg_settings.get_overwrite_opt() is None:
-                raise Exception(file + ' exists, use --ffmpeg-overwrite or move them')
+            decoder_cmd.append('-')
 
-            self.run_cmds(dropout_correct_cmd, decoder_cmd, ffmpeg_cmd)
+        return DecodePipeline(self.flatten(dropout_correct_cmd), self.flatten(decoder_cmd))
 
-    def generate_chroma(self):
-        """Generate the final video file."""
-        file = self.files.name + '.' + self.ffmpeg_settings.profile.get_container()
-
+    def get_chroma_cmds(self):
+        """Return ld-dropout-correct and ld-chroma-decode arguments for chroma."""
         dropout_correct_cmd = [
             'ld-dropout-correct',
             '-i',
@@ -666,8 +732,47 @@ class TBCVideoExport:
             '--input-json',
             self.files.tbc_json,
             '-',
-            '-'
         ]
+
+        if self.use_named_pipes:
+            decoder_cmd.append(self.pipe_chroma)
+        else:
+            decoder_cmd.append('-')
+
+        return DecodePipeline(self.flatten(dropout_correct_cmd), self.flatten(decoder_cmd))
+
+    def get_luma_ffmepg_cmd(self):
+        """FFmpeg arguments for generating a luma-only video file."""
+        file = self.files.name + '_luma.' + self.ffmpeg_settings.profile_luma.get_container()
+
+        ffmpeg_cmd = [
+            'ffmpeg',
+            '-hide_banner',
+            self.ffmpeg_settings.get_overwrite_opt(),
+            self.ffmpeg_settings.get_thread_queue_size_opt(),
+            '-i',
+            '-',
+            self.ffmpeg_settings.get_audio_opts(),
+            '-map',
+            '0',
+            self.ffmpeg_settings.get_audio_map_opts(1),
+            self.ffmpeg_settings.get_metadata_opts(),
+            self.ffmpeg_settings.get_rate_opt(),
+            self.ffmpeg_settings.profile_luma.get_video_opts(),
+            '-pass',
+            '1',
+            file
+        ]
+
+        self.files.video_luma = file
+
+        return self.flatten(ffmpeg_cmd)
+
+    def get_chroma_ffmpeg_cmd(self):
+        """FFmpeg arguments for generating a chroma video file. This will work
+        with either a luma video file or multiple named pipes, depending on whether
+        use_named_pipes is true."""
+        file = self.files.name + '.' + self.ffmpeg_settings.profile.get_container()
 
         ffmpeg_cmd = [
             'ffmpeg',
@@ -675,41 +780,80 @@ class TBCVideoExport:
             self.ffmpeg_settings.get_overwrite_opt(),
             self.ffmpeg_settings.get_thread_queue_size_opt(),
             self.ffmpeg_settings.get_color_range_opt(),
-            '-i',
-            self.files.video_luma,
+            '-i'
+        ]
+
+        if self.use_named_pipes:
+            ffmpeg_cmd.append(self.pipe_luma)
+        else:
+            ffmpeg_cmd.append(self.files.video_luma)
+
+        ffmpeg_cmd.append([
             self.ffmpeg_settings.get_thread_queue_size_opt(),
             '-i',
-            '-',
+        ])
+
+        if self.use_named_pipes:
+            ffmpeg_cmd.append(self.pipe_chroma)
+        else:
+            ffmpeg_cmd.append('-')
+
+        ffmpeg_cmd.append([
             self.ffmpeg_settings.get_audio_opts(),
             self.ffmpeg_settings.get_audio_map_opts(2),
             self.ffmpeg_settings.get_metadata_opts(),
-            '-filter_complex',
-            '[0]format=pix_fmts=' + self.ffmpeg_settings.profile.get_video_format() +
-            ',extractplanes=y[y];'
-            '[1]format=pix_fmts=' + self.ffmpeg_settings.profile.get_video_format() +
-            ',extractplanes=u+v[u][v];'
-            '[y][u][v]mergeplanes=0x001020:' + self.ffmpeg_settings.profile.get_video_format() +
-            ',format=pix_fmts=' + self.ffmpeg_settings.profile.get_video_format(),
+            '-filter_complex'
+        ])
+
+        if self.use_named_pipes is not None:
+            ffmpeg_cmd.append([
+                '[1:v]format=' + self.ffmpeg_settings.profile.get_video_format() + '[chroma];' +
+                '[0:v][chroma]mergeplanes=0x001112:' + self.ffmpeg_settings.profile.get_video_format() +
+                '[output]',
+                '-map',
+                '[output]:v'
+            ])
+        else:
+            ffmpeg_cmd.append([
+                '[0]format=pix_fmts=' + self.ffmpeg_settings.profile.get_video_format() +
+                ',extractplanes=y[y];'
+                '[1]format=pix_fmts=' + self.ffmpeg_settings.profile.get_video_format() +
+                ',extractplanes=u+v[u][v];'
+                '[y][u][v]mergeplanes=0x001020:' + self.ffmpeg_settings.profile.get_video_format() +
+                ',format=pix_fmts=' + self.ffmpeg_settings.profile.get_video_format()
+            ])
+
+        ffmpeg_cmd.append([
             self.ffmpeg_settings.profile.get_video_opts(),
             self.ffmpeg_settings.get_rate_opt(),
             self.ffmpeg_settings.get_aspect_ratio_opt(),
             self.ffmpeg_settings.get_color_range_opt(),
             self.ffmpeg_settings.get_color_opts(),
             file
-        ]
+        ])
 
         self.files.video = file
-        if self.program_opts.what_if:
-            print('chroma:')
-            print(*self.flatten(dropout_correct_cmd))
-            print(*self.flatten(decoder_cmd))
-            print(*self.flatten(ffmpeg_cmd))
-            print('---\n')
-        else:
-            if os.path.isfile(file) and self.ffmpeg_settings.get_overwrite_opt() is None:
-                raise Exception(file + ' exists, use --ffmpeg-overwrite or move them')
 
-            self.run_cmds(dropout_correct_cmd, decoder_cmd, ffmpeg_cmd)
+        return self.flatten(ffmpeg_cmd)
+
+    def check_file_overwrites(self):
+        """Check if files exist with named pipes off/on and b/w off/on."""
+        if self.use_named_pipes:
+            if self.program_opts.blackandwhite:
+                self.check_file_overwrite(self.files.video_luma)
+            else:
+                self.check_file_overwrite(self.files.video)
+        else:
+            if self.program_opts.blackandwhite:
+                self.check_file_overwrite(self.files.video_luma)
+            else:
+                self.check_file_overwrite(self.files.video_luma)
+                self.check_file_overwrite(self.files.video)
+
+    def check_file_overwrite(self, file):
+        """Check if a file exists and ask to run with overwrite."""
+        if os.path.isfile(file) and self.ffmpeg_settings.get_overwrite_opt() is None:
+            raise Exception(file + ' exists, use --ffmpeg-overwrite or move them')
 
     def get_video_system(self, json_file):
         """Determine whether a TBC is PAL or NTSC."""
