@@ -558,9 +558,9 @@ class TBCVideoExport:
         """Run ld-dropout-correct, ld-chroma-decoder and ffmpeg."""
         dropout_correct = subprocess.Popen(self.flatten(dropout_correct_cmd), stdout=subprocess.PIPE)
         decoder = subprocess.Popen(self.flatten(decoder_cmd), stdin=dropout_correct.stdout, stdout=subprocess.PIPE)
-        ffmpeg_chroma = subprocess.Popen(self.flatten(ffmpeg_cmd), stdin=decoder.stdout)
+        ffmpeg = subprocess.Popen(self.flatten(ffmpeg_cmd), stdin=decoder.stdout)
 
-        ffmpeg_chroma.communicate()
+        ffmpeg.communicate()
 
     def generate_luma(self, add_audio):
         """Generate the luma file.
