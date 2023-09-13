@@ -311,9 +311,16 @@ class FFmpegSettings:
         input_opts = []
 
         tracks = self.program_opts.ffmpeg_audio_file
+        offsets = self.program_opts.ffmpeg_audio_offset
 
         if tracks is not None:
             for idx, track in enumerate(tracks):
+                # add offset if set
+                if offsets is not None and len(offsets) >= idx + 1:
+                    input_opts.append(['-itsoffset', offsets[idx]])
+                else:
+                    input_opts.append(['-itsoffset', '00:00:00.000'])
+
                 input_opts.append(['-i', track])
 
             ffmpeg_opts.append(input_opts)
@@ -539,6 +546,11 @@ class TBCVideoExport:
 
         ffmpeg_opts.add_argument('--ffmpeg-audio-language',
                                  help='Language of the audio track.',
+                                 type=str,
+                                 action='append')
+
+        ffmpeg_opts.add_argument('--ffmpeg-audio-offset',
+                                 help='Offset of the audio track.',
                                  type=str,
                                  action='append')
 
