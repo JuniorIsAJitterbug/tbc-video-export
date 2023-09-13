@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 import subprocess
+import pathlib
 from enum import Enum
 from shutil import which
 
@@ -34,14 +35,14 @@ class ChromaDecoder(Enum):
 
 class InputFiles:
     def __init__(self, file, input_json):
-        self.name = file
-        self.tbc = file + '.tbc'
-        self.tbc_chroma = file + '_chroma.tbc'
+        self.name = pathlib.Path(file).stem
+        self.tbc = self.name + '.tbc'
+        self.tbc_chroma = self.name + '_chroma.tbc'
 
         if input_json is not None:
             self.tbc_json = input_json
         else:
-            self.tbc_json = file + '.tbc.json'
+            self.tbc_json = self.name + '.tbc.json'
 
         self.video_luma = None
         self.video = None
@@ -51,7 +52,7 @@ class InputFiles:
 
         for file in files:
             if not os.path.isfile(file):
-                raise Exception('missing required tbc files')
+                raise Exception('missing required tbc file ' + file)
 
 
 class DecoderSettings:
