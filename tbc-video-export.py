@@ -12,6 +12,15 @@ import tempfile
 from enum import Enum
 from shutil import which
 
+if os.name == 'nt':
+    import win32pipe
+    import win32api
+    import win32file
+    import pywintypes
+    import winerror
+    import win32con
+    from threading import Thread
+
 
 class VideoSystem(Enum):
     PAL = 'pal'
@@ -366,34 +375,34 @@ class TBCVideoExport:
                                               self.ffmpeg_profile_luma, self.files.tbc_json, self.video_system)
 
     def run(self):
-        try:
-            self.setup_pipes()
+        self.setup_pipes()
 
-            luma_pipeline = self.get_luma_cmds()
-            chroma_pipeline = self.get_chroma_cmds()
+        luma_pipeline = self.get_luma_cmds()
+        chroma_pipeline = self.get_chroma_cmds()
 
-            luma_pipeline.ffmpeg_cmd = self.get_luma_ffmepg_cmd()
-            chroma_pipeline.ffmpeg_cmd = self.get_chroma_ffmpeg_cmd()
+        luma_pipeline.ffmpeg_cmd = self.get_luma_ffmepg_cmd()
+        chroma_pipeline.ffmpeg_cmd = self.get_chroma_ffmpeg_cmd()
 
-            if self.program_opts.what_if:
-                self.print_cmds(luma_pipeline, chroma_pipeline)
-                return
+        if self.program_opts.what_if:
+            self.print_cmds(luma_pipeline, chroma_pipeline)
+            return
 
+        if not self.program_opts.ffmpeg_overwrite:
             self.check_file_overwrites()
 
-            # named pipes are only useful with chroma
-            if self.program_opts.luma_only:
-                self.run_cmds(luma_pipeline)
-            else:
-                if self.use_named_pipes:
-                    self.run_named_pipe_cmds(luma_pipeline, chroma_pipeline)
-                else:
-                    self.run_cmds(luma_pipeline)
-                    self.run_cmds(chroma_pipeline)
-
-        finally:
+        # named pipes are only useful with chroma
+        if self.program_opts.luma_only:
+            self.run_cmds(luma_pipeline)
+        else:
             if self.use_named_pipes:
-                self.cleanup_pipes()
+                try:
+                    self.create_pipes()
+                    self.run_named_pipe_cmds(luma_pipeline, chroma_pipeline)
+                finally:
+                    self.cleanup_pipes()
+            else:
+                self.run_cmds(luma_pipeline)
+                self.run_cmds(chroma_pipeline)
 
     def parse_opts(self, ffmpeg_profiles):
         parser = argparse.ArgumentParser(
@@ -417,7 +426,7 @@ class TBCVideoExport:
         global_opts.add_argument('--skip-named-pipes',
                                  help='Skip using named pipes and instead use a two-step process.',
                                  action='store_true',
-                                 default=os.name != 'posix')
+                                 default=os.name not in ('posix', 'nt'))
 
         global_opts.add_argument('-t', '--threads',
                                  help='Specify the number of concurrent threads.',
@@ -603,35 +612,131 @@ class TBCVideoExport:
                 rt.append(i)
         return rt
 
+    def print_windows_error(self, err=None):
+        """Print out windows related errors."""
+        if err is None:
+            err = win32api.GetLastError()
+        OSError(win32api.FormatMessage(win32con.FORMAT_MESSAGE_FROM_SYSTEM, 0, err, 0, None))
+
     def cleanup_pipes(self):
         """Cleanup named pipes and any temp dirs."""
-        if os.name == 'posix':
-            try:
-                os.unlink(self.pipe_luma)
-                os.unlink(self.pipe_chroma)
+        try:
+            if os.name == 'posix':
+                os.unlink(self.pipe_input_luma)
+                os.unlink(self.pipe_input_chroma)
                 os.rmdir(self.pipe_tmp_dir)
-            except:
-                raise Exception('unable to cleanup')
+            elif os.name == 'nt':
+                # cleanup should be handled by the pipe bridge thread
+                self.pipe_bridge_luma.join()
+                self.pipe_bridge_chroma.join()
+        except:
+            raise Exception('unable to cleanup')
+
+    def setup_win_pipe_bridge(self, input_name, output_name):
+        input_pipe = win32pipe.CreateNamedPipe(
+            input_name,
+            win32pipe.PIPE_ACCESS_DUPLEX,
+            (
+                win32pipe.PIPE_TYPE_BYTE
+                | win32pipe.PIPE_READMODE_BYTE
+                | win32pipe.PIPE_WAIT
+            ),
+            1, 65536, 65536,
+            0,
+            None)
+
+        if input_pipe == win32file.INVALID_HANDLE_VALUE:
+            self.print_windows_error()
+
+        output_pipe = win32pipe.CreateNamedPipe(
+            output_name,
+            win32pipe.PIPE_ACCESS_DUPLEX,
+            (
+                win32pipe.PIPE_TYPE_BYTE
+                | win32pipe.PIPE_READMODE_BYTE
+                | win32pipe.PIPE_WAIT
+            ),
+            1, 65536, 65536,
+            0,
+            None)
+
+        if output_pipe == win32file.INVALID_HANDLE_VALUE:
+            self.print_windows_error()
+
+        if win32pipe.ConnectNamedPipe(input_pipe, None):
+            self.print_windows_error()
+
+        if win32pipe.ConnectNamedPipe(output_pipe, None):
+            self.print_windows_error()
+
+        while True:
+            try:
+                read_hr, read_buf = win32file.ReadFile(input_pipe, 65536)
+
+                if read_hr in (winerror.ERROR_MORE_DATA, winerror.ERROR_IO_PENDING):
+                    self.print_windows_error(read_hr)
+
+                write_hr, written = win32file.WriteFile(output_pipe, read_buf)
+
+                if write_hr:
+                    self.print_windows_error(write_hr)
+
+            except pywintypes.error:
+                if win32api.GetLastError() == winerror.ERROR_BROKEN_PIPE:
+                    # pipe is
+                    break
+                raise
+
+        if win32file.CloseHandle(input_pipe):
+            self.print_windows_error()
+        if win32file.CloseHandle(output_pipe):
+            self.print_windows_error()
 
     def setup_pipes(self):
-        """Create named pipes for FFmpeg."""
+        """Config named pipes for FFmpeg."""
         if not self.program_opts.skip_named_pipes:
-            if os.name == 'posix':
-                try:
+            try:
+                if os.name == 'posix':
                     self.use_named_pipes = True
-                    self.pipe_tmp_dir = tempfile.mkdtemp(prefix="tbc-video-export", suffix="")
-                    self.pipe_luma = os.path.join(self.pipe_tmp_dir, 'luma')
-                    self.pipe_chroma = os.path.join(self.pipe_tmp_dir, 'chroma')
 
-                    os.mkfifo(self.pipe_luma)
-                    os.mkfifo(self.pipe_chroma)
-                except:
-                    cleanup_pipes()
-                    raise Exception('unable to create pipes')
-            else:
-                raise Exception('named pipes not implemented for ' + os.name)
+                    # we can use the same pipe for in/out on posix
+                    self.pipe_tmp_dir = tempfile.mkdtemp(prefix="tbc-video-export", suffix="")
+                    self.pipe_input_luma = self.pipe_output_luma = os.path.join(self.pipe_tmp_dir, 'luma')
+                    self.pipe_input_chroma = self.pipe_output_chroma = os.path.join(self.pipe_tmp_dir, 'chroma')
+                elif os.name == 'nt':
+                    self.use_named_pipes = True
+
+                    # we must create a named piped for decoder output and bridge it with ffmpeg input
+                    self.pipe_input_luma = r'\\.\pipe\tbc-video-export-luma-input'
+                    self.pipe_output_luma = r'\\.\pipe\tbc-video-export-luma-output'
+                    self.pipe_input_chroma = r'\\.\pipe\tbc-video-export-chroma-input'
+                    self.pipe_output_chroma = r'\\.\pipe\tbc-video-export-chroma-output'
+                else:
+                    raise Exception('named pipes not implemented for ' + os.name)
+            except:
+                raise Exception('unable to setup pipes')
         else:
             self.use_named_pipes = False
+
+    def create_pipes(self):
+        """Create named pipes for FFmpeg."""
+        try:
+            if os.name == 'posix':
+                os.mkfifo(self.pipe_input_luma)
+                os.mkfifo(self.pipe_input_chroma)
+            elif os.name == 'nt':
+                self.pipe_bridge_luma = Thread(target=self.setup_win_pipe_bridge, args=(
+                    self.pipe_input_luma, self.pipe_output_luma))
+                self.pipe_bridge_chroma = Thread(target=self.setup_win_pipe_bridge, args=(
+                    self.pipe_input_chroma, self.pipe_output_chroma))
+
+                self.pipe_bridge_luma.start()
+                self.pipe_bridge_chroma.start()
+            else:
+                raise Exception('named pipes not implemented for ' + os.name)
+        except:
+            self.cleanup_pipes()
+            raise Exception('unable to create pipes')
 
     def print_cmds(self, luma_pipeline, chroma_pipeline):
         """Print the full command arguments when using --what-if"""
@@ -704,7 +809,7 @@ class TBCVideoExport:
 
         # we just pipe into ffmpeg if b/w
         if self.use_named_pipes and not self.program_opts.luma_only:
-            decoder_cmd.append(self.pipe_luma)
+            decoder_cmd.append(self.pipe_input_luma)
         else:
             decoder_cmd.append('-')
 
@@ -735,7 +840,7 @@ class TBCVideoExport:
         ]
 
         if self.use_named_pipes:
-            decoder_cmd.append(self.pipe_chroma)
+            decoder_cmd.append(self.pipe_input_chroma)
         else:
             decoder_cmd.append('-')
 
@@ -784,7 +889,7 @@ class TBCVideoExport:
         ]
 
         if self.use_named_pipes:
-            ffmpeg_cmd.append(self.pipe_luma)
+            ffmpeg_cmd.append(self.pipe_output_luma)
         else:
             ffmpeg_cmd.append(self.files.video_luma)
 
@@ -794,7 +899,7 @@ class TBCVideoExport:
         ])
 
         if self.use_named_pipes:
-            ffmpeg_cmd.append(self.pipe_chroma)
+            ffmpeg_cmd.append(self.pipe_output_chroma)
         else:
             ffmpeg_cmd.append('-')
 
@@ -852,7 +957,7 @@ class TBCVideoExport:
 
     def check_file_overwrite(self, file):
         """Check if a file exists and ask to run with overwrite."""
-        if os.path.isfile(file) and self.ffmpeg_settings.get_overwrite_opt() is None:
+        if os.path.isfile(file):
             raise Exception(file + ' exists, use --ffmpeg-overwrite or move them')
 
     def get_video_system(self, json_file):
