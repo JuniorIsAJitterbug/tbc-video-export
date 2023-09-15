@@ -832,13 +832,19 @@ class TBCVideoExport:
     def get_luma_cmds(self):
         """Return ld-dropout-correct and ld-chroma-decode arguments for luma."""
         dropout_correct_cmd = [
-            'ld-dropout-correct',
+            'ld-dropout-correct'
+        ]
+
+        if not self.program_opts.verbose:
+            dropout_correct_cmd.append('-q')
+
+        dropout_correct_cmd.append([
             '-i',
             self.files.tbc,
             '--output-json',
             os.devnull,
             '-'
-        ]
+        ])
 
         decoder_cmd = [
             'ld-chroma-decoder',
@@ -862,7 +868,13 @@ class TBCVideoExport:
     def get_chroma_cmds(self):
         """Return ld-dropout-correct and ld-chroma-decode arguments for chroma."""
         dropout_correct_cmd = [
-            'ld-dropout-correct',
+            'ld-dropout-correct'
+        ]
+
+        if not self.program_opts.verbose:
+            dropout_correct_cmd.append('-q')
+
+        dropout_correct_cmd.append([
             '-i',
             self.files.tbc_chroma,
             '--input-json',
@@ -870,7 +882,7 @@ class TBCVideoExport:
             '--output-json',
             os.devnull,
             '-'
-        ]
+        ])
 
         decoder_cmd = [
             'ld-chroma-decoder',
