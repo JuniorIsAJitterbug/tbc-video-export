@@ -89,6 +89,9 @@ class DecoderSettings:
         """Generate ld-chroma-decoder opts."""
         decoder_opts = []
 
+        if not self.program_opts.verbose:
+            decoder_opts.append('-q')
+
         if self.video_system is VideoSystem.PAL:
             if self.program_opts.chroma_decoder is None:
                 # chroma decoder unset, use transform2d
@@ -127,7 +130,6 @@ class DecoderSettings:
         decoder_opts.append(self.convert_opt(self.program_opts, 'length', '-l'))
         decoder_opts.append(self.convert_opt(self.program_opts, 'reverse', '-r'))
         decoder_opts.append(self.convert_opt(self.program_opts, 'threads', '-t'))
-        decoder_opts.append(self.convert_opt(self.program_opts, 'quiet', '-q'))
         decoder_opts.append(self.convert_opt(self.program_opts, 'pad', '--pad'))
         decoder_opts.append(self.convert_opt(self.program_opts, 'offset', '-o'))
         decoder_opts.append(self.convert_opt(self.program_opts, 'simple_pal', '--simple-pal'))
@@ -338,6 +340,12 @@ class FFmpegSettings:
 
         return ffmpeg_opts
 
+    def get_verbosity(self):
+        if not self.program_opts.verbose:
+            return ['-hide_banner', '-loglevel', 'error', '-stats']
+
+        return '-hide_banner'
+
     def get_overwrite_opt(self):
         if self.program_opts.ffmpeg_overwrite:
             return '-y'
@@ -423,6 +431,11 @@ class TBCVideoExport:
                                  action='store_true',
                                  default=False)
 
+        global_opts.add_argument('--verbose',
+                                 help='Do not suppress info and warning messages.',
+                                 action='store_true',
+                                 default=False)
+
         global_opts.add_argument('--skip-named-pipes',
                                  help='Skip using named pipes and instead use a two-step process.',
                                  action='store_true',
@@ -450,11 +463,6 @@ class TBCVideoExport:
 
         decoder_opts.add_argument('-r', '--reverse',
                                   help='Reverse the field order to second/first',
-                                  action='store_true',
-                                  default=False)
-
-        decoder_opts.add_argument('-q', '--quiet',
-                                  help='Suppress info and warning messages.',
                                   action='store_true',
                                   default=False)
 
@@ -852,7 +860,7 @@ class TBCVideoExport:
 
         ffmpeg_cmd = [
             'ffmpeg',
-            '-hide_banner',
+            self.ffmpeg_settings.get_verbosity(),
             self.ffmpeg_settings.get_overwrite_opt(),
             self.ffmpeg_settings.get_thread_queue_size_opt(),
             '-i',
@@ -881,7 +889,7 @@ class TBCVideoExport:
 
         ffmpeg_cmd = [
             'ffmpeg',
-            '-hide_banner',
+            self.ffmpeg_settings.get_verbosity(),
             self.ffmpeg_settings.get_overwrite_opt(),
             self.ffmpeg_settings.get_thread_queue_size_opt(),
             self.ffmpeg_settings.get_color_range_opt(),
