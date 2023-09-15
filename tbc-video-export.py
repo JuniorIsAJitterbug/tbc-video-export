@@ -922,7 +922,7 @@ class TBCVideoExport:
             ffmpeg_cmd.append([
                 '[1:v]format=' + self.ffmpeg_settings.profile.get_video_format() + '[chroma];' +
                 '[0:v][chroma]mergeplanes=0x001112:' + self.ffmpeg_settings.profile.get_video_format() +
-                '[output]',
+                ',setfield=tff[output]',
                 '-map',
                 '[output]:v'
             ])
@@ -933,7 +933,7 @@ class TBCVideoExport:
                 '[1]format=pix_fmts=' + self.ffmpeg_settings.profile.get_video_format() +
                 ',extractplanes=u+v[u][v];'
                 '[y][u][v]mergeplanes=0x001020:' + self.ffmpeg_settings.profile.get_video_format() +
-                ',format=pix_fmts=' + self.ffmpeg_settings.profile.get_video_format()
+                ',format=pix_fmts=' + self.ffmpeg_settings.profile.get_video_format() + ',setfield=tff'
             ])
 
         ffmpeg_cmd.append([
