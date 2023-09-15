@@ -121,16 +121,16 @@ class DecoderSettings:
             decoder_opts.append(self.convert_opt(self.program_opts, 'chroma_decoder', '-f'))
 
         if not self.program_opts.vbi:
-            decoder_opts.append(self.convert_opt(self.program_opts, 'ffll', '--ffll'))
-            decoder_opts.append(self.convert_opt(self.program_opts, 'lfll', '--lfll'))
-            decoder_opts.append(self.convert_opt(self.program_opts, 'ffrl', '--ffrl'))
-            decoder_opts.append(self.convert_opt(self.program_opts, 'lfrl', '--lfrl'))
+            decoder_opts.append(self.convert_opt(self.program_opts, 'first_active_field_line', '--ffll'))
+            decoder_opts.append(self.convert_opt(self.program_opts, 'last_active_field_line', '--lfll'))
+            decoder_opts.append(self.convert_opt(self.program_opts, 'first_active_frame_line', '--ffrl'))
+            decoder_opts.append(self.convert_opt(self.program_opts, 'last_active_frame_line', '--lfrl'))
 
         decoder_opts.append(self.convert_opt(self.program_opts, 'start', '-s'))
         decoder_opts.append(self.convert_opt(self.program_opts, 'length', '-l'))
         decoder_opts.append(self.convert_opt(self.program_opts, 'reverse', '-r'))
         decoder_opts.append(self.convert_opt(self.program_opts, 'threads', '-t'))
-        decoder_opts.append(self.convert_opt(self.program_opts, 'pad', '--pad'))
+        decoder_opts.append(self.convert_opt(self.program_opts, 'output_padding', '--pad'))
         decoder_opts.append(self.convert_opt(self.program_opts, 'offset', '-o'))
         decoder_opts.append(self.convert_opt(self.program_opts, 'simple_pal', '--simple-pal'))
         decoder_opts.append(self.convert_opt(self.program_opts, 'show_ffts', '--show-ffts'))
@@ -414,8 +414,9 @@ class TBCVideoExport:
 
     def parse_opts(self, ffmpeg_profiles):
         parser = argparse.ArgumentParser(
-            description='tbc-video-export - vhs-decode video generation script',
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+            prog='tbc-video-export',
+            description='vhs-decode video generation script',
+            formatter_class=argparse.RawTextHelpFormatter)
 
         global_opts = parser.add_argument_group('global')
         decoder_opts = parser.add_argument_group('decoder')
@@ -423,165 +424,194 @@ class TBCVideoExport:
 
         # general / global arguments
         global_opts.add_argument('input',
-                                 help='Name of the input, without extension.',
-                                 type=str)
-
-        global_opts.add_argument('--what-if',
-                                 help='Show what commands would be ran without running them.',
-                                 action='store_true',
-                                 default=False)
-
-        global_opts.add_argument('--verbose',
-                                 help='Do not suppress info and warning messages.',
-                                 action='store_true',
-                                 default=False)
-
-        global_opts.add_argument('--skip-named-pipes',
-                                 help='Skip using named pipes and instead use a two-step process.',
-                                 action='store_true',
-                                 default=os.name not in ('posix', 'nt'))
+                                 type=str,
+                                 help='Name of the input tbc.')
 
         global_opts.add_argument('-t', '--threads',
-                                 help='Specify the number of concurrent threads.',
                                  type=int,
-                                 default=os.cpu_count())
+                                 default=os.cpu_count(),
+                                 metavar='int',
+                                 help='Specify the number of concurrent threads.')
 
-        global_opts.add_argument('-v', '--videosystem',
-                                 help='Video system format.',
+        global_opts.add_argument('--video-system',
                                  type=VideoSystem,
                                  choices=list(VideoSystem),
-                                 default=VideoSystem.PAL)
+                                 metavar='format',
+                                 help='Force a video system format. (default: from .tbc.json)\n'
+                                 'Available formats:\n  ' + '\n  '.join([e.value for e in VideoSystem]))
+
+        global_opts.add_argument('--verbose',
+                                 action='store_true',
+                                 default=False,
+                                 help='Do not suppress info and warning messages.')
+
+        global_opts.add_argument('--what-if',
+                                 action='store_true',
+                                 default=False,
+                                 help='Show what commands would be run without running them.')
+
+        global_opts.add_argument('--skip-named-pipes',
+                                 action='store_true',
+                                 default=os.name not in ('posix', 'nt'),
+                                 help='Skip using named pipes and instead use a two-step process.')
 
         # decoder arguments
         decoder_opts.add_argument('-s', '--start',
-                                  help='Specify the start frame number.',
-                                  type=int)
+                                  type=int,
+                                  metavar='int',
+                                  help='Specify the start frame number.')
 
         decoder_opts.add_argument('-l', '--length',
-                                  help='Specify the number of frames to process.',
-                                  type=int)
+                                  type=int,
+                                  metavar='int',
+                                  help='Specify the number of frames to process.')
 
-        decoder_opts.add_argument('-r', '--reverse',
-                                  help='Reverse the field order to second/first',
+        decoder_opts.add_argument('--reverse',
                                   action='store_true',
-                                  default=False)
+                                  default=False,
+                                  help='Reverse the field order to second/first.')
 
         decoder_opts.add_argument('--input-json',
-                                  help='Use a different .tbc.json file.',
-                                  type=str)
+                                  type=str,
+                                  metavar='json_file',
+                                  help='Use a different .tbc.json file.')
 
         decoder_opts.add_argument('--luma-only',
-                                  help='Only output a luma video.',
                                   action='store_true',
-                                  default=False)
+                                  default=False,
+                                  help='Only output a luma video.')
 
-        decoder_opts.add_argument('--pad', '--output-padding',
-                                  help='Pad the output frame to a multiple of this many pixels.',
-                                  type=int)
+        decoder_opts.add_argument('--output-padding',
+                                  type=int,
+                                  metavar='int',
+                                  help='Pad the output frame to a multiple of this many pixels.')
 
         decoder_opts.add_argument('--vbi',
-                                  help='Adjust FFLL/LFLL/FFRL/LFRL for full vertical export',
                                   action='store_true',
-                                  default=False)
+                                  default=False,
+                                  help='Adjust FFLL/LFLL/FFRL/LFRL for full vertical export.')
 
-        decoder_opts.add_argument('--ffll', '--first_active_field_line',
-                                  help='The first visible line of a field.'
-                                  'Range 1-259 for NTSC (default: 20),'
-                                  '      2-308 for PAL  (default: 22)',
-                                  type=int)
+        decoder_opts.add_argument('--first_active_field_line',
+                                  type=int,
+                                  metavar='int',
+                                  help='The first visible line of a field.\n'
+                                  '  Range 1-259 for NTSC (default: 20)\n'
+                                  '        2-308 for PAL  (default: 22)')
 
-        decoder_opts.add_argument('--lfll', '--last_active_field_line',
-                                  help='The last visible line of a field.'
-                                  'Range 1-259 for NTSC (default: 259),'
-                                  '      2-308 for PAL  (default: 308)',
-                                  type=int)
+        decoder_opts.add_argument('--last_active_field_line',
+                                  type=int,
+                                  metavar='int',
+                                  help='The last visible line of a field.\n'
+                                  '  Range 1-259 for NTSC (default: 259)\n'
+                                  '        2-308 for PAL  (default: 308)')
 
-        decoder_opts.add_argument('--ffrl', '--first_active_frame_line',
-                                  help='The first visible line of a field.'
-                                  'Range 1-525 for NTSC (default: 40),'
-                                  '      1-620 for PAL  (default: 44)',
-                                  type=int)
+        decoder_opts.add_argument('--first_active_frame_line',
+                                  type=int,
+                                  metavar='int',
+                                  help='The first visible line of a field.\n'
+                                  '  Range 1-525 for NTSC (default: 40)\n'
+                                  '        1-620 for PAL  (default: 44)')
 
-        decoder_opts.add_argument('--lfrl', '--last_active_frame_line',
-                                  help='The last visible line of a field.'
-                                  'Range 1-525 for NTSC (default: 525),'
-                                  '      1-620 for PAL  (default: 620)',
-                                  type=int)
+        decoder_opts.add_argument('--last_active_frame_line',
+                                  type=int,
+                                  metavar='int',
+                                  help='The last visible line of a field.\n'
+                                  '  Range 1-525 for NTSC (default: 525)\n'
+                                  '        1-620 for PAL  (default: 620)')
 
-        decoder_opts.add_argument('-o', '--offset',
-                                  help='NTSC: Overlay the adaptive filter map (only used for testing).',
+        decoder_opts.add_argument('--offset',
                                   action='store_true',
-                                  default=False)
+                                  default=False,
+                                  help='NTSC: Overlay the adaptive filter map (only used for testing).')
 
         decoder_opts.add_argument('--chroma-decoder',
-                                  help='Chroma decoder to use.',
                                   type=ChromaDecoder,
-                                  choices=list(ChromaDecoder))
+                                  choices=list(ChromaDecoder),
+                                  metavar='decoder',
+                                  help='Chroma decoder to use. '
+                                  '(default: ' + ChromaDecoder.TRANSFORM2D.value + ' for PAL, ' +
+                                  ChromaDecoder.NTSC2D.value + ' for NTSC).\n'
+                                  'Available decoders:\n  ' + '\n  '.join([e.value for e in ChromaDecoder]))
 
         decoder_opts.add_argument('--chroma-gain',
-                                  help='Gain factor applied to chroma components (default 1.5 for PAL, 2.0 for NTSC).',
-                                  type=float)
+                                  type=float,
+                                  metavar='float',
+                                  help='Gain factor applied to chroma components (default: 1.5 for PAL, 2.0 for NTSC).')
 
         decoder_opts.add_argument('--chroma-phase',
-                                  help='Phase rotation applied to chroma components (degrees).',
                                   type=float,
-                                  default=0.0)
+                                  default=0.0,
+                                  metavar='float',
+                                  help='Phase rotation applied to chroma components (degrees).')
 
         decoder_opts.add_argument('--chroma-nr',
-                                  help='NTSC: Chroma noise reduction level in dB.',
                                   type=float,
-                                  default=0.0)
+                                  default=0.0,
+                                  metavar='float',
+                                  help='NTSC: Chroma noise reduction level in dB.')
 
         decoder_opts.add_argument('--luma-nr',
-                                  help='Luma noise reduction level in dB.',
                                   type=float,
-                                  default=1.0)
+                                  default=1.0,
+                                  metavar='float',
+                                  help='Luma noise reduction level in dB.')
 
         decoder_opts.add_argument('--simple-pal',
-                                  help='Transform: Use 1D UV filter',
-                                  type=str)
+                                  action='store_true',
+                                  default=False,
+                                  help='Transform: Use 1D UV filter.')
 
         decoder_opts.add_argument('--transform-threshold',
-                                  help='Transform: Uniform similarity threshold in \'threshold\' mode.',
                                   type=float,
-                                  default=0.4)
+                                  default=0.4,
+                                  metavar='float',
+                                  help='Transform: Uniform similarity threshold in \'threshold\' mode.')
 
         decoder_opts.add_argument('--transform-thresholds',
-                                  help='Transform: File containing per-bin similarity thresholds in \'threshold\' mode.',
-                                  type=str)
+                                  type=str,
+                                  metavar='file_name',
+                                  help='Transform: File containing per-bin similarity thresholds in \'threshold\' mode.')
 
         decoder_opts.add_argument('--show-ffts',
-                                  help='Transform: Overlay the input and output FFTs.',
                                   action='store_true',
-                                  default=False)
+                                  default=False,
+                                  help='Transform: Overlay the input and output FFTs.')
 
         # ffmpeg arguments
         ffmpeg_opts.add_argument('--ffmpeg-profile',
-                                 help='Specify an FFmpeg profile to use.',
                                  type=str,
                                  choices=ffmpeg_profiles.names,
-                                 default=next(iter(ffmpeg_profiles.names)))
+                                 default=next(iter(ffmpeg_profiles.names)),
+                                 metavar='profile_name',
+                                 help='Specify an FFmpeg profile to use. '
+                                 '(default: ' + next(iter(ffmpeg_profiles.names)) + ')\n'
+                                 'Available profiles:\n  ' + '\n  '.join(ffmpeg_profiles.names))
 
         ffmpeg_opts.add_argument('--ffmpeg-profile-luma',
-                                 help='Specify an FFmpeg profile to use for luma.',
                                  type=str,
                                  choices=ffmpeg_profiles.names_luma,
-                                 default=next(iter(ffmpeg_profiles.names_luma)))
+                                 default=next(iter(ffmpeg_profiles.names_luma)),
+                                 metavar='profile_name',
+                                 help='Specify an FFmpeg profile to use for luma. '
+                                 '(default: ' + next(iter(ffmpeg_profiles.names_luma)) + ')\n'
+                                 'Available profiles:\n  ' + '\n  '.join(ffmpeg_profiles.names_luma))
 
         ffmpeg_opts.add_argument('--ffmpeg-metadata',
-                                 help='Add metadata to file, eg. \'foo=\"bar\"\'.',
                                  type=str,
-                                 action='append')
+                                 action='append',
+                                 metavar='foo=\"bar\"',
+                                 help='Add metadata to output file.',)
 
         ffmpeg_opts.add_argument('--ffmpeg-thread-queue-size',
-                                 help='Sets the thread queue size for FFmpeg.',
                                  type=int,
-                                 default=1024)
+                                 default=1024,
+                                 metavar='int',
+                                 help='Sets the thread queue size for FFmpeg. (default: 1024)',)
 
         ffmpeg_opts.add_argument('--ffmpeg-force-anamorphic',
-                                 help='Force widescreen aspect ratio.',
                                  action='store_true',
-                                 default=False)
+                                 default=False,
+                                 help='Force widescreen aspect ratio.')
 
         ffmpeg_opts.add_argument('--ffmpeg-overwrite',
                                  help='Set to overwrite existing video files.',
@@ -589,24 +619,28 @@ class TBCVideoExport:
                                  default=False)
 
         ffmpeg_opts.add_argument('--ffmpeg-audio-file',
-                                 help='Audio file to mux with generated video.',
                                  type=str,
-                                 action='append')
+                                 action='append',
+                                 metavar='file_name',
+                                 help='Audio file to mux with generated video.')
 
         ffmpeg_opts.add_argument('--ffmpeg-audio-title',
-                                 help='Title of the audio track.',
                                  type=str,
-                                 action='append')
+                                 action='append',
+                                 metavar='title',
+                                 help='Title of the audio track.')
 
         ffmpeg_opts.add_argument('--ffmpeg-audio-language',
-                                 help='Language of the audio track.',
                                  type=str,
-                                 action='append')
+                                 action='append',
+                                 metavar='language',
+                                 help='Language of the audio track.')
 
         ffmpeg_opts.add_argument('--ffmpeg-audio-offset',
-                                 help='Offset of the audio track.',
                                  type=str,
-                                 action='append')
+                                 action='append',
+                                 metavar='offset',
+                                 help='Offset of the audio track. (default: 00:00:00.000)')
 
         return parser.parse_args()
 
@@ -972,6 +1006,11 @@ class TBCVideoExport:
 
     def get_video_system(self, json_file):
         """Determine whether a TBC is PAL or NTSC."""
+
+        # if user has forced a format
+        if self.program_opts.video_system is not None:
+            return self.program_opts.video_system
+
         try:
             with open(json_file, 'r') as file:
                 data = json.load(file)
