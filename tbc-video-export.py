@@ -793,6 +793,8 @@ class TBCVideoExport:
             luma_decoder.communicate()
             chroma_decoder.communicate()
 
+        ffmpeg.wait()
+
     def get_luma_cmds(self):
         """Return ld-dropout-correct and ld-chroma-decode arguments for luma."""
         dropout_correct_cmd = [
