@@ -927,8 +927,8 @@ class TBCVideoExport:
             'ffmpeg',
             self.ffmpeg_settings.get_verbosity(),
             self.ffmpeg_settings.get_overwrite_opt(),
-            self.ffmpeg_settings.get_thread_queue_size_opt(),
             self.ffmpeg_settings.get_color_range_opt(),
+            self.ffmpeg_settings.get_thread_queue_size_opt(),
             '-i'
         ]
 
