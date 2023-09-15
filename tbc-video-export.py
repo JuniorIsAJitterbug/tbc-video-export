@@ -103,6 +103,12 @@ class DecoderSettings:
                 decoder_opts.append(['--lfll', '308'])
                 decoder_opts.append(['--ffrl', '2'])
                 decoder_opts.append(['--lfrl', '620'])
+            elif self.program_opts.letterbox:
+                decoder_opts.append(['--ffll', '2'])
+                decoder_opts.append(['--lfll', '308'])
+                decoder_opts.append(['--ffrl', '118'])
+                decoder_opts.append(['--lfrl', '548'])
+
         elif self.video_system is VideoSystem.NTSC:
             if self.program_opts.chroma_decoder is None:
                 # chroma decoder unset, use ntsc2d
@@ -116,6 +122,11 @@ class DecoderSettings:
                 decoder_opts.append(['--lfll', '259'])
                 decoder_opts.append(['--ffrl', '2'])
                 decoder_opts.append(['--lfrl', '525'])
+            elif self.program_opts.letterbox:
+                decoder_opts.append(['--ffll', '2'])
+                decoder_opts.append(['--lfll', '308'])
+                decoder_opts.append(['--ffrl', '118'])
+                decoder_opts.append(['--lfrl', '453'])
 
         if self.program_opts.chroma_decoder is not None:
             decoder_opts.append(self.convert_opt(self.program_opts, 'chroma_decoder', '-f'))
@@ -490,6 +501,11 @@ class TBCVideoExport:
                                   action='store_true',
                                   default=False,
                                   help='Adjust FFLL/LFLL/FFRL/LFRL for full vertical export.')
+
+        decoder_opts.add_argument('--letterbox',
+                                  action='store_true',
+                                  default=False,
+                                  help='Adjust FFLL/LFLL/FFRL/LFRL for letterbox crop.')
 
         decoder_opts.add_argument('--first_active_field_line',
                                   type=int,
