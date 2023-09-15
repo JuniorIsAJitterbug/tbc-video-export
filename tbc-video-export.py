@@ -108,7 +108,7 @@ class DecoderSettings:
                 # chroma decoder unset, use ntsc2d
                 decoder_opts.append(['-f', ChromaDecoder.NTSC2D.value])
 
-            decoder_opts.append(['--ntsc-phase-comp'])
+            decoder_opts.append('--ntsc-phase-comp')
 
             # vbi is set, use preset line values
             if self.program_opts.vbi:
