@@ -276,7 +276,7 @@ class FFmpegSettings:
     def get_aspect_ratio_opt(self):
         """Returns FFmpeg opts for aspect ratio."""
         if (('isWidescreen' in self.tbc_json_data['videoParameters'] and self.tbc_json_data['videoParameters']['isWidescreen'])
-                or self.program_opts.ffmpeg_force_anamorphic):
+                or self.program_opts.ffmpeg_force_anamorphic or self.program_opts.letterbox):
             return ['-aspect', '16:9']
 
         return ['-aspect', '4:3']
