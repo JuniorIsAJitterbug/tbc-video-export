@@ -54,6 +54,12 @@ class InputFiles:
         else:
             self.tbc_json = self.name + '.tbc.json'
 
+        try:
+            with open(self.tbc_json, 'r') as file:
+                self.tbc_json_data = json.load(file)
+        except:
+            raise Exception(json_file + ' is not valid json file')
+
         self.video_luma = None
         self.video = None
 
@@ -248,11 +254,11 @@ class FFmpegProfiles:
 
 
 class FFmpegSettings:
-    def __init__(self, program_opts, profile, profile_luma, tbc_json, video_system, timecode):
+    def __init__(self, program_opts, profile, profile_luma, tbc_json_data, video_system, timecode):
         self.program_opts = program_opts
         self.profile = profile
         self.profile_luma = profile_luma
-        self.tbc_json = tbc_json
+        self.tbc_json_data = tbc_json_data
         self.video_system = video_system
         self.timecode = timecode
 
@@ -269,10 +275,7 @@ class FFmpegSettings:
 
     def get_aspect_ratio_opt(self):
         """Returns FFmpeg opts for aspect ratio."""
-        with open(self.tbc_json, 'r') as file:
-            data = json.load(file)
-
-        if (('isWidescreen' in data['videoParameters'] and data['videoParameters']['isWidescreen'])
+        if (('isWidescreen' in self.tbc_json_data['videoParameters'] and self.tbc_json_data['videoParameters']['isWidescreen'])
                 or self.program_opts.ffmpeg_force_anamorphic):
             return ['-aspect', '16:9']
 
@@ -388,15 +391,15 @@ class TBCVideoExport:
         self.files = InputFiles(self.program_opts.input, self.program_opts.input_json)
         self.files.check_files_exist()
 
-        self.video_system = self.get_video_system(self.files.tbc_json)
-        self.timecode = self.get_timecode(self.files.tbc_json)
+        self.video_system = self.get_video_system(self.files.tbc_json_data)
+        self.timecode = self.get_timecode(self.files.tbc_json_data)
 
         self.ffmpeg_profile = self.ffmpeg_profiles.get_profile(self.program_opts.ffmpeg_profile)
         self.ffmpeg_profile_luma = self.ffmpeg_profiles.get_profile(self.program_opts.ffmpeg_profile_luma)
 
         self.decoder_settings = DecoderSettings(self.program_opts, self.video_system)
         self.ffmpeg_settings = FFmpegSettings(self.program_opts, self.ffmpeg_profile,
-                                              self.ffmpeg_profile_luma, self.files.tbc_json, self.video_system, self.timecode)
+                                              self.ffmpeg_profile_luma, self.files.tbc_json_data, self.video_system, self.timecode)
 
     def run(self):
         self.setup_pipes()
@@ -1039,46 +1042,34 @@ class TBCVideoExport:
         if os.path.isfile(file):
             raise Exception(file + ' exists, use --ffmpeg-overwrite or move them')
 
-    def get_video_system(self, json_file):
+    def get_video_system(self, tbc_json_data):
         """Determine whether a TBC is PAL or NTSC."""
 
         # if user has forced a format
         if self.program_opts.video_system is not None:
             return self.program_opts.video_system
 
-        try:
-            with open(json_file, 'r') as file:
-                data = json.load(file)
-        except:
-            raise Exception(json_file + ' is not valid json file')
-
         # search for PAL* or NTSC* in videoParameters.system or the existence
         # if isSourcePal keys
-        if (VideoSystem.PAL.value in data['videoParameters']['system'].lower()
-            or 'isSourcePal' in data['videoParameters']
-                or 'isSourcePalM' in data['videoParameters']):
+        if (VideoSystem.PAL.value in tbc_json_data['videoParameters']['system'].lower()
+            or 'isSourcePal' in tbc_json_data['videoParameters']
+                or 'isSourcePalM' in tbc_json_data['videoParameters']):
             return VideoSystem.PAL
-        elif VideoSystem.NTSC.value in data['videoParameters']['system'].lower():
+        elif VideoSystem.NTSC.value in tbc_json_data['videoParameters']['system'].lower():
             return VideoSystem.NTSC
         else:
             raise Exception('could not read video system from ' + json_file)
 
-    def get_timecode(self, json_file):
+    def get_timecode(self, tbc_json_data):
         """Attempt to read a VITC timecode for the first frame.
         Returns starting timecode if no VITC data found."""
 
-        try:
-            with open(json_file, 'r') as file:
-                data = json.load(file)
-        except:
-            raise Exception(json_file + ' is not valid json file')
-
-        if 'vitc' not in data['fields'][0] or 'vitcData' not in data['fields'][0]['vitc']:
+        if 'vitc' not in tbc_json_data['fields'][0] or 'vitcData' not in tbc_json_data['fields'][0]['vitc']:
             return '00:00:00:00'
 
         is_valid = True
         is_30_frame = self.video_system is not VideoSystem.PAL
-        vitc_data = data['fields'][0]['vitc']['vitcData']
+        vitc_data = tbc_json_data['fields'][0]['vitc']['vitcData']
 
         def decode_bcd(tens, units):
             if tens > 9:
