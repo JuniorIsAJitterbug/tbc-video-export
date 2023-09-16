@@ -248,12 +248,13 @@ class FFmpegProfiles:
 
 
 class FFmpegSettings:
-    def __init__(self, program_opts, profile, profile_luma, tbc_json, video_system):
+    def __init__(self, program_opts, profile, profile_luma, tbc_json, video_system, timecode):
         self.program_opts = program_opts
         self.profile = profile
         self.profile_luma = profile_luma
         self.tbc_json = tbc_json
         self.video_system = video_system
+        self.timecode = timecode
 
     def get_rate_opt(self):
         """Returns FFmpeg opts for rate."""
@@ -351,6 +352,9 @@ class FFmpegSettings:
 
         return ffmpeg_opts
 
+    def get_timecode_opt(self):
+        return ['-timecode', self.timecode]
+
     def get_verbosity(self):
         if not self.program_opts.verbose:
             return ['-hide_banner', '-loglevel', 'error', '-stats']
@@ -385,13 +389,14 @@ class TBCVideoExport:
         self.files.check_files_exist()
 
         self.video_system = self.get_video_system(self.files.tbc_json)
+        self.timecode = self.get_timecode(self.files.tbc_json)
 
         self.ffmpeg_profile = self.ffmpeg_profiles.get_profile(self.program_opts.ffmpeg_profile)
         self.ffmpeg_profile_luma = self.ffmpeg_profiles.get_profile(self.program_opts.ffmpeg_profile_luma)
 
         self.decoder_settings = DecoderSettings(self.program_opts, self.video_system)
         self.ffmpeg_settings = FFmpegSettings(self.program_opts, self.ffmpeg_profile,
-                                              self.ffmpeg_profile_luma, self.files.tbc_json, self.video_system)
+                                              self.ffmpeg_profile_luma, self.files.tbc_json, self.video_system, self.timecode)
 
     def run(self):
         self.setup_pipes()
@@ -934,6 +939,7 @@ class TBCVideoExport:
             '0',
             self.ffmpeg_settings.get_audio_map_opts(1),
             self.ffmpeg_settings.get_metadata_opts(),
+            self.ffmpeg_settings.get_timecode_opt(),
             self.ffmpeg_settings.get_rate_opt(),
             self.ffmpeg_settings.profile_luma.get_video_opts(),
             '-pass',
@@ -1002,6 +1008,7 @@ class TBCVideoExport:
 
         ffmpeg_cmd.append([
             self.ffmpeg_settings.profile.get_video_opts(),
+            self.ffmpeg_settings.get_timecode_opt(),
             self.ffmpeg_settings.get_rate_opt(),
             self.ffmpeg_settings.get_aspect_ratio_opt(),
             self.ffmpeg_settings.get_color_range_opt(),
@@ -1055,6 +1062,62 @@ class TBCVideoExport:
             return VideoSystem.NTSC
         else:
             raise Exception('could not read video system from ' + json_file)
+
+    def get_timecode(self, json_file):
+        """Attempt to read a VITC timecode for the first frame.
+        Returns starting timecode if no VITC data found."""
+
+        try:
+            with open(json_file, 'r') as file:
+                data = json.load(file)
+        except:
+            raise Exception(json_file + ' is not valid json file')
+
+        if 'vitc' not in data['fields'][0] or 'vitcData' not in data['fields'][0]['vitc']:
+            return '00:00:00:00'
+
+        is_valid = True
+        is_30_frame = self.video_system is not VideoSystem.PAL
+        vitc_data = data['fields'][0]['vitc']['vitcData']
+
+        def decode_bcd(tens, units):
+            if tens > 9:
+                is_valid = False
+                tens = 9
+
+            if units > 9:
+                is_valid = False
+                units = 9
+
+            return (tens * 10) + units
+
+        hour = decode_bcd(vitc_data[7] & 0x03, vitc_data[6] & 0x0F)
+        minute = decode_bcd(vitc_data[5] & 0x07, vitc_data[4] & 0x0F)
+        second = decode_bcd(vitc_data[3] & 0x07, vitc_data[2] & 0x0F)
+        frame = decode_bcd(vitc_data[1] & 0x03, vitc_data[0] & 0x0f)
+
+        if (hour > 23 or minute > 59 or second > 59 or
+                (is_30_frame and frame > 29) or (not is_30_frame and frame > 24)):
+            is_valid = False
+
+        if is_30_frame:
+            is_drop_frame = (vitc_data[1] & 0x04) != 0
+            is_col_frame = (vitc_data[1] & 0x08) != 0
+            is_field_mark = (vitc_data[3] & 0x08) != 0
+        else:
+            is_drop_frame = False
+            is_col_frame = (vitc_data[1] & 0x08) != 0
+            is_field_mark = (vitc_data[7] & 0x08) != 0
+
+        if not is_valid:
+            return '00:00:00:00'
+
+        if is_drop_frame:
+            sep = ';'
+        else:
+            sep = ':'
+
+        return f'{hour:02d}:{minute:02d}:{second:02d}{sep}{frame:02d}'
 
     def get_profile_file(self):
         """Returns name of json file to load profiles from. Checks for existence of
