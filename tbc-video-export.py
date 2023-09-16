@@ -296,15 +296,20 @@ class FFmpegSettings:
 
         return ffmpeg_opts
 
-    def get_audio_map_opts(self, video_inputs):
+    def get_audio_map_opts(self):
         """Returns FFmpeg opts for audio mapping."""
         ffmpeg_opts = []
 
         audio_inputs = self.program_opts.ffmpeg_audio_file
 
+        offset = 2
+
+        if self.program_opts.luma_only:
+            offset = 1
+
         if audio_inputs is not None:
             for idx, audio_input in enumerate(audio_inputs):
-                ffmpeg_opts.append(['-map', str(idx + video_inputs) + ':a'])
+                ffmpeg_opts.append(['-map', str(idx + offset) + ':a'])
 
         return ffmpeg_opts
 
@@ -313,15 +318,22 @@ class FFmpegSettings:
         ffmpeg_opts = []
 
         metadata = self.program_opts.ffmpeg_metadata
-        audio_titles = self.program_opts.ffmpeg_audio_title
-        audio_languages = self.program_opts.ffmpeg_audio_language
 
         # add video metadata
         if metadata is not None:
             for data in metadata:
                 ffmpeg_opts.append(['-metadata', data])
 
-        # add audio metadata
+        return ffmpeg_opts
+
+    def get_audio_metadata_opts(self):
+        """Returns FFmpeg opts for audio metadata."""
+        ffmpeg_opts = []
+
+        audio_titles = self.program_opts.ffmpeg_audio_title
+        audio_languages = self.program_opts.ffmpeg_audio_language
+
+        # add audio metadata only if luma only
         if audio_titles is not None:
             for idx, title in enumerate(audio_titles):
                 ffmpeg_opts.append(['-metadata:s:a:' + str(idx), 'title=\"' + title + '\"'])
@@ -332,9 +344,8 @@ class FFmpegSettings:
 
         return ffmpeg_opts
 
-    def get_audio_opts(self):
-        """Returns FFmpeg opts for audio inputs."""
-        ffmpeg_opts = []
+    def get_audio_inputs_opts(self):
+        """Returns FFmpeg audio input opts."""
         input_opts = []
 
         tracks = self.program_opts.ffmpeg_audio_file
@@ -350,10 +361,7 @@ class FFmpegSettings:
 
                 input_opts.append(['-i', track])
 
-            ffmpeg_opts.append(input_opts)
-            ffmpeg_opts.append(self.profile.get_audio_opts())
-
-        return ffmpeg_opts
+        return input_opts
 
     def get_timecode_opt(self):
         return ['-timecode', self.timecode]
@@ -937,18 +945,38 @@ class TBCVideoExport:
             self.ffmpeg_settings.get_thread_queue_size_opt(),
             '-i',
             '-',
-            self.ffmpeg_settings.get_audio_opts(),
+        ]
+
+        if self.program_opts.luma_only:
+            ffmpeg_cmd.append(self.ffmpeg_settings.get_audio_inputs_opts())
+
+        ffmpeg_cmd.append([
             '-map',
-            '0',
-            self.ffmpeg_settings.get_audio_map_opts(1),
-            self.ffmpeg_settings.get_metadata_opts(),
+            '0'
+        ])
+
+        if self.program_opts.luma_only:
+            ffmpeg_cmd.append(self.ffmpeg_settings.get_audio_map_opts())
+
+        ffmpeg_cmd.append([
             self.ffmpeg_settings.get_timecode_opt(),
             self.ffmpeg_settings.get_rate_opt(),
-            self.ffmpeg_settings.profile_luma.get_video_opts(),
+            self.ffmpeg_settings.profile_luma.get_video_opts()
+        ])
+
+        if self.program_opts.luma_only:
+            ffmpeg_cmd.append(self.ffmpeg_settings.profile.get_audio_opts(),)
+
+        ffmpeg_cmd.append(self.ffmpeg_settings.get_metadata_opts())
+
+        if self.program_opts.luma_only:
+            ffmpeg_cmd.append(self.ffmpeg_settings.get_audio_metadata_opts())
+
+        ffmpeg_cmd.append([
             '-pass',
             '1',
             file
-        ]
+        ])
 
         self.files.video_luma = file
 
@@ -957,7 +985,7 @@ class TBCVideoExport:
     def get_chroma_ffmpeg_cmd(self):
         """FFmpeg arguments for generating a chroma video file. This will work
         with either a luma video file or multiple named pipes, depending on whether
-        use_named_pipes is true."""
+        usz_named_pipes is true."""
         file = self.files.name + '.' + self.ffmpeg_settings.profile.get_container()
 
         ffmpeg_cmd = [
@@ -985,19 +1013,16 @@ class TBCVideoExport:
             ffmpeg_cmd.append('-')
 
         ffmpeg_cmd.append([
-            self.ffmpeg_settings.get_audio_opts(),
-            self.ffmpeg_settings.get_audio_map_opts(2),
-            self.ffmpeg_settings.get_metadata_opts(),
+            self.ffmpeg_settings.get_audio_inputs_opts(),
             '-filter_complex'
         ])
 
+        # filters from existing scripts, can probably be tidied up
         if self.use_named_pipes is not None:
             ffmpeg_cmd.append([
                 '[1:v]format=' + self.ffmpeg_settings.profile.get_video_format() + '[chroma];' +
                 '[0:v][chroma]mergeplanes=0x001112:' + self.ffmpeg_settings.profile.get_video_format() +
                 ',setfield=tff[output]',
-                '-map',
-                '[output]:v'
             ])
         else:
             ffmpeg_cmd.append([
@@ -1006,16 +1031,23 @@ class TBCVideoExport:
                 '[1]format=pix_fmts=' + self.ffmpeg_settings.profile.get_video_format() +
                 ',extractplanes=u+v[u][v];'
                 '[y][u][v]mergeplanes=0x001020:' + self.ffmpeg_settings.profile.get_video_format() +
-                ',format=pix_fmts=' + self.ffmpeg_settings.profile.get_video_format() + ',setfield=tff'
+                ',format=pix_fmts=' + self.ffmpeg_settings.profile.get_video_format() +
+                ',setfield=tff[output]'
             ])
 
         ffmpeg_cmd.append([
-            self.ffmpeg_settings.profile.get_video_opts(),
+            '-map',
+            '[output]:v',
+            self.ffmpeg_settings.get_audio_map_opts(),
             self.ffmpeg_settings.get_timecode_opt(),
             self.ffmpeg_settings.get_rate_opt(),
+            self.ffmpeg_settings.profile.get_video_opts(),
             self.ffmpeg_settings.get_aspect_ratio_opt(),
             self.ffmpeg_settings.get_color_range_opt(),
             self.ffmpeg_settings.get_color_opts(),
+            self.ffmpeg_settings.profile.get_audio_opts(),
+            self.ffmpeg_settings.get_metadata_opts(),
+            self.ffmpeg_settings.get_audio_metadata_opts(),
             file
         ])
 
