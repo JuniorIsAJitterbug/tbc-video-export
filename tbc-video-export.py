@@ -448,7 +448,7 @@ class TBCVideoExport:
 
         global_opts.add_argument('-t', '--threads',
                                  type=int,
-                                 default=os.cpu_count(),
+                                 default=int(os.cpu_count() / 2),
                                  metavar='int',
                                  help='Specify the number of concurrent threads.')
 
