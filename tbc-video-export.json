@@ -12,6 +12,8 @@
                 "-slices",
                 "24",
                 "-slicecrc",
+                "1",
+                "-g",
                 "1"
             ],
             "v_format": "yuv422p10le",
@@ -34,6 +36,8 @@
                 "-slices",
                 "24",
                 "-slicecrc",
+                "1",
+                "-g",
                 "1"
             ],
             "v_format": "yuv422p10le",
@@ -52,6 +56,8 @@
                 "-slices",
                 "24",
                 "-slicecrc",
+                "1",
+                "-g",
                 "1"
             ],
             "v_format": "yuv422p",
@@ -74,6 +80,8 @@
                 "-slices",
                 "24",
                 "-slicecrc",
+                "1",
+                "-g",
                 "1"
             ],
             "v_format": "yuv422p",
@@ -92,6 +100,8 @@
                 "-slices",
                 "24",
                 "-slicecrc",
+                "1",
+                "-g",
                 "1"
             ],
             "v_format": "y8",
