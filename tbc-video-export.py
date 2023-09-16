@@ -1112,11 +1112,30 @@ class TBCVideoExport:
 
     def get_profile_file(self):
         """Returns name of json file to load profiles from. Checks for existence of
-        a .custom file."""
-        if os.path.isfile('tbc-video-export.custom.json'):
-            return 'tbc-video-export.custom.json'
+        a .custom file. Checks both . and the dir the script is run from."""
 
-        return 'tbc-video-export.json'
+        file_name_stock = 'tbc-video-export.json'
+        file_name_custom = 'tbc-video-export.custom.json'
+
+        # check custom file
+        if os.path.isfile(file_name_custom):
+            return file_name_custom
+
+        path = pathlib.Path(__file__).with_name(file_name_custom).absolute()
+
+        if os.path.isfile(path):
+            return path
+
+        # check stock file
+        if os.path.isfile(file_name_stock):
+            return file_name_stock
+
+        path = pathlib.Path(__file__).with_name(file_name_stock).absolute()
+
+        if os.path.isfile(path):
+            return path
+
+        raise Exception('Unable to find profile config file')
 
     def check_paths(self):
         """Ensure required binaries are in PATH."""
