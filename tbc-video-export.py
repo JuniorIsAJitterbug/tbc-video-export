@@ -214,6 +214,13 @@ class FFmpegProfile:
 
         return rt
 
+    def get_video_filter_opts(self):
+        """Return FFmpeg video filter opts from profile."""
+        if 'v_filter' in self.profile:
+            return ',' + self.profile['v_filter']
+
+        return ''
+
     def get_audio_opts(self):
         """Return FFmpeg audio opts from profile."""
         rt = []
@@ -225,6 +232,13 @@ class FFmpegProfile:
             rt.append(self.profile['a_opts'])
 
         return rt
+
+    def get_video_doublerate(self):
+        """Return FFmpeg double rate from profile."""
+        if 'v_double_rate' in self.profile and self.profile['v_double_rate']:
+            return True
+
+        return False
 
     def get_video_format(self):
         return self.profile['v_format']
@@ -267,9 +281,14 @@ class FFmpegSettings:
         ffmpeg_opts = []
 
         if self.video_system == VideoSystem.PAL:
-            ffmpeg_opts.append(['-r', '25'])
+            rate = 25
         elif self.video_system == VideoSystem.NTSC:
-            ffmpeg_opts.append(['-r', '30'])
+            rate = 30
+
+        if self.profile.get_video_doublerate():
+            rate = rate * 2
+
+        ffmpeg_opts.append(['-r', str(rate)])
 
         return ffmpeg_opts
 
@@ -1022,7 +1041,7 @@ class TBCVideoExport:
             ffmpeg_cmd.append([
                 '[1:v]format=' + self.ffmpeg_settings.profile.get_video_format() + '[chroma];' +
                 '[0:v][chroma]mergeplanes=0x001112:' + self.ffmpeg_settings.profile.get_video_format() +
-                ',setfield=tff[output]',
+                ',setfield=tff' + self.ffmpeg_settings.profile.get_video_filter_opts() + '[output]',
             ])
         else:
             ffmpeg_cmd.append([
@@ -1032,7 +1051,7 @@ class TBCVideoExport:
                 ',extractplanes=u+v[u][v];'
                 '[y][u][v]mergeplanes=0x001020:' + self.ffmpeg_settings.profile.get_video_format() +
                 ',format=pix_fmts=' + self.ffmpeg_settings.profile.get_video_format() +
-                ',setfield=tff[output]'
+                ',setfield=tff' + self.ffmpeg_settings.profile.get_video_filter_opts() + '[output]'
             ])
 
         ffmpeg_cmd.append([
