@@ -152,6 +152,32 @@
             "v_format": "yuv422p10le",
             "a_codec": "pcm_s24le",
             "container": "mov"
+        },
+        "x264_web": {
+            "v_codec": "libx264",
+            "v_opts": [
+                "-crf",
+                "18",
+                "-preset",
+                "slow",
+                "-maxrate",
+                "8M",
+                "-bufsize",
+                "16M",
+                "-movflags",
+                "+faststart"
+            ],
+            "v_format": "yuv420p",
+            "v_filter": "bwdif",
+            "v_double_rate": true,
+            "a_codec": "aac",
+            "a_opts": [
+                "-ar",
+                "48000",
+                "-b:a",
+                "160K"
+            ],
+            "container": "mov"
         }
     }
 }
