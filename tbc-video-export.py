@@ -45,14 +45,15 @@ class ChromaDecoder(Enum):
 
 class InputFiles:
     def __init__(self, file, input_json):
+        self.path = pathlib.Path(file).parent
         self.name = pathlib.Path(file).stem
-        self.tbc = self.name + '.tbc'
-        self.tbc_chroma = self.name + '_chroma.tbc'
+        self.tbc = os.path.join(self.path, self.name + '.tbc')
+        self.tbc_chroma = os.path.join(self.path, self.name + '_chroma.tbc')
 
         if input_json is not None:
             self.tbc_json = input_json
         else:
-            self.tbc_json = self.name + '.tbc.json'
+            self.tbc_json = os.path.join(self.path, self.name + '.tbc.json')
 
         try:
             with open(self.tbc_json, 'r') as file:
