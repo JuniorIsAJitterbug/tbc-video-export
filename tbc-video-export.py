@@ -308,11 +308,11 @@ class FFmpegSettings:
         if self.video_system == VideoSystem.PAL:
             ffmpeg_opts.append(['-colorspace', 'bt470bg'])
             ffmpeg_opts.append(['-color_primaries', 'bt470bg'])
-            ffmpeg_opts.append(['-color_trc', 'gamma28'])
+            ffmpeg_opts.append(['-color_trc', 'bt709'])
         elif self.video_system == VideoSystem.NTSC:
             ffmpeg_opts.append(['-colorspace', 'smpte170m'])
             ffmpeg_opts.append(['-color_primaries', 'smpte170m'])
-            ffmpeg_opts.append(['-color_trc', 'smpte170m'])
+            ffmpeg_opts.append(['-color_trc', 'bt709'])
 
         return ffmpeg_opts
 
