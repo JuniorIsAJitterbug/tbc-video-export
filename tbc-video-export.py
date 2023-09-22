@@ -1070,6 +1070,7 @@ class TBCVideoExport:
             self.ffmpeg_settings.profile.get_audio_opts(),
             self.ffmpeg_settings.get_metadata_opts(),
             self.ffmpeg_settings.get_audio_metadata_opts(),
+            '-flags', '+ildct',
             file
         ])
 

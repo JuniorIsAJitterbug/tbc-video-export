@@ -165,7 +165,9 @@
                 "-bufsize",
                 "16M",
                 "-movflags",
-                "+faststart"
+                "+faststart",
+                "-x264opts",
+                "interlaced=0"
             ],
             "v_format": "yuv420p",
             "v_filter": "bwdif",
