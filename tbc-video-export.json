@@ -180,6 +180,38 @@
                 "160K"
             ],
             "container": "mov"
+        },
+        "x264_lossless": {
+            "v_codec": "libx264",
+            "v_opts": [
+                "-qp",
+                "0",
+                "-preset",
+                "veryslow"
+            ],
+            "v_format": "yuv422p10le",
+            "a_codec": "flac",
+            "a_opts": [
+                "-compression_level",
+                "12"
+            ],
+            "container": "mkv"
+        },
+        "x264_lossless_8bit": {
+            "v_codec": "libx264",
+            "v_opts": [
+                "-qp",
+                "0",
+                "-preset",
+                "veryslow"
+            ],
+            "v_format": "yuv422p",
+            "a_codec": "flac",
+            "a_opts": [
+                "-compression_level",
+                "12"
+            ],
+            "container": "mkv"
         }
     }
 }
