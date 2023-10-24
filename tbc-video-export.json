@@ -107,7 +107,7 @@
             "v_format": "y8",
             "container": "mkv"
         },
-        "prores_hq_422": {
+        "prores_hq": {
             "v_codec": "prores",
             "v_opts": [
                 "-profile:v",
@@ -177,7 +177,7 @@
                 "-ar",
                 "48000",
                 "-b:a",
-                "160K"
+                "320K"
             ],
             "container": "mov"
         },
@@ -212,6 +212,34 @@
                 "12"
             ],
             "container": "mkv"
+        },
+        "x265_web": {
+            "v_codec": "libx265",
+            "v_opts": [
+                "-crf",
+                "18",
+                "-preset",
+                "slow",
+                "-maxrate",
+                "8M",
+                "-bufsize",
+                "16M",
+                "-movflags",
+                "+faststart",
+                "-x264opts",
+                "interlaced=0"
+            ],
+            "v_format": "yuv420p",
+            "v_filter": "bwdif",
+            "v_double_rate": true,
+            "a_codec": "aac",
+            "a_opts": [
+                "-ar",
+                "48000",
+                "-b:a",
+                "320K"
+            ],
+            "container": "mov"
         }
     }
 }
