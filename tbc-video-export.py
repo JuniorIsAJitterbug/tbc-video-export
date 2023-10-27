@@ -655,6 +655,7 @@ class TBCVideoExport:
 
         decoder_opts.add_argument(
             "--first_active_field_line",
+            "--ffll",
             type=int,
             metavar="int",
             help="The first visible line of a field.\n"
@@ -664,6 +665,7 @@ class TBCVideoExport:
 
         decoder_opts.add_argument(
             "--last_active_field_line",
+            "--lfll",
             type=int,
             metavar="int",
             help="The last visible line of a field.\n"
@@ -673,6 +675,7 @@ class TBCVideoExport:
 
         decoder_opts.add_argument(
             "--first_active_frame_line",
+            "--ffrl",
             type=int,
             metavar="int",
             help="The first visible line of a field.\n"
@@ -682,6 +685,7 @@ class TBCVideoExport:
 
         decoder_opts.add_argument(
             "--last_active_frame_line",
+            "--lfrl",
             type=int,
             metavar="int",
             help="The last visible line of a field.\n"
