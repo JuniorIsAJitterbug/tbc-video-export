@@ -1359,7 +1359,7 @@ class TBCVideoExport:
         ):
             return VideoSystem.NTSC
         else:
-            raise Exception("could not read video system from " + json_file)
+            raise Exception("could not read video system from tbc json")
 
     def get_timecode(self, tbc_json_data):
         """Attempt to read a VITC timecode for the first frame.
