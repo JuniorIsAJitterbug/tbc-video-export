@@ -1200,7 +1200,7 @@ class TBCVideoExport:
     def get_chroma_ffmpeg_cmd(self):
         """FFmpeg arguments for generating a chroma video file. This will work
         with either a luma video file or multiple named pipes, depending on whether
-        usz_named_pipes is true."""
+        use_named_pipes is true."""
         file_name = self.files.name + "." + self.ffmpeg_settings.profile.get_container()
         file = self.files.get_output_path(file_name)
 
