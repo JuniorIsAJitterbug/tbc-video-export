@@ -45,7 +45,7 @@ class ChromaDecoder(Enum):
 
 
 class InputFiles:
-    def __init__(self, file, input_json):
+    def __init__(self, file, output_dir, input_json):
         self.path = pathlib.Path(file).parent
         self.name = pathlib.Path(file).stem
         self.tbc = os.path.join(self.path, self.name + ".tbc")
@@ -62,8 +62,15 @@ class InputFiles:
         except:
             raise Exception(json_file + " is not valid json file")
 
+        if not os.path.isdir(output_dir):
+            raise Exception("output dir does not exist: " + output_dir)
+
+        self.output_dir = output_dir
         self.video_luma = None
         self.video = None
+
+    def get_output_path(self, filename):
+        return os.path.join(self.output_dir, filename)
 
     def check_files_exist(self):
         files = [self.tbc, self.tbc_chroma, self.tbc_json]
@@ -468,7 +475,11 @@ class TBCVideoExport:
         self.ffmpeg_profiles = FFmpegProfiles(self.get_profile_file())
         self.program_opts = self.parse_opts(self.ffmpeg_profiles)
 
-        self.files = InputFiles(self.program_opts.input, self.program_opts.input_json)
+        self.files = InputFiles(
+            self.program_opts.input,
+            self.program_opts.output,
+            self.program_opts.input_json
+        )
         self.files.check_files_exist()
 
         self.video_system = self.get_video_system(self.files.tbc_json_data)
@@ -534,6 +545,15 @@ class TBCVideoExport:
 
         # general / global arguments
         global_opts.add_argument("input", type=str, help="Name of the input tbc.")
+
+        global_opts.add_argument(
+            "-o",
+            "--output",
+            type=str,
+            default=".",
+            metavar="file_name",
+            help="Output directory. (default: current directory)"
+        )
 
         global_opts.add_argument(
             "-t",
@@ -1126,11 +1146,13 @@ class TBCVideoExport:
 
     def get_luma_ffmepg_cmd(self):
         """FFmpeg arguments for generating a luma-only video file."""
-        file = (
+        file_name = (
             self.files.name
             + "_luma."
             + self.ffmpeg_settings.profile_luma.get_container()
         )
+
+        file = self.files.get_output_path(file_name)
 
         ffmpeg_cmd = [
             "ffmpeg",
@@ -1179,7 +1201,8 @@ class TBCVideoExport:
         """FFmpeg arguments for generating a chroma video file. This will work
         with either a luma video file or multiple named pipes, depending on whether
         usz_named_pipes is true."""
-        file = self.files.name + "." + self.ffmpeg_settings.profile.get_container()
+        file_name = self.files.name + "." + self.ffmpeg_settings.profile.get_container()
+        file = self.files.get_output_path(file_name)
 
         ffmpeg_cmd = [
             "ffmpeg",
