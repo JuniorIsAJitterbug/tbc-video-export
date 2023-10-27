@@ -311,11 +311,12 @@ class FFmpegProfiles:
 
 class FFmpegSettings:
     def __init__(
-        self, program_opts, profile, profile_luma, tbc_json_data, video_system, timecode
+        self, program_opts, profile, profile_luma, tbc_json, tbc_json_data, video_system, timecode
     ):
         self.program_opts = program_opts
         self.profile = profile
         self.profile_luma = profile_luma
+        self.tbc_json = tbc_json
         self.tbc_json_data = tbc_json_data
         self.video_system = video_system
         self.timecode = timecode
@@ -400,6 +401,23 @@ class FFmpegSettings:
                 ffmpeg_opts.append(["-metadata", data])
 
         return ffmpeg_opts
+
+    def get_attachment_opts(self):
+        """Returns FFmpeg opts for attachments.
+        Only available for MKV containers"""
+        ffmpeg_opts = []
+
+        if self.profile.get_container().lower() == "mkv":
+            # add tbc json
+            ffmpeg_opts.append([
+                "-attach",
+                self.tbc_json,
+                "-metadata:s:t",
+                "mimetype=application/json"
+            ])
+
+        return ffmpeg_opts
+
 
     def get_audio_metadata_opts(self):
         """Returns FFmpeg opts for audio metadata."""
@@ -497,6 +515,7 @@ class TBCVideoExport:
             self.program_opts,
             self.ffmpeg_profile,
             self.ffmpeg_profile_luma,
+            self.files.tbc_json,
             self.files.tbc_json_data,
             self.video_system,
             self.timecode,
@@ -1182,6 +1201,7 @@ class TBCVideoExport:
                 self.ffmpeg_settings.get_timecode_opt(),
                 self.ffmpeg_settings.get_rate_opt(),
                 self.ffmpeg_settings.profile_luma.get_video_opts(),
+                self.ffmpeg_settings.get_attachment_opts()
             ]
         )
 
@@ -1286,6 +1306,7 @@ class TBCVideoExport:
                 self.ffmpeg_settings.get_color_opts(),
                 self.ffmpeg_settings.profile.get_audio_opts(),
                 self.ffmpeg_settings.get_metadata_opts(),
+                self.ffmpeg_settings.get_attachment_opts(),
                 self.ffmpeg_settings.get_audio_metadata_opts(),
                 file,
             ]
