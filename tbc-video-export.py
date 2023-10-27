@@ -489,7 +489,7 @@ class DecodePipeline:
 
 class TBCVideoExport:
     def __init__(self):
-        self.check_paths()
+        self.tools = self.get_tool_paths()
         self.ffmpeg_profiles = FFmpegProfiles(self.get_profile_file())
         self.program_opts = self.parse_opts(self.ffmpeg_profiles)
 
@@ -1098,7 +1098,7 @@ class TBCVideoExport:
 
     def get_luma_cmds(self):
         """Return ld-dropout-correct and ld-chroma-decode arguments for luma."""
-        dropout_correct_cmd = ["ld-dropout-correct"]
+        dropout_correct_cmd = [self.tools["ld-dropout-correct"]]
 
         if not self.program_opts.verbose:
             dropout_correct_cmd.append("-q")
@@ -1108,7 +1108,7 @@ class TBCVideoExport:
         )
 
         decoder_cmd = [
-            "ld-chroma-decoder",
+            self.tools["ld-chroma-decoder"],
             self.decoder_settings.get_luma_opts(),
             "-p",
             "y4m",
@@ -1130,7 +1130,7 @@ class TBCVideoExport:
 
     def get_chroma_cmds(self):
         """Return ld-dropout-correct and ld-chroma-decode arguments for chroma."""
-        dropout_correct_cmd = ["ld-dropout-correct"]
+        dropout_correct_cmd = [self.tools["ld-dropout-correct"]]
 
         if not self.program_opts.verbose:
             dropout_correct_cmd.append("-q")
@@ -1148,7 +1148,7 @@ class TBCVideoExport:
         )
 
         decoder_cmd = [
-            "ld-chroma-decoder",
+            self.tools["ld-chroma-decoder"],
             self.decoder_settings.get_chroma_opts(),
             "-p",
             "y4m",
@@ -1178,7 +1178,7 @@ class TBCVideoExport:
         file = self.files.get_output_path(file_name)
 
         ffmpeg_cmd = [
-            "ffmpeg",
+            self.tools["ffmpeg"],
             self.ffmpeg_settings.get_verbosity(),
             self.ffmpeg_settings.get_overwrite_opt(),
             "-hwaccel",
@@ -1229,7 +1229,7 @@ class TBCVideoExport:
         file = self.files.get_output_path(file_name)
 
         ffmpeg_cmd = [
-            "ffmpeg",
+            self.tools["ffmpeg"],
             self.ffmpeg_settings.get_verbosity(),
             self.ffmpeg_settings.get_overwrite_opt(),
             "-hwaccel",
@@ -1446,11 +1446,29 @@ class TBCVideoExport:
 
         raise Exception("Unable to find profile config file")
 
-    def check_paths(self):
-        """Ensure required binaries are in PATH."""
-        for tool in ["ld-dropout-correct", "ld-chroma-decoder", "ffmpeg"]:
-            if not which(tool):
-                raise Exception(tool + " not in PATH")
+    def get_tool_paths(self):
+        """Get required tool paths from PATH or script path."""
+        tools = {}
+
+        for tool_name in ["ld-dropout-correct", "ld-chroma-decoder", "ffmpeg"]:
+            binary = tool_name
+
+            if os.name == "nt":
+                binary += ".exe"
+
+            # check if tool exists in the same dir as script
+            script_path = pathlib.Path(__file__).with_name(binary).absolute()
+
+            if os.path.isfile(script_path):
+                tools[tool_name] = script_path
+            # check if tool exists in PATH or current dir
+            elif which(binary):
+                tools[tool_name] = binary
+
+            if not tool_name in tools:
+                raise Exception(tool_name + " not in PATH or script dir")
+
+        return tools
 
 
 def main():
