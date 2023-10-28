@@ -4,6 +4,7 @@
 # - JuniorIsAJitterbug
 
 import argparse
+import contextlib
 import json
 import os
 import subprocess
@@ -527,48 +528,52 @@ class TBCVideoExport:
             self.timecode,
         )
 
+        # default to using named pipes unless user asks not to
+        self.use_named_pipes = not self.program_opts.skip_named_pipes
+
     def run(self):
         combined_pipeline = None
         luma_pipeline = None
         chroma_pipeline = None
 
-        self.setup_pipes()
+        try:
+            self.setup_pipes()
 
-        # set up commands        
-        if self.files.is_combined_tbc:
-            combined_pipeline = self.get_combined_cmds()
-            combined_pipeline.ffmpeg_cmd = self.get_combined_ffmpeg_cmd()
-        else:
-            luma_pipeline = self.get_luma_cmds()
-
-            # we only need to set luma ffmpeg_cmd with luma only
-            if self.program_opts.luma_only:
-                luma_pipeline.ffmpeg_cmd = self.get_luma_ffmepg_cmd()
+            # set up commands        
+            if self.files.is_combined_tbc:
+                combined_pipeline = self.get_combined_cmds()
+                combined_pipeline.ffmpeg_cmd = self.get_combined_ffmpeg_cmd()
             else:
-                chroma_pipeline = self.get_chroma_cmds()
-                chroma_pipeline.ffmpeg_cmd = self.get_chroma_ffmpeg_cmd()
+                luma_pipeline = self.get_luma_cmds()
 
-        if self.program_opts.what_if:
-            self.print_pipelines(combined_pipeline, luma_pipeline, chroma_pipeline)
-            return
+                # we do not use ffmpeg for luma unless skipping named pipes, or luma only
+                if self.program_opts.luma_only or not self.use_named_pipes:
+                        luma_pipeline.ffmpeg_cmd = self.get_luma_ffmepg_cmd()
 
-        if not self.program_opts.ffmpeg_overwrite:
-            self.check_file_overwrites()
+                if not self.program_opts.luma_only:
+                    chroma_pipeline = self.get_chroma_cmds()
+                    chroma_pipeline.ffmpeg_cmd = self.get_chroma_ffmpeg_cmd()
 
-        # run commands
-        if self.files.is_combined_tbc:
-            self.run_cmds(combined_pipeline)
-        elif self.program_opts.luma_only:
-            self.run_cmds(luma_pipeline)
-        elif self.use_named_pipes:
-            try:
+            if self.program_opts.what_if:
+                self.print_pipelines(combined_pipeline, luma_pipeline, chroma_pipeline)
+                return
+
+            if not self.program_opts.ffmpeg_overwrite:
+                self.check_file_overwrites()
+
+            # run commands
+            if self.files.is_combined_tbc:
+                self.run_cmds(combined_pipeline)
+            elif self.program_opts.luma_only:
+                self.run_cmds(luma_pipeline)
+            elif self.use_named_pipes:
                 self.create_pipes()
                 self.run_named_pipe_cmds(luma_pipeline, chroma_pipeline)
-            finally:
-                self.cleanup_pipes()
-        else:
-            self.run_cmds(luma_pipeline)
-            self.run_cmds(chroma_pipeline)
+            else:
+                self.run_cmds(luma_pipeline)
+                self.run_cmds(chroma_pipeline)
+        finally:
+            self.cleanup_pipes()
 
     def parse_opts(self, ffmpeg_profiles):
         parser = argparse.ArgumentParser(
@@ -922,13 +927,21 @@ class TBCVideoExport:
         """Cleanup named pipes and any temp dirs."""
         try:
             if os.name == "posix":
-                os.unlink(self.pipe_input_luma)
-                os.unlink(self.pipe_input_chroma)
-                os.rmdir(self.pipe_tmp_dir)
+                with contextlib.suppress(FileNotFoundError):
+                    os.unlink(self.pipe_input_luma)
+
+                with contextlib.suppress(FileNotFoundError):
+                    os.unlink(self.pipe_input_chroma)
+
+                with contextlib.suppress(FileNotFoundError):
+                    os.rmdir(self.pipe_tmp_dir)
             elif os.name == "nt":
                 # cleanup should be handled by the pipe bridge thread
-                self.pipe_bridge_luma.join()
-                self.pipe_bridge_chroma.join()
+                if self.pipe_bridge_luma is not None:
+                    self.pipe_bridge_luma.join()
+
+                if self.pipe_bridge_chroma is not None:
+                    self.pipe_bridge_chroma.join()
         except:
             raise Exception("unable to cleanup")
 
@@ -1001,35 +1014,32 @@ class TBCVideoExport:
     def setup_pipes(self):
         """Config named pipes for FFmpeg.
         This is only needed for separated tbc exports."""
-        if not self.program_opts.skip_named_pipes:
-            try:
-                if os.name == "posix":
-                    self.use_named_pipes = True
+        try:
+            if os.name == "posix":
+                # we can use the same pipe for in/out on posix
+                self.pipe_tmp_dir = tempfile.mkdtemp(
+                    prefix="tbc-video-export-", suffix=""
+                )
+                self.pipe_input_luma = self.pipe_output_luma = os.path.join(
+                    self.pipe_tmp_dir, "luma"
+                )
+                self.pipe_input_chroma = self.pipe_output_chroma = os.path.join(
+                    self.pipe_tmp_dir, "chroma"
+                )
+            elif os.name == "nt":
+                # we must create a named piped for decoder output and bridge it with ffmpeg input
+                self.pipe_input_luma = r"\\.\pipe\tbc-video-export-luma-input"
+                self.pipe_output_luma = r"\\.\pipe\tbc-video-export-luma-output"
+                self.pipe_input_chroma = r"\\.\pipe\tbc-video-export-chroma-input"
+                self.pipe_output_chroma = r"\\.\pipe\tbc-video-export-chroma-output"
 
-                    # we can use the same pipe for in/out on posix
-                    self.pipe_tmp_dir = tempfile.mkdtemp(
-                        prefix="tbc-video-export", suffix=""
-                    )
-                    self.pipe_input_luma = self.pipe_output_luma = os.path.join(
-                        self.pipe_tmp_dir, "luma"
-                    )
-                    self.pipe_input_chroma = self.pipe_output_chroma = os.path.join(
-                        self.pipe_tmp_dir, "chroma"
-                    )
-                elif os.name == "nt":
-                    self.use_named_pipes = True
-
-                    # we must create a named piped for decoder output and bridge it with ffmpeg input
-                    self.pipe_input_luma = r"\\.\pipe\tbc-video-export-luma-input"
-                    self.pipe_output_luma = r"\\.\pipe\tbc-video-export-luma-output"
-                    self.pipe_input_chroma = r"\\.\pipe\tbc-video-export-chroma-input"
-                    self.pipe_output_chroma = r"\\.\pipe\tbc-video-export-chroma-output"
-                else:
-                    raise Exception("named pipes not implemented for " + os.name)
-            except:
-                raise Exception("unable to setup pipes")
-        else:
-            self.use_named_pipes = False
+                self.pipe_bridge_luma = None
+                self.pipe_bridge_chroma = None
+            else:
+                # disable named pipes on other os
+                self.use_named_pipes = False
+        except:
+            raise Exception("unable to setup pipes")
 
     def create_pipes(self):
         """Create named pipes for FFmpeg."""
