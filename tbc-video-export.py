@@ -203,38 +203,32 @@ class DecoderSettings:
 
         return decoder_opts
 
-    def get_luma_opts(self):
-        """Generate ld-chroma-decoder opts for luma."""
-        decoder_opts = []
-        decoder_opts.append(self.convert_opt(self.program_opts, "luma_nr", "--luma-nr"))
-
-        # ignore program opts for these
-        decoder_opts.append(["--chroma-nr", "0"])
-        decoder_opts.append(["--chroma-gain", "0"])
-        decoder_opts.append(["--chroma-phase", "1"])
-
-        return decoder_opts
-
-    def get_chroma_opts(self):
-        """Generate ld-chroma-decoder opts for chroma."""
+    def get_decoder_opts(self, skip_luma, skip_chroma):
+        """Generate ld-chroma-decoder opts."""
         decoder_opts = []
 
-        decoder_opts.append(
-            self.convert_opt(self.program_opts, "chroma_gain", "--chroma-gain")
-        )
+        if skip_luma:
+            # when skipping luma we want this set to 0
+            decoder_opts.append(["--luma-nr", "0"])
+        else:
+            decoder_opts.append(self.convert_opt(self.program_opts, "luma_nr", "--luma-nr"))
 
-        decoder_opts.append(
-            self.convert_opt(self.program_opts, "chroma_nr", "--chroma-nr")
-        )
-        decoder_opts.append(
-            self.convert_opt(self.program_opts, "chroma_phase", "--chroma-phase")
-        )
+        if skip_chroma:
+            # when skipping chroma we want this set to 0
+            decoder_opts.append(["--chroma-gain", "0"])
+        else:
+            decoder_opts.append(
+                self.convert_opt(self.program_opts, "chroma_gain", "--chroma-gain")
+            )
 
-        # ignore program opts for these
-        decoder_opts.append(["--luma-nr", "0"])
+            decoder_opts.append(
+                self.convert_opt(self.program_opts, "chroma_nr", "--chroma-nr")
+            )
+            decoder_opts.append(
+                self.convert_opt(self.program_opts, "chroma_phase", "--chroma-phase")
+            )
 
         return decoder_opts
-
 
 class FFmpegProfile:
     def __init__(self, profiles, name):
@@ -760,7 +754,6 @@ class TBCVideoExport:
         decoder_opts.add_argument(
             "--chroma-gain",
             type=float,
-            default=1.0,
             metavar="float",
             help="Gain factor applied to chroma components.",
         )
@@ -768,7 +761,6 @@ class TBCVideoExport:
         decoder_opts.add_argument(
             "--chroma-phase",
             type=float,
-            default=0.0,
             metavar="float",
             help="Phase rotation applied to chroma components (degrees).",
         )
@@ -776,7 +768,6 @@ class TBCVideoExport:
         decoder_opts.add_argument(
             "--chroma-nr",
             type=float,
-            default=0.0,
             metavar="float",
             help="NTSC: Chroma noise reduction level in dB.",
         )
@@ -784,7 +775,6 @@ class TBCVideoExport:
         decoder_opts.add_argument(
             "--luma-nr",
             type=float,
-            default=1.0,
             metavar="float",
             help="Luma noise reduction level in dB.",
         )
@@ -799,7 +789,6 @@ class TBCVideoExport:
         decoder_opts.add_argument(
             "--transform-threshold",
             type=float,
-            default=0.4,
             metavar="float",
             help="Transform: Uniform similarity threshold in 'threshold' mode.",
         )
@@ -1134,7 +1123,7 @@ class TBCVideoExport:
 
         decoder_cmd = [
             self.tools["ld-chroma-decoder"],
-            self.decoder_settings.get_luma_opts(),
+            self.decoder_settings.get_decoder_opts(skip_luma=False, skip_chroma=True),
             "-p",
             "y4m",
             self.decoder_settings.get_opts(),
@@ -1174,7 +1163,7 @@ class TBCVideoExport:
 
         decoder_cmd = [
             self.tools["ld-chroma-decoder"],
-            self.decoder_settings.get_chroma_opts(),
+            self.decoder_settings.get_decoder_opts(skip_luma=True, skip_chroma=False),
             "-p",
             "y4m",
             self.decoder_settings.get_opts(),
@@ -1213,7 +1202,7 @@ class TBCVideoExport:
 
         decoder_cmd = [
             self.tools["ld-chroma-decoder"],
-            self.decoder_settings.get_chroma_opts(),
+            self.decoder_settings.get_decoder_opts(skip_luma=False, skip_chroma=False),
             "-p",
             "y4m",
             self.decoder_settings.get_opts(),
