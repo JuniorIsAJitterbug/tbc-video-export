@@ -50,6 +50,7 @@ class InputFiles:
         self.name = pathlib.Path(file).stem
         self.tbc = os.path.join(self.path, self.name + ".tbc")
         self.tbc_chroma = os.path.join(self.path, self.name + "_chroma.tbc")
+        self.is_combined_tbc = False
 
         if input_json is not None:
             self.tbc_json = input_json
@@ -73,12 +74,17 @@ class InputFiles:
         return os.path.join(self.output_dir, filename)
 
     def check_files_exist(self):
-        files = [self.tbc, self.tbc_chroma, self.tbc_json]
+        # check for tbc json
+        if not os.path.isfile(self.tbc_json):
+            raise Exception("missing tbc json file")
 
-        for file in files:
-            if not os.path.isfile(file):
-                raise Exception("missing required tbc file " + file)
+        # check for chroma tbc file
+        if not os.path.isfile(self.tbc_chroma):
+            self.is_combined_tbc = True
 
+        # check for tbc file
+        if not os.path.isfile(self.tbc):
+            raise Exception("missing tbc file")
 
 class DecoderSettings:
     def __init__(self, program_opts, video_system):
@@ -522,34 +528,47 @@ class TBCVideoExport:
         )
 
     def run(self):
+        combined_pipeline = None
+        luma_pipeline = None
+        chroma_pipeline = None
+
         self.setup_pipes()
 
-        luma_pipeline = self.get_luma_cmds()
-        chroma_pipeline = self.get_chroma_cmds()
+        # set up commands        
+        if self.files.is_combined_tbc:
+            combined_pipeline = self.get_combined_cmds()
+            combined_pipeline.ffmpeg_cmd = self.get_combined_ffmpeg_cmd()
+        else:
+            luma_pipeline = self.get_luma_cmds()
 
-        luma_pipeline.ffmpeg_cmd = self.get_luma_ffmepg_cmd()
-        chroma_pipeline.ffmpeg_cmd = self.get_chroma_ffmpeg_cmd()
+            # we only need to set luma ffmpeg_cmd with luma only
+            if self.program_opts.luma_only:
+                luma_pipeline.ffmpeg_cmd = self.get_luma_ffmepg_cmd()
+            else:
+                chroma_pipeline = self.get_chroma_cmds()
+                chroma_pipeline.ffmpeg_cmd = self.get_chroma_ffmpeg_cmd()
 
         if self.program_opts.what_if:
-            self.print_cmds(luma_pipeline, chroma_pipeline)
+            self.print_pipelines(combined_pipeline, luma_pipeline, chroma_pipeline)
             return
 
         if not self.program_opts.ffmpeg_overwrite:
             self.check_file_overwrites()
 
-        # named pipes are only useful with chroma
-        if self.program_opts.luma_only:
+        # run commands
+        if self.files.is_combined_tbc:
+            self.run_cmds(combined_pipeline)
+        elif self.program_opts.luma_only:
             self.run_cmds(luma_pipeline)
+        elif self.use_named_pipes:
+            try:
+                self.create_pipes()
+                self.run_named_pipe_cmds(luma_pipeline, chroma_pipeline)
+            finally:
+                self.cleanup_pipes()
         else:
-            if self.use_named_pipes:
-                try:
-                    self.create_pipes()
-                    self.run_named_pipe_cmds(luma_pipeline, chroma_pipeline)
-                finally:
-                    self.cleanup_pipes()
-            else:
-                self.run_cmds(luma_pipeline)
-                self.run_cmds(chroma_pipeline)
+            self.run_cmds(luma_pipeline)
+            self.run_cmds(chroma_pipeline)
 
     def parse_opts(self, ffmpeg_profiles):
         parser = argparse.ArgumentParser(
@@ -980,7 +999,8 @@ class TBCVideoExport:
             self.print_windows_error()
 
     def setup_pipes(self):
-        """Config named pipes for FFmpeg."""
+        """Config named pipes for FFmpeg.
+        This is only needed for separated tbc exports."""
         if not self.program_opts.skip_named_pipes:
             try:
                 if os.name == "posix":
@@ -1035,23 +1055,18 @@ class TBCVideoExport:
             self.cleanup_pipes()
             raise Exception("unable to create pipes")
 
-    def print_cmds(self, luma_pipeline, chroma_pipeline):
+    def print_pipelines(self, *pipelines):
         """Print the full command arguments when using --what-if"""
-        print("luma:")
-        print(*luma_pipeline.dropout_correct_cmd)
-        print(*luma_pipeline.decoder_cmd)
 
-        if self.program_opts.luma_only or not self.use_named_pipes:
-            print(*luma_pipeline.ffmpeg_cmd)
-
-        print("---\n")
-
-        if not self.program_opts.luma_only:
-            print("chroma:")
-            print(*chroma_pipeline.dropout_correct_cmd)
-            print(*chroma_pipeline.decoder_cmd)
-            print(*chroma_pipeline.ffmpeg_cmd)
-            print("---\n")
+        for pipeline in pipelines:
+            if pipeline is not None:
+                print(*pipeline.dropout_correct_cmd)
+                print(*pipeline.decoder_cmd)
+                
+                if pipeline.ffmpeg_cmd is not None:
+                    print(*pipeline.ffmpeg_cmd)
+                
+                print("---\n")          
 
     def run_cmds(self, pipeline):
         """Run ld-dropout-correct, ld-chroma-decoder and ffmpeg."""
@@ -1162,6 +1177,41 @@ class TBCVideoExport:
             decoder_cmd.append(self.pipe_input_chroma)
         else:
             decoder_cmd.append("-")
+
+        return DecodePipeline(
+            self.flatten(dropout_correct_cmd), self.flatten(decoder_cmd)
+        )
+
+    def get_combined_cmds(self):
+        """Return ld-dropout-correct and ld-chroma-decode arguments for combined tbc decoding."""
+        dropout_correct_cmd = [self.tools["ld-dropout-correct"]]
+
+        if not self.program_opts.verbose:
+            dropout_correct_cmd.append("-q")
+
+        dropout_correct_cmd.append(
+            [
+                "-i",
+                self.files.tbc_chroma,
+                "--input-json",
+                self.files.tbc_json,
+                "--output-json",
+                os.devnull,
+                "-",
+            ]
+        )
+
+        decoder_cmd = [
+            self.tools["ld-chroma-decoder"],
+            self.decoder_settings.get_chroma_opts(),
+            "-p",
+            "y4m",
+            self.decoder_settings.get_opts(),
+            "--input-json",
+            self.files.tbc_json,
+            "-",
+            "-"
+        ]
 
         return DecodePipeline(
             self.flatten(dropout_correct_cmd), self.flatten(decoder_cmd)
@@ -1311,6 +1361,43 @@ class TBCVideoExport:
                 file,
             ]
         )
+
+        self.files.video = file
+
+        return self.flatten(ffmpeg_cmd)
+
+    def get_combined_ffmpeg_cmd(self):
+        """FFmpeg arguments for generating a video file from a combined tbc.
+        This is for use with cvbs-decoder and ld-decoder."""
+        file_name = self.files.name + "." + self.ffmpeg_settings.profile.get_container()
+        file = self.files.get_output_path(file_name)
+
+        ffmpeg_cmd = [
+            self.tools["ffmpeg"],
+            self.ffmpeg_settings.get_verbosity(),
+            self.ffmpeg_settings.get_overwrite_opt(),
+            "-hwaccel",
+            "auto",
+            self.ffmpeg_settings.get_color_range_opt(),
+            self.ffmpeg_settings.get_thread_queue_size_opt(),
+            "-i",
+            "-",
+            "-map",
+            "[output]:v",
+            self.ffmpeg_settings.get_audio_map_opts(),
+            self.ffmpeg_settings.get_timecode_opt(),
+            self.ffmpeg_settings.get_rate_opt(),
+            self.ffmpeg_settings.profile.get_video_opts(),
+            self.ffmpeg_settings.get_aspect_ratio_opt(),
+            self.ffmpeg_settings.get_color_range_opt(),
+            self.ffmpeg_settings.get_color_opts(),
+            self.ffmpeg_settings.profile.get_audio_opts(),
+            self.ffmpeg_settings.get_metadata_opts(),
+            self.ffmpeg_settings.get_attachment_opts(),
+            self.ffmpeg_settings.get_audio_metadata_opts(),
+            file,
+        ]
+        
 
         self.files.video = file
 
