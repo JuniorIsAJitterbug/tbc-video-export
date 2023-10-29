@@ -373,16 +373,11 @@ class FFmpegSettings:
 
         return ffmpeg_opts
 
-    def get_audio_map_opts(self):
+    def get_audio_map_opts(self, offset):
         """Returns FFmpeg opts for audio mapping."""
         ffmpeg_opts = []
 
         audio_inputs = self.program_opts.ffmpeg_audio_file
-
-        offset = 2
-
-        if self.program_opts.luma_only:
-            offset = 1
 
         if audio_inputs is not None:
             for idx, audio_input in enumerate(audio_inputs):
@@ -1215,7 +1210,7 @@ class TBCVideoExport:
         dropout_correct_cmd.append(
             [
                 "-i",
-                self.files.tbc_chroma,
+                self.files.tbc,
                 "--input-json",
                 self.files.tbc_json,
                 "--output-json",
@@ -1267,7 +1262,7 @@ class TBCVideoExport:
         ffmpeg_cmd.append(["-map", "0"])
 
         if self.program_opts.luma_only:
-            ffmpeg_cmd.append(self.ffmpeg_settings.get_audio_map_opts())
+            ffmpeg_cmd.append(self.ffmpeg_settings.get_audio_map_opts(1))
 
         ffmpeg_cmd.append(
             [
@@ -1370,7 +1365,7 @@ class TBCVideoExport:
             [
                 "-map",
                 "[output]:v",
-                self.ffmpeg_settings.get_audio_map_opts(),
+                self.ffmpeg_settings.get_audio_map_opts(2),
                 self.ffmpeg_settings.get_timecode_opt(),
                 self.ffmpeg_settings.get_rate_opt(),
                 self.ffmpeg_settings.profile.get_video_opts(),
@@ -1405,9 +1400,10 @@ class TBCVideoExport:
             self.ffmpeg_settings.get_thread_queue_size_opt(),
             "-i",
             "-",
+            self.ffmpeg_settings.get_audio_inputs_opts(),
             "-map",
-            "[output]:v",
-            self.ffmpeg_settings.get_audio_map_opts(),
+            "0:v",
+            self.ffmpeg_settings.get_audio_map_opts(1),
             self.ffmpeg_settings.get_timecode_opt(),
             self.ffmpeg_settings.get_rate_opt(),
             self.ffmpeg_settings.profile.get_video_opts(),
