@@ -1128,13 +1128,9 @@ class TBCVideoExport:
         )
 
         # ffmpeg proc
-        if self.program_opts.luma_only:
-            ffmpeg = subprocess.Popen(luma_pipeline.ffmpeg_cmd)
-            luma_decoder.communicate()
-        else:
-            ffmpeg = subprocess.Popen(chroma_pipeline.ffmpeg_cmd)
-            luma_decoder.communicate()
-            chroma_decoder.communicate()
+        ffmpeg = subprocess.Popen(chroma_pipeline.ffmpeg_cmd)
+        luma_decoder.communicate()
+        chroma_decoder.communicate()
 
         ffmpeg.wait()
 
@@ -1451,17 +1447,10 @@ class TBCVideoExport:
 
     def check_file_overwrites(self):
         """Check if files exist with named pipes off/on and b/w off/on."""
-        if self.use_named_pipes:
-            if self.program_opts.luma_only:
-                self.check_file_overwrite(self.files.video_luma)
-            else:
-                self.check_file_overwrite(self.files.video)
-        else:
-            if self.program_opts.luma_only:
-                self.check_file_overwrite(self.files.video_luma)
-            else:
-                self.check_file_overwrite(self.files.video_luma)
-                self.check_file_overwrite(self.files.video)
+        if self.program_opts.luma_only or not self.use_named_pipes:
+            self.check_file_overwrite(self.files.video_luma)
+        
+        self.check_file_overwrite(self.files.video)
 
     def check_file_overwrite(self, file):
         """Check if a file exists and ask to run with overwrite."""
