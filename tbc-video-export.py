@@ -490,9 +490,9 @@ class DecodePipeline:
 
 class TBCVideoExport:
     def __init__(self):
-        self.tools = self.get_tool_paths()
         self.ffmpeg_profiles = FFmpegProfiles(self.get_profile_file())
         self.program_opts = self.parse_opts(self.ffmpeg_profiles)
+        self.tools = self.get_tool_paths()
 
         self.files = InputFiles(
             self.program_opts.input,
@@ -526,6 +526,7 @@ class TBCVideoExport:
         self.use_named_pipes = not self.program_opts.skip_named_pipes
 
     def run(self):
+        process_vbi_cmd = None
         combined_pipeline = None
         luma_pipeline = None
         chroma_pipeline = None
@@ -533,7 +534,10 @@ class TBCVideoExport:
         try:
             self.setup_pipes()
 
-            # set up commands        
+            # set up commands
+            if not self.program_opts.skip_process_vbi:
+                process_vbi_cmd = self.get_process_vbi_cmd()
+
             if self.files.is_combined_tbc:
                 combined_pipeline = self.get_combined_cmds()
                 combined_pipeline.ffmpeg_cmd = self.get_combined_ffmpeg_cmd()
@@ -549,13 +553,21 @@ class TBCVideoExport:
                     chroma_pipeline.ffmpeg_cmd = self.get_chroma_ffmpeg_cmd()
 
             if self.program_opts.what_if:
-                self.print_pipelines(combined_pipeline, luma_pipeline, chroma_pipeline)
+                self.print_pipelines(
+                    process_vbi_cmd,
+                    combined_pipeline,
+                    luma_pipeline,
+                    chroma_pipeline
+                )
                 return
 
             if not self.program_opts.ffmpeg_overwrite:
                 self.check_file_overwrites()
 
             # run commands
+            if not self.program_opts.skip_process_vbi:
+                self.run_process_vbi(process_vbi_cmd)
+
             if self.files.is_combined_tbc:
                 self.run_cmds(combined_pipeline)
             elif self.program_opts.luma_only:
@@ -805,6 +817,13 @@ class TBCVideoExport:
             action="store_true",
             default=False,
             help="Transform: Overlay the input and output FFTs.",
+        )
+
+        decoder_opts.add_argument(
+            "--skip-process-vbi",
+            action="store_true",
+            default=False,
+            help="Skip running ld-process-vbi before export."
         )
 
         # ffmpeg arguments
@@ -1059,13 +1078,22 @@ class TBCVideoExport:
 
         for pipeline in pipelines:
             if pipeline is not None:
-                print(*pipeline.dropout_correct_cmd)
-                print(*pipeline.decoder_cmd)
-                
-                if pipeline.ffmpeg_cmd is not None:
-                    print(*pipeline.ffmpeg_cmd)
-                
-                print("---\n")          
+                # if given a cmd just print
+                if type(pipeline) is list:
+                    print(*pipeline)
+                else:
+                    print(*pipeline.dropout_correct_cmd)
+                    print(*pipeline.decoder_cmd)
+                    
+                    if pipeline.ffmpeg_cmd is not None:
+                        print(*pipeline.ffmpeg_cmd)
+                    
+                print()
+
+    def run_process_vbi(self, cmd):
+        """Run ld-process-vbi."""
+        process = subprocess.Popen(cmd)
+        process.wait()
 
     def run_cmds(self, pipeline):
         """Run ld-dropout-correct, ld-chroma-decoder and ffmpeg."""
@@ -1402,6 +1430,25 @@ class TBCVideoExport:
 
         return self.flatten(ffmpeg_cmd)
 
+    def get_process_vbi_cmd(self):
+        """Return ld-process-vbi arguments."""
+        process_vbi_cmd = [self.tools["ld-process-vbi"]]
+
+        if not self.program_opts.verbose:
+            process_vbi_cmd.append("-q")
+
+        process_vbi_cmd.append(
+            [
+                "-t",
+                str(self.program_opts.threads),
+                "--input-json",
+                self.files.tbc_json,
+                self.files.tbc
+            ]
+        )
+
+        return self.flatten(process_vbi_cmd)
+
     def check_file_overwrites(self):
         """Check if files exist with named pipes off/on and b/w off/on."""
         if self.use_named_pipes:
@@ -1534,9 +1581,13 @@ class TBCVideoExport:
 
     def get_tool_paths(self):
         """Get required tool paths from PATH or script path."""
+        tool_names = ["ld-dropout-correct", "ld-chroma-decoder", "ffmpeg"]
         tools = {}
 
-        for tool_name in ["ld-dropout-correct", "ld-chroma-decoder", "ffmpeg"]:
+        if not self.program_opts.skip_process_vbi:
+            tool_names.append("ld-process-vbi")
+
+        for tool_name in tool_names:
             binary = tool_name
 
             if os.name == "nt":
