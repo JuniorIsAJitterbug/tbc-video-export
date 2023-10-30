@@ -425,15 +425,17 @@ class FFmpegSettings:
         # add audio metadata only if luma only
         if audio_titles is not None:
             for idx, title in enumerate(audio_titles):
-                ffmpeg_opts.append(
-                    ["-metadata:s:a:" + str(idx), 'title="' + title + '"']
-                )
+                if title is not None:
+                    ffmpeg_opts.append(
+                        ["-metadata:s:a:" + str(idx), 'title="' + title + '"']
+                    )
 
         if audio_languages is not None:
             for idx, language in enumerate(audio_languages):
-                ffmpeg_opts.append(
-                    ["-metadata:s:a:" + str(idx), 'language="' + language + '"']
-                )
+                if language is not None:
+                    ffmpeg_opts.append(
+                        ["-metadata:s:a:" + str(idx), 'language="' + language + '"']
+                    )
 
         return ffmpeg_opts
 
@@ -443,14 +445,26 @@ class FFmpegSettings:
 
         tracks = self.program_opts.ffmpeg_audio_file
         offsets = self.program_opts.ffmpeg_audio_offset
+        formats = self.program_opts.ffmpeg_audio_format
+        rates = self.program_opts.ffmpeg_audio_rate
+        channels = self.program_opts.ffmpeg_audio_channels
 
         if tracks is not None:
             for idx, track in enumerate(tracks):
                 # add offset if set
-                if offsets is not None and len(offsets) >= idx + 1:
+                if len(offsets) >= idx + 1 and offsets[idx] is not None:
                     input_opts.append(["-itsoffset", offsets[idx]])
                 else:
                     input_opts.append(["-itsoffset", "00:00:00.000"])
+
+                if len(formats) >= idx + 1 and formats[idx] is not None:
+                    input_opts.append(["-f", formats[idx]])
+
+                if len(rates) >= idx + 1 and rates[idx] is not None:
+                    input_opts.append(["-ar", rates[idx]])
+
+                if len(channels) >= idx + 1 and channels[idx] is not None:
+                    input_opts.append(["-ac", channels[idx]])
 
                 input_opts.append(["-i", track])
 
@@ -878,6 +892,7 @@ class TBCVideoExport:
             "--ffmpeg-audio-file",
             type=str,
             action="append",
+            default=[],
             metavar="file_name",
             help="Audio file to mux with generated video.",
         )
@@ -886,6 +901,7 @@ class TBCVideoExport:
             "--ffmpeg-audio-title",
             type=str,
             action="append",
+            default=[],
             metavar="title",
             help="Title of the audio track.",
         )
@@ -894,14 +910,43 @@ class TBCVideoExport:
             "--ffmpeg-audio-language",
             type=str,
             action="append",
+            default=[],
             metavar="language",
             help="Language of the audio track.",
+        )
+
+        ffmpeg_opts.add_argument(
+            "--ffmpeg-audio-format",
+            type=str,
+            action="append",
+            default=[],
+            metavar="format",
+            help="Format of the audio track.",
+        )
+
+        ffmpeg_opts.add_argument(
+            "--ffmpeg-audio-rate",
+            type=str,
+            action="append",
+            default=[],
+            metavar="rate",
+            help="Rate of the audio track.",
+        )
+
+        ffmpeg_opts.add_argument(
+            "--ffmpeg-audio-channels",
+            type=str,
+            action="append",
+            default=[],
+            metavar="channels",
+            help="Channel count of the audio track.",
         )
 
         ffmpeg_opts.add_argument(
             "--ffmpeg-audio-offset",
             type=str,
             action="append",
+            default=[],
             metavar="offset",
             help="Offset of the audio track. (default: 00:00:00.000)",
         )
