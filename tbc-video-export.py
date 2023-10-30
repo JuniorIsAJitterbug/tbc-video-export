@@ -51,6 +51,9 @@ class InputFiles:
         self.name = pathlib.Path(file).stem
         self.tbc = os.path.join(self.path, self.name + ".tbc")
         self.tbc_chroma = os.path.join(self.path, self.name + "_chroma.tbc")
+        self.pcm = os.path.join(self.path, self.name + ".pcm")
+
+        self.pcm_exists = False
         self.is_combined_tbc = False
 
         if input_json is not None:
@@ -86,6 +89,10 @@ class InputFiles:
         # check for tbc file
         if not os.path.isfile(self.tbc):
             raise Exception("missing tbc file")
+
+        # check for pcm file
+        if os.path.isfile(self.pcm):
+            self.pcm_exists = True
 
 class DecoderSettings:
     def __init__(self, program_opts, video_system):
@@ -513,6 +520,9 @@ class TBCVideoExport:
         self.video_system = self.get_video_system(self.files.tbc_json_data)
         self.timecode = self.get_timecode(self.files.tbc_json_data)
 
+        if not self.program_opts.ffmpeg_skip_auto_pcm:
+            self.add_pcm_audio()
+
         self.ffmpeg_profile = self.ffmpeg_profiles.get_profile(
             self.program_opts.ffmpeg_profile
         )
@@ -884,6 +894,13 @@ class TBCVideoExport:
         ffmpeg_opts.add_argument(
             "--ffmpeg-overwrite",
             help="Set to overwrite existing video files.",
+            action="store_true",
+            default=False,
+        )
+        
+        ffmpeg_opts.add_argument(
+            "--ffmpeg-skip-auto-pcm",
+            help="Skip adding PCM audio if available.",
             action="store_true",
             default=False,
         )
@@ -1523,6 +1540,18 @@ class TBCVideoExport:
             return VideoSystem.NTSC
         else:
             raise Exception("could not read video system from tbc json")
+
+    def add_pcm_audio(self):
+        """Adds PCM audio to program_opts.ffmpeg_audio_* if available.
+        I'm not sure if these values can change, will update to read from
+        tbc json if required."""
+        if self.files.pcm_exists:
+            self.program_opts.ffmpeg_audio_file.insert(0, self.files.pcm)
+            self.program_opts.ffmpeg_audio_language.insert(0, None)
+            self.program_opts.ffmpeg_audio_title.insert(0, "PCM")
+            self.program_opts.ffmpeg_audio_format.insert(0, "s16le")
+            self.program_opts.ffmpeg_audio_rate.insert(0, "44.1k")
+            self.program_opts.ffmpeg_audio_channels.insert(0, "2")
 
     def get_timecode(self, tbc_json_data):
         """Attempt to read a VITC timecode for the first frame.
