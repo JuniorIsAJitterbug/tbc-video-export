@@ -130,7 +130,6 @@ class DecoderSettings:
                 decoder_opts.append(["-f", ChromaDecoder.TRANSFORM2D.value])
             elif self.video_system is VideoSystem.NTSC:
                 decoder_opts.append(["-f", ChromaDecoder.NTSC2D.value])
-            
 
         if self.video_system is VideoSystem.PAL:
             # vbi is set, use preset line values
@@ -565,7 +564,7 @@ class TBCVideoExport:
 
                 # we do not use ffmpeg for luma unless skipping named pipes, or luma only
                 if self.program_opts.luma_only or not self.use_named_pipes:
-                        luma_pipeline.ffmpeg_cmd = self.get_luma_ffmepg_cmd()
+                    luma_pipeline.ffmpeg_cmd = self.get_luma_ffmepg_cmd()
 
                 if not self.program_opts.luma_only:
                     chroma_pipeline = self.get_chroma_cmds()
@@ -897,7 +896,7 @@ class TBCVideoExport:
             action="store_true",
             default=False,
         )
-        
+
         ffmpeg_opts.add_argument(
             "--ffmpeg-skip-auto-pcm",
             help="Skip adding PCM audio if available.",
@@ -1141,10 +1140,10 @@ class TBCVideoExport:
                 else:
                     print(*pipeline.dropout_correct_cmd)
                     print(*pipeline.decoder_cmd)
-                    
+
                     if pipeline.ffmpeg_cmd is not None:
                         print(*pipeline.ffmpeg_cmd)
-                    
+
                 print()
 
     def run_process_vbi(self, cmd):
@@ -1478,7 +1477,6 @@ class TBCVideoExport:
             self.ffmpeg_settings.get_audio_metadata_opts(),
             file,
         ]
-        
 
         self.files.video = file
 
@@ -1507,7 +1505,7 @@ class TBCVideoExport:
         """Check if files exist with named pipes off/on and b/w off/on."""
         if self.program_opts.luma_only or not self.use_named_pipes:
             self.check_file_overwrite(self.files.video_luma)
-        
+
         self.check_file_overwrite(self.files.video)
 
     def check_file_overwrite(self, file):
