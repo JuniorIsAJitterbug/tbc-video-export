@@ -65,7 +65,7 @@ class InputFiles:
             with open(self.tbc_json, "r") as file:
                 self.tbc_json_data = json.load(file)
         except:
-            raise Exception(json_file + " is not valid json file")
+            raise Exception(self.tbc_json + " is not valid json file")
 
         if not os.path.isdir(output_dir):
             raise Exception("output dir does not exist: " + output_dir)
@@ -1566,6 +1566,8 @@ class TBCVideoExport:
         vitc_data = tbc_json_data["fields"][0]["vitc"]["vitcData"]
 
         def decode_bcd(tens, units):
+            nonlocal is_valid
+
             if tens > 9:
                 is_valid = False
                 tens = 9
