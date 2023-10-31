@@ -1153,8 +1153,6 @@ class TBCVideoExport:
             raise SystemExit(
                 "unable to create pipe bridge threads, consider using --skip-named-pipes"
             ) from e
-        finally:
-            self.cleanup_pipes()
 
     def print_pipelines(self, *pipelines):
         """Print the full command arguments when using --what-if"""
