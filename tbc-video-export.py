@@ -64,11 +64,15 @@ class InputFiles:
         try:
             with open(self.tbc_json, "r") as file:
                 self.tbc_json_data = json.load(file)
-        except:
-            raise Exception(self.tbc_json + " is not valid json file")
+        except FileNotFoundError as e:
+            raise SystemExit("tbc json not found (" + self.tbc_json + ")") from e
+        except PermissionError as e:
+            raise SystemExit("permission denied opening tbc json (" + self.tbc_json + ")") from e
+        except json.JSONDecodeError as e:
+            raise SystemExit("unable to parse tbc json (" + self.tbc_json + ")") from e
 
         if not os.path.isdir(output_dir):
-            raise Exception("output dir does not exist: " + output_dir)
+            raise SystemExit("output directory does not exist (" + output_dir + ")")
 
         self.output_dir = output_dir
         self.video_luma = None
@@ -80,7 +84,7 @@ class InputFiles:
     def check_files_exist(self):
         # check for tbc json
         if not os.path.isfile(self.tbc_json):
-            raise Exception("missing tbc json file")
+            raise SystemExit("tbc json not found (" + self.tbc_json + ")")
 
         # check for chroma tbc file
         if not os.path.isfile(self.tbc_chroma):
@@ -88,7 +92,7 @@ class InputFiles:
 
         # check for tbc file
         if not os.path.isfile(self.tbc):
-            raise Exception("missing tbc file")
+            raise SystemExit("tbc not found (" + self.tbc + ")")
 
         # check for pcm file
         if os.path.isfile(self.pcm):
@@ -246,7 +250,7 @@ class FFmpegProfile:
         rt = []
 
         if not all(key in self.profile for key in ("v_codec", "v_format", "container")):
-            raise Exception("profile is missing required data")
+            raise SystemExit("ffmpeg profile is missing required data")
 
         rt.append(["-c:v", self.profile["v_codec"]])
 
@@ -309,8 +313,12 @@ class FFmpegProfiles:
                     name for name in data["ffmpeg_profiles"].keys() if "_luma" in name
                 ]
                 self.profiles = data["ffmpeg_profiles"]
-        except:
-            raise Exception(file_name + " is not a valid json file")
+        except FileNotFoundError as e:
+            raise SystemExit("profile json not found (" + file_name+ ")") from e
+        except PermissionError as e:
+            raise SystemExit("permission denied opening profile json (" + file_name + ")") from e
+        except json.JSONDecodeError as e:
+            raise SystemExit("unable to parse profile json (" + file_name + ")") from e
 
     def get_profile(self, name):
         return FFmpegProfile(self, name)
@@ -983,7 +991,7 @@ class TBCVideoExport:
         """Print out windows related errors."""
         if err is None:
             err = win32api.GetLastError()
-        OSError(
+        raise OSError(
             win32api.FormatMessage(win32con.FORMAT_MESSAGE_FROM_SYSTEM, 0, err, 0, None)
         )
 
@@ -991,6 +999,7 @@ class TBCVideoExport:
         """Cleanup named pipes and any temp dirs."""
         try:
             if os.name == "posix":
+                # we suppress FileNotFoundError so other files can be cleaned up
                 with contextlib.suppress(FileNotFoundError):
                     os.unlink(self.pipe_input_luma)
 
@@ -1006,8 +1015,11 @@ class TBCVideoExport:
 
                 if self.pipe_bridge_chroma is not None:
                     self.pipe_bridge_chroma.join()
-        except:
-            raise Exception("unable to cleanup")
+        # we're exiting anyway, not sure this matters...
+        except PermissionError as e:
+            raise SystemExit("unable to cleanup named pipes due to permissions") from e
+        except RuntimeError as e:
+            raise SystemExit("unable to cleanup threads") from e
 
     def setup_win_pipe_bridge(self, input_name, output_name):
         input_pipe = win32pipe.CreateNamedPipe(
@@ -1102,8 +1114,10 @@ class TBCVideoExport:
             else:
                 # disable named pipes on other os
                 self.use_named_pipes = False
-        except:
-            raise Exception("unable to setup pipes")
+        except PermissionError as e:
+            raise SystemExit(
+                "unable to create pipes due to permissions, consider using --skip-named-pipes"
+            ) from e
 
     def create_pipes(self):
         """Create named pipes for FFmpeg."""
@@ -1123,11 +1137,16 @@ class TBCVideoExport:
 
                 self.pipe_bridge_luma.start()
                 self.pipe_bridge_chroma.start()
-            else:
-                raise Exception("named pipes not implemented for " + os.name)
-        except:
+        except PermissionError as e:
+            raise SystemExit(
+                "unable to create pipes due to permissions, consider using --skip-named-pipes"
+            ) from e
+        except RuntimeError as e:
+            raise SystemExit(
+                "unable to create pipe bridge threads, consider using --skip-named-pipes"
+            ) from e
+        finally:
             self.cleanup_pipes()
-            raise Exception("unable to create pipes")
 
     def print_pipelines(self, *pipelines):
         """Print the full command arguments when using --what-if"""
@@ -1511,7 +1530,7 @@ class TBCVideoExport:
     def check_file_overwrite(self, file):
         """Check if a file exists and ask to run with overwrite."""
         if os.path.isfile(file):
-            raise Exception(file + " exists, use --ffmpeg-overwrite or move them")
+            raise SystemExit(file + " exists, use --ffmpeg-overwrite or move them")
 
     def get_video_system(self, tbc_json_data):
         """Determine whether a TBC is PAL or NTSC."""
@@ -1537,7 +1556,7 @@ class TBCVideoExport:
         ):
             return VideoSystem.NTSC
         else:
-            raise Exception("could not read video system from tbc json")
+            raise SystemExit("could not read video system from tbc json")
 
     def add_pcm_audio(self):
         """Adds PCM audio to program_opts.ffmpeg_audio_* if available.
@@ -1636,7 +1655,7 @@ class TBCVideoExport:
         if os.path.isfile(path):
             return path
 
-        raise Exception("Unable to find profile config file")
+        raise SystemExit("Unable to find profile config file")
 
     def get_tool_paths(self):
         """Get required tool paths from PATH or script path."""
@@ -1662,7 +1681,7 @@ class TBCVideoExport:
                 tools[tool_name] = binary
 
             if not tool_name in tools:
-                raise Exception(tool_name + " not in PATH or script dir")
+                raise SystemExit(tool_name + " not in PATH or script dir")
 
         return tools
 
@@ -1670,7 +1689,6 @@ class TBCVideoExport:
 def main():
     tbc_video_export = TBCVideoExport()
     tbc_video_export.run()
-
 
 if __name__ == "__main__":
     main()
