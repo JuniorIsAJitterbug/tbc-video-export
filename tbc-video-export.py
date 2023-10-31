@@ -517,6 +517,14 @@ class TBCVideoExport:
         self.program_opts = self.parse_opts(self.ffmpeg_profiles)
         self.tools = self.get_tool_paths()
 
+        self.pipe_tmp_dir = None
+        self.pipe_input_luma = None
+        self.pipe_output_luma = None
+        self.pipe_bridge_luma = None
+        self.pipe_input_chroma = None
+        self.pipe_output_chroma = None
+        self.pipe_bridge_chroma = None
+
         self.files = InputFiles(
             self.program_opts.input,
             self.program_opts.output,
