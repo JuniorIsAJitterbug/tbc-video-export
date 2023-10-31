@@ -62,7 +62,7 @@ class InputFiles:
             self.tbc_json = os.path.join(self.path, self.name + ".tbc.json")
 
         try:
-            with open(self.tbc_json, "r") as file:
+            with open(self.tbc_json, mode="r", encoding="utf-8") as file:
                 self.tbc_json_data = json.load(file)
         except FileNotFoundError as e:
             raise SystemExit("tbc json not found (" + self.tbc_json + ")") from e
@@ -109,7 +109,7 @@ class DecoderSettings:
         value = getattr(program_opts, program_opt_name)
 
         if value is not None:
-            if type(value) is bool:
+            if isinstance(value, bool):
                 # only appends opt on true, fine for current use
                 if value is True:
                     rt.append([target_opt_name])
@@ -302,7 +302,7 @@ class FFmpegProfiles:
 
         # profiles ending in _luma are considered luma profiles
         try:
-            with open(file_name, "r") as file:
+            with open(file_name, mode="r", encoding="utf-8") as file:
                 data = json.load(file)
                 self.names = [
                     name
@@ -394,7 +394,7 @@ class FFmpegSettings:
         audio_inputs = self.program_opts.ffmpeg_audio_file
 
         if audio_inputs is not None:
-            for idx, audio_input in enumerate(audio_inputs):
+            for idx, _ in enumerate(audio_inputs):
                 ffmpeg_opts.append(["-map", str(idx + offset) + ":a"])
 
         return ffmpeg_opts
@@ -977,10 +977,10 @@ class TBCVideoExport:
 
         return parser.parse_args()
 
-    def flatten(self, A):
+    def flatten(self, arr):
         """Flatten list of lists. Skips None values."""
         rt = []
-        for i in A:
+        for i in arr:
             if isinstance(i, list):
                 rt.extend(self.flatten(i))
             elif i is not None:
@@ -1071,7 +1071,7 @@ class TBCVideoExport:
                 if read_hr in (winerror.ERROR_MORE_DATA, winerror.ERROR_IO_PENDING):
                     self.print_windows_error(read_hr)
 
-                write_hr, written = win32file.WriteFile(output_pipe, read_buf)
+                write_hr, _ = win32file.WriteFile(output_pipe, read_buf)
 
                 if write_hr:
                     self.print_windows_error(write_hr)
@@ -1154,7 +1154,7 @@ class TBCVideoExport:
         for pipeline in pipelines:
             if pipeline is not None:
                 # if given a cmd just print
-                if type(pipeline) is list:
+                if isinstance(pipeline, list):
                     print(*pipeline)
                 else:
                     print(*pipeline.dropout_correct_cmd)
@@ -1613,12 +1613,12 @@ class TBCVideoExport:
 
         if is_30_frame:
             is_drop_frame = (vitc_data[1] & 0x04) != 0
-            is_col_frame = (vitc_data[1] & 0x08) != 0
-            is_field_mark = (vitc_data[3] & 0x08) != 0
+            #is_col_frame = (vitc_data[1] & 0x08) != 0
+            #is_field_mark = (vitc_data[3] & 0x08) != 0
         else:
             is_drop_frame = False
-            is_col_frame = (vitc_data[1] & 0x08) != 0
-            is_field_mark = (vitc_data[7] & 0x08) != 0
+            #is_col_frame = (vitc_data[1] & 0x08) != 0
+            #is_field_mark = (vitc_data[7] & 0x08) != 0
 
         if not is_valid:
             return "00:00:00:00"
