@@ -779,8 +779,8 @@ class InputFiles:
             self.tbc_json = os.path.join(self.path, self.name + ".tbc.json")
 
         try:
-            with open(self.tbc_json, mode="r", encoding="utf-8") as file:
-                self.tbc_json_data = json.load(file)
+            with open(self.tbc_json, mode="r", encoding="utf-8") as json_file:
+                self.tbc_json_data = json.load(json_file)
         except FileNotFoundError as e:
             raise SystemExit("tbc json not found (" + self.tbc_json + ")") from e
         except PermissionError as e:
@@ -833,17 +833,19 @@ class InputFiles:
             or "isSourcePal" in self.tbc_json_data["videoParameters"]
         ):
             return VideoSystem.PAL
-        elif (
+
+        if (
             VideoSystem.PALM.value == self.tbc_json_data["videoParameters"]["system"].lower()
             or "isSourcePalM" in self.tbc_json_data["videoParameters"]
         ):
             return VideoSystem.PALM
-        elif (
+
+        if (
             VideoSystem.NTSC.value in self.tbc_json_data["videoParameters"]["system"].lower()
         ):
             return VideoSystem.NTSC
-        else:
-            raise SystemExit("could not read video system from tbc json")
+
+        raise SystemExit("could not read video system from tbc json")
 
     def get_timecode(self, video_system):
         """Attempt to read a VITC timecode for the first frame.
@@ -1520,9 +1522,7 @@ class FFmpegWrapper:
 
         if self.video_system == VideoSystem.PAL:
             rate = 25
-        elif (
-            self.video_system in (VideoSystem.NTSC, VideoSystem.PALM)
-        ):
+        elif self.video_system in (VideoSystem.NTSC, VideoSystem.PALM):
             rate = 29.97
 
         if self.profile.get_video_doublerate():
@@ -1550,10 +1550,7 @@ class FFmpegWrapper:
         """Returns FFmpeg opts for color settings."""
         ffmpeg_opts = []
 
-        if (
-            self.video_system == VideoSystem.PAL
-            or self.video_system == VideoSystem.PALM
-        ):
+        if self.video_system in (VideoSystem.PAL, VideoSystem.PALM):
             ffmpeg_opts.append(["-colorspace", "bt470bg"])
             ffmpeg_opts.append(["-color_primaries", "bt470bg"])
             ffmpeg_opts.append(["-color_trc", "bt709"])
