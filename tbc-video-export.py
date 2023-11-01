@@ -93,7 +93,10 @@ class TBCVideoExport:
                     luma_pipeline.ffmpeg_cmd = self.ffmpeg_wrapper.get_luma_ffmepg_cmd(self.files)
 
                 if not self.program_opts.luma_only:
-                    chroma_pipeline = self.ldtools_wrapper.get_chroma_cmds(self.files, self.use_named_pipes)
+                    chroma_pipeline = self.ldtools_wrapper.get_chroma_cmds(
+                        self.files,
+                        self.use_named_pipes
+                    )
                     chroma_pipeline.ffmpeg_cmd = self.ffmpeg_wrapper.get_chroma_ffmpeg_cmd(
                         self.files,
                         self.use_named_pipes
@@ -1525,8 +1528,7 @@ class FFmpegWrapper:
         if self.video_system == VideoSystem.PAL:
             rate = 25
         elif (
-            self.video_system == VideoSystem.NTSC
-            or self.video_system == VideoSystem.PALM
+            self.video_system in (VideoSystem.NTSC, VideoSystem.PALM)
         ):
             rate = 29.97
 
@@ -1678,6 +1680,7 @@ class FFmpegWrapper:
     def __get_overwrite_opt(self):
         if self.program_opts.ffmpeg_overwrite:
             return "-y"
+        return None
 
     def __get_color_range_opt(self):
         return ["-color_range", "tv"]
