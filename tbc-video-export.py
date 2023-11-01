@@ -42,26 +42,15 @@ class TBCVideoExport:
         else:
             self.video_system = self.files.get_video_system()
 
-        self.timecode = self.files.get_timecode(self.video_system)
-
         if not self.program_opts.ffmpeg_skip_auto_pcm:
             self.__add_pcm_audio()
-
-        self.ffmpeg_profile = self.ffmpeg_profiles.get_profile(
-            self.program_opts.ffmpeg_profile
-        )
-        self.ffmpeg_profile_luma = self.ffmpeg_profiles.get_profile(
-            self.program_opts.ffmpeg_profile_luma
-        )
 
         self.ldtools_wrapper = LDToolsWrapper(self.program_opts, self.video_system)
         self.ffmpeg_wrapper = FFmpegWrapper(
             self.program_opts,
-            self.ffmpeg_profile,
-            self.ffmpeg_profile_luma,
             self.files,
-            self.video_system,
-            self.timecode,
+            self.ffmpeg_profiles,
+            self.video_system
         )
 
         # default to using named pipes unless user asks not to
@@ -1215,7 +1204,6 @@ class LDToolsWrapper:
             decoder_opts.append(
                 self.__convert_opt(self.program_opts, "chroma_gain", "--chroma-gain")
             )
-
             decoder_opts.append(
                 self.__convert_opt(self.program_opts, "chroma_nr", "--chroma-nr")
             )
@@ -1326,14 +1314,19 @@ class FFmpegProfiles:
 
 class FFmpegWrapper:
     def __init__(
-        self, program_opts, profile, profile_luma, files, video_system, timecode
+        self, program_opts, files, profiles, video_system
     ):
         self.program_opts = program_opts
-        self.profile = profile
-        self.profile_luma = profile_luma
         self.files = files
         self.video_system = video_system
-        self.timecode = timecode
+
+        self.profile = profiles.get_profile(
+            self.program_opts.ffmpeg_profile
+        )
+        self.profile_luma = profiles.get_profile(
+            self.program_opts.ffmpeg_profile_luma
+        )
+        self.timecode = self.files.get_timecode(self.video_system)
 
     def get_luma_ffmepg_cmd(self, files):
         """FFmpeg arguments for generating a luma-only video file."""
