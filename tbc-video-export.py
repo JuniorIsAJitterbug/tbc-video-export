@@ -676,47 +676,50 @@ class TBCVideoExport:
 
     def __run_process_vbi(self, cmd):
         """Run ld-process-vbi."""
-        process = subprocess.Popen(cmd)
-        process.wait()
+        with subprocess.Popen(cmd) as process:
+            process.wait()
 
     def __run_cmds(self, pipeline):
         """Run ld-dropout-correct, ld-chroma-decoder and ffmpeg."""
-        dropout_correct = subprocess.Popen(
-            pipeline.dropout_correct_cmd, stdout=subprocess.PIPE
-        )
-        decoder = subprocess.Popen(
-            pipeline.decoder_cmd, stdin=dropout_correct.stdout, stdout=subprocess.PIPE
-        )
-        ffmpeg = subprocess.Popen(pipeline.ffmpeg_cmd, stdin=decoder.stdout)
-
-        ffmpeg.communicate()
+        with (
+            subprocess.Popen(
+                pipeline.dropout_correct_cmd, stdout=subprocess.PIPE
+            ) as dropout_correct,
+            subprocess.Popen(
+                pipeline.decoder_cmd, stdin=dropout_correct.stdout, stdout=subprocess.PIPE
+            ) as decoder,
+            subprocess.Popen(pipeline.ffmpeg_cmd, stdin=decoder.stdout) as ffmpeg
+        ):
+            ffmpeg.communicate()
 
     def __run_named_pipe_cmds(self, luma_pipeline, chroma_pipeline):
         """Run ld-dropout-correct, ld-chroma-decoder and ffmpeg using a combination
         of subprocess pipes and named pipes. This allows us to use multiple pipes to
         ffmpeg and prevents a two-step process of merging luma and chroma."""
-        # luma decoder procs
-        luma_dropout_correct = subprocess.Popen(
-            luma_pipeline.dropout_correct_cmd, stdout=subprocess.PIPE
-        )
-        luma_decoder = subprocess.Popen(
-            luma_pipeline.decoder_cmd, stdin=luma_dropout_correct.stdout
-        )
+        with (
+            # luma decoder procs
+            subprocess.Popen(
+                luma_pipeline.dropout_correct_cmd, stdout=subprocess.PIPE
+            ) as luma_dropout_correct,
+            subprocess.Popen(
+                luma_pipeline.decoder_cmd, stdin=luma_dropout_correct.stdout
+            ) as luma_decoder,
 
-        # chroma decoder procs
-        chroma_dropout_correct = subprocess.Popen(
-            chroma_pipeline.dropout_correct_cmd, stdout=subprocess.PIPE
-        )
-        chroma_decoder = subprocess.Popen(
-            chroma_pipeline.decoder_cmd, stdin=chroma_dropout_correct.stdout
-        )
+            # chroma decoder procs
+            subprocess.Popen(
+                chroma_pipeline.dropout_correct_cmd, stdout=subprocess.PIPE
+            ) as chroma_dropout_correct,
+            subprocess.Popen(
+                chroma_pipeline.decoder_cmd, stdin=chroma_dropout_correct.stdout
+            ) as chroma_decoder,
 
-        # ffmpeg proc
-        ffmpeg = subprocess.Popen(chroma_pipeline.ffmpeg_cmd)
-        luma_decoder.communicate()
-        chroma_decoder.communicate()
+            # ffmpeg proc
+            subprocess.Popen(chroma_pipeline.ffmpeg_cmd) as ffmpeg
+        ):
+            luma_decoder.communicate()
+            chroma_decoder.communicate()
 
-        ffmpeg.wait()
+            ffmpeg.wait()
 
     def __add_pcm_audio(self):
         """Adds PCM audio to program_opts.ffmpeg_audio_* if available.
