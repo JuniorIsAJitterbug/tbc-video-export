@@ -10,8 +10,10 @@ import os
 import subprocess
 import pathlib
 import tempfile
+from dataclasses import dataclass
 from enum import Enum
 from shutil import which
+from threading import Thread
 
 if os.name == "nt":
     import win32pipe
@@ -20,15 +22,14 @@ if os.name == "nt":
     import pywintypes
     import winerror
     import win32con
-    from threading import Thread
 
 
 class TBCVideoExport:
     def __init__(self):
-        self.ffmpeg_profiles = FFmpegProfiles(InputFiles.get_profile_file())
+        self.ffmpeg_profiles = FFmpegProfiles(Files.get_profile_file())
         self.program_opts = self.__parse_opts(self.ffmpeg_profiles)
 
-        self.files = InputFiles(
+        self.files = Files(
             self.program_opts.input,
             self.program_opts.output,
             self.program_opts.input_json,
@@ -504,20 +505,20 @@ class TBCVideoExport:
             if os.name == "posix":
                 # we suppress FileNotFoundError so other files can be cleaned up
                 with contextlib.suppress(FileNotFoundError):
-                    os.unlink(self.files.pipe_input_luma)
+                    os.unlink(self.files.pipes.input_luma)
 
                 with contextlib.suppress(FileNotFoundError):
-                    os.unlink(self.files.pipe_input_chroma)
+                    os.unlink(self.files.pipes.input_chroma)
 
                 with contextlib.suppress(FileNotFoundError):
-                    os.rmdir(self.files.pipe_tmp_dir)
+                    os.rmdir(self.files.pipes.tmp_dir)
             elif os.name == "nt":
                 # cleanup should be handled by the pipe bridge thread
-                if self.files.pipe_bridge_luma is not None:
-                    self.files.pipe_bridge_luma.join()
+                if self.files.pipes.bridge_luma is not None:
+                    self.files.pipes.bridge_luma.join()
 
-                if self.files.pipe_bridge_chroma is not None:
-                    self.files.pipe_bridge_chroma.join()
+                if self.files.pipes.bridge_chroma is not None:
+                    self.files.pipes.bridge_chroma.join()
         # we're exiting anyway, not sure this matters...
         except PermissionError as e:
             raise SystemExit("unable to cleanup named pipes due to permissions") from e
@@ -596,24 +597,24 @@ class TBCVideoExport:
         try:
             if os.name == "posix":
                 # we can use the same pipe for in/out on posix
-                self.files.pipe_tmp_dir = tempfile.mkdtemp(
+                self.files.pipes.tmp_dir = tempfile.mkdtemp(
                     prefix="tbc-video-export-", suffix=""
                 )
-                self.files.pipe_input_luma = self.files.pipe_output_luma = os.path.join(
-                    self.files.pipe_tmp_dir, "luma"
+                self.files.pipes.input_luma = self.files.pipes.output_luma = os.path.join(
+                    self.files.pipes.tmp_dir, "luma"
                 )
-                self.files.pipe_input_chroma = self.files.pipe_output_chroma = os.path.join(
-                    self.files.pipe_tmp_dir, "chroma"
+                self.files.pipes.input_chroma = self.files.pipes.output_chroma = os.path.join(
+                    self.files.pipes.tmp_dir, "chroma"
                 )
             elif os.name == "nt":
                 # we must create a named piped for decoder output and bridge it with ffmpeg input
-                self.files.pipe_input_luma = r"\\.\pipe\tbc-video-export-luma-input"
-                self.files.pipe_output_luma = r"\\.\pipe\tbc-video-export-luma-output"
-                self.files.pipe_input_chroma = r"\\.\pipe\tbc-video-export-chroma-input"
-                self.files.pipe_output_chroma = r"\\.\pipe\tbc-video-export-chroma-output"
+                self.files.pipes.input_luma = r"\\.\pipe\tbc-video-export-luma-input"
+                self.files.pipes.output_luma = r"\\.\pipe\tbc-video-export-luma-output"
+                self.files.pipes.input_chroma = r"\\.\pipe\tbc-video-export-chroma-input"
+                self.files.pipes.output_chroma = r"\\.\pipe\tbc-video-export-chroma-output"
 
-                self.files.pipe_bridge_luma = None
-                self.files.pipe_bridge_chroma = None
+                self.files.pipes.bridge_luma = None
+                self.files.pipes.bridge_chroma = None
             else:
                 # disable named pipes on other os
                 self.use_named_pipes = False
@@ -626,20 +627,20 @@ class TBCVideoExport:
         """Create named pipes for FFmpeg."""
         try:
             if os.name == "posix":
-                os.mkfifo(self.files.pipe_input_luma)
-                os.mkfifo(self.files.pipe_input_chroma)
+                os.mkfifo(self.files.pipes.input_luma)
+                os.mkfifo(self.files.pipes.input_chroma)
             elif os.name == "nt":
-                self.files.pipe_bridge_luma = Thread(
+                self.files.pipes.bridge_luma = Thread(
                     target=self.__setup_win_pipe_bridge,
-                    args=(self.files.pipe_input_luma, self.files.pipe_output_luma),
+                    args=(self.files.pipes.input_luma, self.files.pipes.output_luma),
                 )
-                self.files.pipe_bridge_chroma = Thread(
+                self.files.pipes.bridge_chroma = Thread(
                     target=self.__setup_win_pipe_bridge,
-                    args=(self.files.pipe_input_chroma, self.files.pipe_output_chroma),
+                    args=(self.files.pipes.input_chroma, self.files.pipes.output_chroma),
                 )
 
-                self.files.pipe_bridge_luma.start()
-                self.files.pipe_bridge_chroma.start()
+                self.files.pipes.bridge_luma.start()
+                self.files.pipes.bridge_chroma.start()
         except PermissionError as e:
             raise SystemExit(
                 "unable to create pipes due to permissions, consider using --skip-named-pipes"
@@ -748,25 +749,31 @@ class ChromaDecoder(Enum):
         return self.value
 
 
-class InputFiles:
+class Files:
+    @dataclass
+    class Pipes:
+        tmp_dir: str = None
+        input_luma: str = None
+        input_chroma: str = None
+        output_luma: str = None
+        output_chroma: str = None
+        bridge_luma: Thread = None
+        bridge_chroma: Thread = None
+
     def __init__(self, file, output_dir, input_json, skip_process_vbi):
         self.path = pathlib.Path(file).parent
         self.name = pathlib.Path(file).stem
+
+        # input files
         self.tbc = os.path.join(self.path, self.name + ".tbc")
         self.tbc_chroma = os.path.join(self.path, self.name + "_chroma.tbc")
         self.pcm = os.path.join(self.path, self.name + ".pcm")
 
+        self.pipes = self.Pipes()
         self.pcm_exists = False
         self.is_combined_tbc = False
 
-        self.pipe_tmp_dir = None
-        self.pipe_input_luma = None
-        self.pipe_output_luma = None
-        self.pipe_bridge_luma = None
-        self.pipe_input_chroma = None
-        self.pipe_output_chroma = None
-        self.pipe_bridge_chroma = None
-
+        # output files
         self.output_dir = output_dir
         self.video_luma = None
         self.video = None
@@ -993,7 +1000,7 @@ class LDToolsWrapper:
 
         # we just pipe into ffmpeg if b/w
         if use_named_pipes and not self.program_opts.luma_only:
-            decoder_cmd.append(files.pipe_input_luma)
+            decoder_cmd.append(files.pipes.input_luma)
         else:
             decoder_cmd.append("-")
 
@@ -1032,7 +1039,7 @@ class LDToolsWrapper:
         ]
 
         if use_named_pipes:
-            decoder_cmd.append(files.pipe_input_chroma)
+            decoder_cmd.append(files.pipes.input_chroma)
         else:
             decoder_cmd.append("-")
 
@@ -1403,7 +1410,7 @@ class FFmpegWrapper:
         ]
 
         if use_named_pipes:
-            ffmpeg_cmd.append(files.pipe_output_luma)
+            ffmpeg_cmd.append(files.pipes.output_luma)
         else:
             ffmpeg_cmd.append(files.video_luma)
 
@@ -1415,7 +1422,7 @@ class FFmpegWrapper:
         )
 
         if use_named_pipes:
-            ffmpeg_cmd.append(files.pipe_output_chroma)
+            ffmpeg_cmd.append(files.pipes.output_chroma)
         else:
             ffmpeg_cmd.append("-")
 
