@@ -1351,6 +1351,7 @@ class FFmpegWrapper:
             files.tools["ffmpeg"],
             self.__get_verbosity(),
             self.__get_overwrite_opt(),
+            self.__get_threads(),
             "-hwaccel",
             "auto",
             self.__get_thread_queue_size_opt(),
@@ -1402,6 +1403,7 @@ class FFmpegWrapper:
             files.tools["ffmpeg"],
             self.__get_verbosity(),
             self.__get_overwrite_opt(),
+            self.__get_threads(),
             "-hwaccel",
             "auto",
             self.__get_color_range_opt(),
@@ -1496,6 +1498,7 @@ class FFmpegWrapper:
             files.tools["ffmpeg"],
             self.__get_verbosity(),
             self.__get_overwrite_opt(),
+            self.__get_threads(),
             "-hwaccel",
             "auto",
             self.__get_color_range_opt(),
@@ -1684,6 +1687,9 @@ class FFmpegWrapper:
 
     def __get_thread_queue_size_opt(self):
         return ["-thread_queue_size", str(self.program_opts.ffmpeg_thread_queue_size)]
+
+    def __get_threads(self):
+        return ["-threads", str(self.program_opts.threads)]
 
 
 class DecodePipeline:
