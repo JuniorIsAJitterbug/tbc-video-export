@@ -827,11 +827,6 @@ class Files:
 
         self.__check_file_overwrite(self.video)
 
-    def __check_file_overwrite(self, file):
-        """Check if a file exists and ask to run with overwrite."""
-        if os.path.isfile(file):
-            raise SystemExit(file + " exists, use --ffmpeg-overwrite or move them")
-
     def get_video_system(self):
         """Determine whether a TBC is PAL or NTSC."""
 
@@ -915,6 +910,11 @@ class Files:
             sep = ":"
 
         return f"{hour:02d}:{minute:02d}:{second:02d}{sep}{frame:02d}"
+
+    def __check_file_overwrite(self, file):
+        """Check if a file exists and ask to run with overwrite."""
+        if os.path.isfile(file):
+            raise SystemExit(file + " exists, use --ffmpeg-overwrite or move them")
 
     def __get_tool_paths(self, skip_process_vbi):
         """Get required tool paths from PATH or script path."""
