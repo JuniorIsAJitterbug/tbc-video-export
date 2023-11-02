@@ -9,6 +9,7 @@ import json
 import os
 import subprocess
 import pathlib
+import sys
 import tempfile
 from dataclasses import dataclass
 from enum import Enum
@@ -930,7 +931,7 @@ class Files:
                 binary += ".exe"
 
             # check if tool exists in the same dir as script
-            script_path = pathlib.Path(__file__).with_name(binary).absolute()
+            script_path = Files.get_runtime_directory().with_name(binary).absolute()
 
             if os.path.isfile(script_path):
                 tools[tool_name] = script_path
@@ -944,6 +945,16 @@ class Files:
         return tools
 
     @staticmethod
+    def get_runtime_directory():
+        """Returns the runtime directory. When the script is built to a single
+        executable using PyInstaller __file__ is somewhere in TEMP, so the executable
+        location must be used instead."""
+        if getattr(sys, "frozen", False):
+            return pathlib.Path(sys.executable)
+
+        return pathlib.Path(__file__)
+
+    @staticmethod
     def get_profile_file():
         """Returns name of json file to load profiles from. Checks for existence of
         a .custom file. Checks both . and the dir the script is run from."""
@@ -955,7 +966,7 @@ class Files:
         if os.path.isfile(file_name_custom):
             return file_name_custom
 
-        path = pathlib.Path(__file__).with_name(file_name_custom).absolute()
+        path = Files.get_runtime_directory().with_name(file_name_custom).absolute()
 
         if os.path.isfile(path):
             return path
@@ -964,7 +975,7 @@ class Files:
         if os.path.isfile(file_name_stock):
             return file_name_stock
 
-        path = pathlib.Path(__file__).with_name(file_name_stock).absolute()
+        path = Files.get_runtime_directory().with_name(file_name_stock).absolute()
 
         if os.path.isfile(path):
             return path
