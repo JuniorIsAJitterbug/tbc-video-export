@@ -740,6 +740,7 @@ class ChromaDecoder(Enum):
     PAL2D = "pal2d"
     TRANSFORM2D = "transform2d"
     TRANSFORM3D = "transform3d"
+    MONO = "mono"
     NTSC1D = "ntsc1d"
     NTSC2D = "ntsc2d"
     NTSC3D = "ntsc3d"
@@ -992,6 +993,7 @@ class LDToolsWrapper:
             self.__get_decoder_opts(skip_luma=False, skip_chroma=True),
             "-p",
             "y4m",
+            self.__get_chroma_decoder(is_luma=True),
             self.__get_opts(),
             "--input-json",
             files.tbc_json,
@@ -1032,6 +1034,7 @@ class LDToolsWrapper:
             self.__get_decoder_opts(skip_luma=True, skip_chroma=False),
             "-p",
             "y4m",
+            self.__get_chroma_decoder(is_luma=False),
             self.__get_opts(),
             "--input-json",
             files.tbc_json,
@@ -1071,6 +1074,7 @@ class LDToolsWrapper:
             self.__get_decoder_opts(skip_luma=False, skip_chroma=False),
             "-p",
             "y4m",
+            self.__get_chroma_decoder(is_luma=False),
             self.__get_opts(),
             "--input-json",
             files.tbc_json,
@@ -1101,22 +1105,31 @@ class LDToolsWrapper:
 
         return flatten(process_vbi_cmd)
 
+    def __get_chroma_decoder(self, is_luma):
+        """Get chroma decoder opts."""
+        decoder_opts = []
+
+        if is_luma:
+            decoder_opts.append(["-f", ChromaDecoder.MONO.value])
+        elif self.program_opts.chroma_decoder is None:
+            # set default chroma decoder if unset
+            if self.video_system in (VideoSystem.PAL, VideoSystem.PALM):
+                decoder_opts.append(["-f", ChromaDecoder.TRANSFORM2D.value])
+            elif self.video_system is VideoSystem.NTSC:
+                decoder_opts.append(["-f", ChromaDecoder.NTSC2D.value])
+        else:
+            decoder_opts.append(
+                self.__convert_opt(self.program_opts, "chroma_decoder", "-f")
+            )
+
+        return decoder_opts
+
     def __get_opts(self):
         """Generate ld-chroma-decoder opts."""
         decoder_opts = []
 
         if not self.program_opts.verbose:
             decoder_opts.append("-q")
-
-        if self.program_opts.chroma_decoder is None:
-            # set default chroma decoder if unset
-            if (
-                self.video_system is VideoSystem.PAL
-                or self.video_system is VideoSystem.PALM
-            ):
-                decoder_opts.append(["-f", ChromaDecoder.TRANSFORM2D.value])
-            elif self.video_system is VideoSystem.NTSC:
-                decoder_opts.append(["-f", ChromaDecoder.NTSC2D.value])
 
         if self.video_system is VideoSystem.PAL:
             # vbi is set, use preset line values
@@ -1149,11 +1162,6 @@ class LDToolsWrapper:
 
         if self.video_system is VideoSystem.NTSC:
             decoder_opts.append("--ntsc-phase-comp")
-
-        if self.program_opts.chroma_decoder is not None:
-            decoder_opts.append(
-                self.__convert_opt(self.program_opts, "chroma_decoder", "-f")
-            )
 
         if not self.program_opts.vbi:
             decoder_opts.append(
