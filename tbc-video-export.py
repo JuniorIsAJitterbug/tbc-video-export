@@ -994,6 +994,7 @@ class LDToolsWrapper:
             "-p",
             "y4m",
             self.__get_chroma_decoder(is_luma=True),
+            self.__get_vbi_opts(),
             self.__get_opts(),
             "--input-json",
             files.tbc_json,
@@ -1035,6 +1036,7 @@ class LDToolsWrapper:
             "-p",
             "y4m",
             self.__get_chroma_decoder(is_luma=False),
+            self.__get_vbi_opts(),
             self.__get_opts(),
             "--input-json",
             files.tbc_json,
@@ -1075,6 +1077,7 @@ class LDToolsWrapper:
             "-p",
             "y4m",
             self.__get_chroma_decoder(is_luma=False),
+            self.__get_vbi_opts(),
             self.__get_opts(),
             "--input-json",
             files.tbc_json,
@@ -1124,12 +1127,9 @@ class LDToolsWrapper:
 
         return decoder_opts
 
-    def __get_opts(self):
-        """Generate ld-chroma-decoder opts."""
+    def __get_vbi_opts(self):
+        """Get VBI opts."""
         decoder_opts = []
-
-        if not self.program_opts.verbose:
-            decoder_opts.append("-q")
 
         if self.video_system is VideoSystem.PAL:
             # vbi is set, use preset line values
@@ -1143,11 +1143,7 @@ class LDToolsWrapper:
                 decoder_opts.append(["--lfll", "308"])
                 decoder_opts.append(["--ffrl", "118"])
                 decoder_opts.append(["--lfrl", "548"])
-
-        elif (
-            self.video_system is VideoSystem.NTSC
-            or self.video_system is VideoSystem.PALM
-        ):
+        elif self.video_system in (VideoSystem.NTSC, VideoSystem.PALM):
             # vbi is set, use preset line values
             if self.program_opts.vbi:
                 decoder_opts.append(["--ffll", "1"])
@@ -1160,10 +1156,7 @@ class LDToolsWrapper:
                 decoder_opts.append(["--ffrl", "118"])
                 decoder_opts.append(["--lfrl", "453"])
 
-        if self.video_system is VideoSystem.NTSC:
-            decoder_opts.append("--ntsc-phase-comp")
-
-        if not self.program_opts.vbi:
+        if not self.program_opts.vbi and not self.program_opts.letterbox:
             decoder_opts.append(
                 self.__convert_opt(self.program_opts, "first_active_field_line", "--ffll")
             )
@@ -1176,6 +1169,19 @@ class LDToolsWrapper:
             decoder_opts.append(
                 self.__convert_opt(self.program_opts, "last_active_frame_line", "--lfrl")
             )
+
+        return decoder_opts
+
+
+    def __get_opts(self):
+        """Generate ld-chroma-decoder opts."""
+        decoder_opts = []
+
+        if not self.program_opts.verbose:
+            decoder_opts.append("-q")
+
+        if self.video_system is VideoSystem.NTSC:
+            decoder_opts.append("--ntsc-phase-comp")
 
         decoder_opts.append(self.__convert_opt(self.program_opts, "start", "-s"))
         decoder_opts.append(self.__convert_opt(self.program_opts, "length", "-l"))
