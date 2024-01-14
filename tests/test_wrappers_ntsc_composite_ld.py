@@ -180,7 +180,7 @@ class TestWrappersNTSCCompositeLD(unittest.TestCase):
                 [
                     f"{self.files.get_tool(ProcessName.FFMPEG)}",
                     "-hide_banner",
-                    "-loglevel verbose",
+                    "-loglevel error",
                     "-progress pipe:2",
                     "-threads 4",
                     "-nostdin",
@@ -295,7 +295,7 @@ class TestWrappersNTSCCompositeLD(unittest.TestCase):
                 [
                     f"{self.files.get_tool(ProcessName.FFMPEG)}",
                     "-hide_banner",
-                    "-loglevel verbose",
+                    "-loglevel error",
                     "-progress pipe:2",
                     "-threads 4",
                     "-nostdin",
@@ -409,7 +409,7 @@ class TestWrappersNTSCCompositeLD(unittest.TestCase):
                 [
                     f"{self.files.get_tool(ProcessName.FFMPEG)}",
                     "-hide_banner",
-                    "-loglevel verbose",
+                    "-loglevel error",
                     "-progress pipe:2",
                     "-threads 4",
                     "-nostdin",
