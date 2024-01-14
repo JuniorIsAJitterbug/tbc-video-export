@@ -16,7 +16,7 @@ To playback an 4fsc TBC file to physical playout systems have a look at:
 
 Linux:
 
-    pip tbc-video-export
+    pip install tbc-video-export
 
 
 # Basic Usage 
@@ -46,11 +46,11 @@ Windows 10 & 11:
 
 CVBS (Combined)
 
-![tbc-video-export-readout-cvbs](https://github.com/JuniorIsAJitterbug/tbc-video-export/wiki/assets/gifs/Windows_Terminal_tbc-video-export_v0.1.0_Composite.gif)
+![tbc-video-export-readout-cvbs](https://github.com/JuniorIsAJitterbug/tbc-video-export/wiki/assets/gifs/Windows_Terminal_tbc-video-export_v0.1.0b2_Composite.gif)
 
 S-Video (Y + C)
 
-![tbc-video-export-readout-s-video](https://github.com/JuniorIsAJitterbug/tbc-video-export/wiki/assets/gifs/Windows_Terminal_tbc-video-export_v0.1.0_S-Video.gif)
+![tbc-video-export-readout-s-video](https://github.com/JuniorIsAJitterbug/tbc-video-export/wiki/assets/gifs/Windows_Terminal_tbc-video-export_v0.1.0b2_S-Video.gif)
 
 
 ## Features
