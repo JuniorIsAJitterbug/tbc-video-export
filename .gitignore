@@ -1,5 +1,7 @@
+.devenv
 .direnv
 .vscode
+.pre-commit-config.yaml
 
 *.mkv
 *.mov

@@ -2,59 +2,65 @@
   description = "tbc-video-export dev flake";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    devenv.url = "github:cachix/devenv";
     jitterbug.url = "github:JuniorIsAJitterbug/nur-packages";
   };
 
-  outputs =
-    { self
-    , nixpkgs
-    , flake-utils
-    , jitterbug
-    }:
+  nixConfig = {
+    extra-trusted-public-keys = "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=";
+    extra-substituters = "https://devenv.cachix.org";
+  };
 
-    flake-utils.lib.eachDefaultSystem (system:
-    let
-      pkgs = import nixpkgs { inherit system; };
-      pythonPackages = ps: with ps; [
-        coverage
+  outputs = inputs@{ flake-parts, nixpkgs, jitterbug, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = [
+        inputs.devenv.flakeModule
       ];
-    in
-    {
-      devShells.default = pkgs.mkShell {
-        buildInputs = with pkgs; [
-          pre-commit
-          stdenv.cc.cc.libgcc
-        ];
-        nativeBuildInputs = [ pkgs.autoPatchelfHook ];
+      systems = [ "x86_64-linux" ];
 
-        enterShell = ''
-          pre-commit install
+      perSystem = { config, self', inputs', pkgs, system, ... }:
+        let
+          python-packages = p:
+            with p; [
+              pip
+            ];
+        in
+        {
+          devenv.shells.default = {
+            name = "tbc-video-export";
 
-          # oddly the python pre-commit hook doesn't actually install things during install
-          # here's a hack to force ruff into the pre-commit cache (works but is not great)
-          pre-commit run
+            imports = [ ];
 
-          # pre-commits output is a bit verbose when it succeeds, choose your own output wrangling
-          patch=$(autoPatchelf ~/.cache/pre-commit/)
-          if [[ $? -ne 0 ]]; then
-            echo "$patch"
-            exit 1
-          else
-            echo "patched ~/.cache/pre-commit"
-          fi
-        '';
+            packages = with pkgs;
+              [
+                stdenv.cc.cc.lib
+                ruff
+                jitterbug.packages.${pkgs.system}.vhs-decode
+                (python310.withPackages python-packages)
+              ];
 
-        packages = with pkgs;
-          [
-            (python310.withPackages pythonPackages)
-            poetry
-            pre-commit
-            ruff
+            languages.python = {
+              enable = true;
+              poetry = {
+                enable = true;
+                activate.enable = true;
+                install.enable = true;
+                install.allExtras = true;
+              };
+            };
 
-            jitterbug.packages.${pkgs.system}.vhs-decode
-          ];
-      };
-    });
+            pre-commit.hooks = {
+              ruff.enable = true;
+              pyright.enable = true;
+            };
+
+            pre-commit.settings = {
+              yamllint.relaxed = true;
+            };
+          };
+
+        };
+      flake = { };
+    };
 }
