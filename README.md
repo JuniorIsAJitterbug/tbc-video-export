@@ -2,7 +2,7 @@
 
 Cross-platform tool for exporting S-Video & CVBS type TBC files to standard video files created by the decode projects:
 
-[VHS-Decoode (Tape Decoding)](https://github.com/oyvindln/vhs-decode/wiki/) / [LaserDisc-Decode](https://github.com/happycube/ld-decode) / [CVBS-Decode (Composite Decoding)](CVBS-Composite-Decode) / [HiFi-Decode (FM Audio Decoding)](https://github.com/oyvindln/vhs-decode/wiki/hifi-decode)
+[VHS-Decode (Tape Decoding)](https://github.com/oyvindln/vhs-decode/wiki/) / [LaserDisc-Decode](https://github.com/happycube/ld-decode) / [CVBS-Decode (Composite Decoding)](CVBS-Composite-Decode) / [HiFi-Decode (FM Audio Decoding)](https://github.com/oyvindln/vhs-decode/wiki/hifi-decode)
 
 To playback an 4fsc TBC file to physical playout systems have a look at:
 
@@ -57,7 +57,7 @@ S-Video (Y + C)
 
 
 - FFmpeg Encoding Profiles
-- Automtic CVBS or S-Video type `tbc` input detection
+- Automatic CVBS or S-Video type `tbc` input detection
 - Clear processing readout screen & logging
 - Automated ld-tool interactions
 - Checksums for Audio & Video streams
