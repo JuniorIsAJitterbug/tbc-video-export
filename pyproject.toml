@@ -1,0 +1,98 @@
+[tool.poetry]
+name = "tbc-video-export"
+version = "0.0.0"
+description = "Cross platform tool for exporting S-Video & CVBS type TBC files to standard video files."
+authors = ["Jitterbug <3130448+JuniorIsAJitterbug@users.noreply.github.com>"]
+license = "GPL-3.0-or-later"
+readme = "README.md"
+repository = "https://github.com/JuniorIsAJitterbug/tbc-video-export"
+keywords = ["vhs-decode", "ld-decode", "cvbs-decode", "tbc", "rf capture"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pywin32 = [{ version = "*", platform = "win32" }]
+
+[tool.poetry.scripts]
+tbc-video-export = "tbc_video_export.__main__:main"
+
+[tool.poetry.urls]
+"Issues" = "https://github.com/JuniorIsAJitterbug/tbc-video-export/issues"
+"Discord" = "https://discord.com/invite/pVVrrxd"
+
+[tool.poetry.group.dev.dependencies]
+poetry-dynamic-versioning = { extras = ["plugin"], version = "^1.2.0" }
+coverage = { extras = ["toml"], version = "^7.4.0" }
+
+[build-system]
+requires = [
+    "poetry-core>=1.0.0",
+    "poetry-dynamic-versioning>=1.0.0,<2.0.0",
+    "pyinstaller",
+    "pyinstaller_versionfile",
+]
+build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.pyright]
+include = ["src/**/*.py"]
+typeCheckingMode = "strict"
+
+[tool.ruff]
+include = ["pyproject.toml", "src/**/*.py"]
+extend-exclude = ["/nix/store"]
+target-version = "py310"
+select = [
+    "PL",     # Pylint
+    "I",      # isort
+    "F",      # Pyflakes
+    "D",      # pydocstyle
+    "C90",    # mccabe
+    "E",      # pycodestyle
+    "W",      # pycodestyle
+    "N",      # pep8-naming
+    "UP",     # pyupgrade
+    "SLF001", # private-member-access
+    "TCH",    # flake8-type-checking
+    "ARG",    # flake8-unused-arguments
+    "PTH",    # flake8-use-pathlib
+    "A",      # flake8-builtins
+    "C4",     # flake8-comprehensions
+    "ISC",    # flake8-implicit-str-concat
+    "G",      # flake8-logging-format
+    "PIE",    # flake8-pie
+    "B",      # flake8-bugbear
+    "ICN",    # flake8-import-conventions
+    "BLE",    # flake8-blind-except
+    "TID",    # flake8-tidy-imports
+    "RSE",    # flake8-raise
+    "RET",    # flake8-return
+    "SIM",    # flake8-simplify
+    "PYI",    # flake8-pyi 
+]
+
+ignore = [
+    "PLC0414", # useless-import-alias
+    "PLR2004", # magic-value-comparison
+    "PLC0415", # import-outside-top-level
+    "PYI034",  # non-self-return-type
+    "D100",    # undocumented-public-module
+    "D104",    # undocumented-public-package
+    "D107",    # undocumented-public-init
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+required-imports = ["from __future__ import annotations"]
+
+[tool.poetry-dynamic-versioning]
+enable = true
+bump = true
+vcs = "git"
+style = "pep440"
+
+[tool.coverage.run]
+omit = [".*", "*/site-packages/*"]
+
+[tool.coverage.report]
+fail_under = 100
