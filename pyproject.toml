@@ -10,7 +10,7 @@ keywords = ["vhs-decode", "ld-decode", "cvbs-decode", "tbc", "rf capture"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pywin32 = [{ version = "*", platform = "win32" }]
+pywin32 = [{ version = "^306", platform = "win32", source = "pypi" }]
 
 [tool.poetry.scripts]
 tbc-video-export = "tbc_video_export.__main__:main"
@@ -90,6 +90,7 @@ enable = true
 bump = true
 vcs = "git"
 style = "pep440"
+metadata = false
 
 [tool.coverage.run]
 omit = [".*", "*/site-packages/*"]

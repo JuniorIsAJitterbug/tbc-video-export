@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import unittest
 from functools import partial
+from pathlib import Path
 
-from path import Path
-from tbc_video_export.common.enums import TBCType, VideoSystem
+from tbc_video_export.common.enums import ProcessName, TBCType, VideoSystem
 from tbc_video_export.common.file_helper import FileHelper
 from tbc_video_export.config import Config as ProgramConfig
 from tbc_video_export.opts import opts_parser
@@ -33,7 +33,7 @@ class TestWrappersNTSCComposite(unittest.TestCase):
 
     def test_videosystem(self) -> None:  # noqa: D102
         opts = self.parse_opts(
-            [self.path, "ntsc_composite", "--input-tbc-json", self.tbc_json]
+            [str(self.path), "ntsc_composite", "--input-tbc-json", str(self.tbc_json)]
         )
         self.files = FileHelper(opts, self.config)
         self.assertTrue(self.files.tbc_json.video_system, VideoSystem.NTSC)
@@ -42,10 +42,10 @@ class TestWrappersNTSCComposite(unittest.TestCase):
         opts = opts_parser.parse_opts(
             self.config,
             [
-                self.path,
+                str(self.path),
                 "ntsc_composite",
                 "--input-tbc-json",
-                self.tbc_json,
+                str(self.tbc_json),
                 "--threads",
                 "4",
             ],
@@ -65,7 +65,7 @@ class TestWrappersNTSCComposite(unittest.TestCase):
 
         self.assertEqual(
             str(decoder.command),
-            f"ld-chroma-decoder "
+            f"{self.files.get_tool(ProcessName.LD_CHROMA_DECODER)} "
             f"--luma-nr 0 "
             f"-p y4m "
             f"-f ntsc3d "
@@ -130,10 +130,10 @@ class TestWrappersNTSCComposite(unittest.TestCase):
         opts = opts_parser.parse_opts(
             self.config,
             [
-                self.path,
+                str(self.path),
                 "ntsc_composite",
                 "--input-tbc-json",
-                self.tbc_json,
+                str(self.tbc_json),
                 "--threads",
                 "4",
             ],
@@ -160,7 +160,7 @@ class TestWrappersNTSCComposite(unittest.TestCase):
             str(ffmpeg_wrapper.command),
             " ".join(
                 [
-                    "ffmpeg",
+                    f"{self.files.get_tool(ProcessName.FFMPEG)}",
                     "-hide_banner",
                     "-loglevel verbose",
                     "-progress pipe:2",
@@ -246,7 +246,7 @@ class TestWrappersNTSCComposite(unittest.TestCase):
         """  # noqa: E501
         opts = self.parse_opts(
             [
-                self.path,
+                str(self.path),
                 "ntsc_composite",
                 "--threads",
                 "4",
@@ -275,7 +275,7 @@ class TestWrappersNTSCComposite(unittest.TestCase):
             str(ffmpeg_wrapper.command),
             " ".join(
                 [
-                    "ffmpeg",
+                    f"{self.files.get_tool(ProcessName.FFMPEG)}",
                     "-hide_banner",
                     "-loglevel verbose",
                     "-progress pipe:2",
@@ -359,7 +359,7 @@ class TestWrappersNTSCComposite(unittest.TestCase):
         """  # noqa: E501
         opts = self.parse_opts(
             [
-                self.path,
+                str(self.path),
                 "ntsc_composite",
                 "--threads",
                 "4",
@@ -389,7 +389,7 @@ class TestWrappersNTSCComposite(unittest.TestCase):
             str(ffmpeg_wrapper.command),
             " ".join(
                 [
-                    "ffmpeg",
+                    f"{self.files.get_tool(ProcessName.FFMPEG)}",
                     "-hide_banner",
                     "-loglevel verbose",
                     "-progress pipe:2",
