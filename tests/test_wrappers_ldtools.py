@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import unittest
 from functools import partial
+from pathlib import Path
 
-from path import Path
 from tbc_video_export.common import exceptions
-from tbc_video_export.common.enums import TBCType
+from tbc_video_export.common.enums import ProcessName, TBCType
 from tbc_video_export.common.file_helper import FileHelper
 from tbc_video_export.config import Config as ProgramConfig
 from tbc_video_export.opts import opts_parser
@@ -25,7 +25,9 @@ class TestWrappersLDTools(unittest.TestCase):
     """Tests for ld-tools wrappers."""
 
     def setUp(self) -> None:  # noqa: D102
-        self.path = Path.joinpath(Path(__file__).parent, "files", "pal_svideo")
+        self.path = Path.joinpath(
+            Path(__file__).parent, "files", "pal_svideo"
+        ).absolute()
 
         self.config = ProgramConfig()
         self.parse_opts = partial(opts_parser.parse_opts, self.config)
@@ -34,7 +36,7 @@ class TestWrappersLDTools(unittest.TestCase):
 
     def test_process_vbi_default_opts(self) -> None:  # noqa: D102
         opts = self.parse_opts(
-            [self.path, "pal_svideo", "--threads", "4", "--process-vbi"]
+            [str(self.path), "pal_svideo", "--threads", "4", "--process-vbi"]
         )
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
@@ -48,7 +50,7 @@ class TestWrappersLDTools(unittest.TestCase):
 
         self.assertEqual(
             str(vbi_process.command),
-            f"ld-process-vbi "
+            f"{self.files.get_tool(ProcessName.LD_PROCESS_VBI)} "
             f"-t 4 "
             f"--input-json {self.path}.tbc.json "
             f"--output-json {self.path}.vbi.json "
@@ -62,13 +64,13 @@ class TestWrappersLDTools(unittest.TestCase):
 
         opts = self.parse_opts(
             [
-                self.path,
+                str(self.path),
                 "pal_svideo",
                 "--threads",
                 "4",
                 "--process-vbi",
                 "--input-tbc-json",
-                custom_json,
+                str(custom_json),
             ],
         )
         self.files = FileHelper(opts, self.config)
@@ -83,7 +85,7 @@ class TestWrappersLDTools(unittest.TestCase):
 
         self.assertEqual(
             str(vbi_process.command),
-            f"ld-process-vbi "
+            f"{self.files.get_tool(ProcessName.LD_PROCESS_VBI)} "
             f"-t 4 "
             f"--input-json {custom_json} "
             f"--output-json {self.path}.vbi.json "
@@ -92,7 +94,7 @@ class TestWrappersLDTools(unittest.TestCase):
 
     def test_dropout_correct_default_opts(self) -> None:  # noqa: D102
         opts = opts_parser.parse_opts(
-            self.config, [self.path, "pal_svideo", "--threads", "4"]
+            self.config, [str(self.path), "pal_svideo", "--threads", "4"]
         )
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
@@ -109,14 +111,16 @@ class TestWrappersLDTools(unittest.TestCase):
 
         self.assertEqual(
             str(dropout_correct.command),
-            f"ld-dropout-correct "
+            f"{self.files.get_tool(ProcessName.LD_DROPOUT_CORRECT)} "
             f"-i {self.path}.tbc "
             f"--input-json {self.path}.tbc.json "
             f"--output-json /dev/null PIPE_OUT",
         )
 
     def test_decoder_invalid_videosystem(self) -> None:  # noqa: D102
-        opts = self.parse_opts([self.path, "pal_svideo", "--chroma-decoder", "ntsc2d"])
+        opts = self.parse_opts(
+            [str(self.path), "pal_svideo", "--chroma-decoder", "ntsc2d"]
+        )
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -133,7 +137,7 @@ class TestWrappersLDTools(unittest.TestCase):
 
     def test_decoder_letterbox_pal(self) -> None:  # noqa: D102
         path = Path.joinpath(Path(__file__).parent, "files", "pal_svideo")
-        opts = self.parse_opts([path, "pal_svideo", "--letterbox"])
+        opts = self.parse_opts([str(path), "pal_svideo", "--letterbox"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -155,7 +159,7 @@ class TestWrappersLDTools(unittest.TestCase):
 
     def test_decoder_letterbox_ntsc(self) -> None:  # noqa: D102
         path = Path.joinpath(Path(__file__).parent, "files", "ntsc_svideo")
-        opts = self.parse_opts([path, "ntsc_svideo", "--letterbox"])
+        opts = self.parse_opts([str(path), "ntsc_svideo", "--letterbox"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -177,7 +181,7 @@ class TestWrappersLDTools(unittest.TestCase):
 
     def test_decoder_letterbox_palm(self) -> None:  # noqa: D102
         path = Path.joinpath(Path(__file__).parent, "files", "palm_svideo")
-        opts = self.parse_opts([path, "palm_svideo", "--letterbox"])
+        opts = self.parse_opts([str(path), "palm_svideo", "--letterbox"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -194,7 +198,7 @@ class TestWrappersLDTools(unittest.TestCase):
 
     def test_decoder_vbi_pal(self) -> None:  # noqa: D102
         path = Path.joinpath(Path(__file__).parent, "files", "pal_svideo")
-        opts = self.parse_opts([path, "pal_svideo", "--vbi"])
+        opts = self.parse_opts([str(path), "pal_svideo", "--vbi"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -213,7 +217,7 @@ class TestWrappersLDTools(unittest.TestCase):
 
     def test_decoder_vbi_ntsc(self) -> None:  # noqa: D102
         path = Path.joinpath(Path(__file__).parent, "files", "ntsc_svideo")
-        opts = self.parse_opts([path, "ntsc_svideo", "--vbi"])
+        opts = self.parse_opts([str(path), "ntsc_svideo", "--vbi"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -235,7 +239,7 @@ class TestWrappersLDTools(unittest.TestCase):
 
     def test_decoder_vbi_palm(self) -> None:  # noqa: D102
         path = Path.joinpath(Path(__file__).parent, "files", "palm_svideo")
-        opts = self.parse_opts([path, "palm_svideo", "--vbi"])
+        opts = self.parse_opts([str(path), "palm_svideo", "--vbi"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 

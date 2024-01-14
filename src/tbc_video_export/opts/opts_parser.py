@@ -263,10 +263,16 @@ def _validate_video_system(parser: argparse.ArgumentParser, opts: Opts) -> None:
 def _validate_ansi_support(opts: Opts) -> None:
     # check if ansi is supported on Windows and disable progress if not
     if not ansi.has_ansi_support():
+        if os.name == "nt":
+            logging.getLogger("console").critical(
+                "Windows Version < 10.0.14393 (Windows 10 Anniversary Update 1607) "
+                "detected.\n"
+                "This version of Windows is unable to support ANSI escape sequences.\n"
+                "The software will run but be unable to display realtime progress.\n"
+            )
+
         logging.getLogger("console").critical(
-            "Windows Version < 10.0.14393 (Windows 10 Anniversary Update 1607) "
-            "detected.\n"
-            "This version of Windows is unable to support ANSI escape sequences.\n"
+            "No support for ANSI escape sequences.\n"
             "The software will run but be unable to display realtime progress.\n"
         )
 

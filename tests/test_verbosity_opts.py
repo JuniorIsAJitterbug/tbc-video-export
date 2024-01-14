@@ -3,8 +3,8 @@ from __future__ import annotations
 import logging
 import unittest
 from functools import partial
+from pathlib import Path
 
-from path import Path
 from tbc_video_export.common.file_helper import FileHelper
 from tbc_video_export.common.utils import log
 from tbc_video_export.config import Config as ProgramConfig
@@ -26,7 +26,7 @@ class TestVerbosityOpts(unittest.TestCase):
         self.parse_opts = partial(opts_parser.parse_opts, self.config)
 
     def test_quiet_mode(self) -> None:  # noqa: D102
-        opts = self.parse_opts([self.path, "pal_svideo", "-q"])
+        opts = self.parse_opts([str(self.path),"pal_svideo", "-q"])
         self.files = FileHelper(opts, self.config)
         log.set_verbosity(opts)
 
@@ -37,7 +37,7 @@ class TestVerbosityOpts(unittest.TestCase):
 
     def test_debug_mode(self) -> None:  # noqa: D102
         opts = self.parse_opts(
-            [self.path, "pal_svideo", "-d", "--no-progress", "--no-debug-log"]
+            [str(self.path),"pal_svideo", "-d", "--no-progress", "--no-debug-log"]
         )
         self.files = FileHelper(opts, self.config)
         log.set_verbosity(opts)
@@ -48,7 +48,7 @@ class TestVerbosityOpts(unittest.TestCase):
         # self.assertGreater(len(logging.getLogger("console").handlers), 1)
 
     def test_show_process_output(self) -> None:  # noqa: D102
-        opts = self.parse_opts([self.path, "pal_svideo", "--show-process-output"])
+        opts = self.parse_opts([str(self.path),"pal_svideo", "--show-process-output"])
         self.files = FileHelper(opts, self.config)
         log.set_verbosity(opts)
 

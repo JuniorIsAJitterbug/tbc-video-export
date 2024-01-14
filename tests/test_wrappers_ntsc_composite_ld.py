@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import unittest
 from functools import partial
+from pathlib import Path
 
-from path import Path
-from tbc_video_export.common.enums import TBCType, VideoSystem
+from tbc_video_export.common.enums import ProcessName, TBCType, VideoSystem
 from tbc_video_export.common.file_helper import FileHelper
 from tbc_video_export.config import Config as ProgramConfig
 from tbc_video_export.opts import opts_parser
@@ -31,16 +31,28 @@ class TestWrappersNTSCCompositeLD(unittest.TestCase):
 
         self.pipe = PipeFactory.create_dummy_pipe()
 
+        self.maxDiff = 99999
+
     def test_videosystem(self) -> None:  # noqa: D102
         opts = self.parse_opts(
-            [self.path, "ntsc_composite_ld", "--input-tbc-json", self.tbc_json]
+            [
+                str(self.path),
+                "ntsc_composite_ld",
+                "--input-tbc-json",
+                str(self.tbc_json),
+            ]
         )
         self.files = FileHelper(opts, self.config)
         self.assertTrue(self.files.tbc_json.video_system, VideoSystem.NTSC)
 
     def test_ld_detect(self) -> None:  # noqa: D102
         opts = self.parse_opts(
-            [self.path, "ntsc_composite_ld", "--input-tbc-json", self.tbc_json]
+            [
+                str(self.path),
+                "ntsc_composite_ld",
+                "--input-tbc-json",
+                str(self.tbc_json),
+            ]
         )
         self.files = FileHelper(opts, self.config)
         self.assertTrue(self.files.is_combined_ld)
@@ -49,10 +61,10 @@ class TestWrappersNTSCCompositeLD(unittest.TestCase):
         opts = opts_parser.parse_opts(
             self.config,
             [
-                self.path,
+                str(self.path),
                 "ntsc_composite_ld",
                 "--input-tbc-json",
-                self.tbc_json,
+                str(self.tbc_json),
                 "--threads",
                 "4",
             ],
@@ -72,7 +84,7 @@ class TestWrappersNTSCCompositeLD(unittest.TestCase):
 
         self.assertEqual(
             str(decoder.command),
-            f"ld-chroma-decoder "
+            f"{self.files.get_tool(ProcessName.LD_CHROMA_DECODER)} "
             f"--luma-nr 0 "
             f"-p y4m "
             f"-f ntsc2d "
@@ -136,10 +148,10 @@ class TestWrappersNTSCCompositeLD(unittest.TestCase):
         opts = opts_parser.parse_opts(
             self.config,
             [
-                self.path,
+                str(self.path),
                 "ntsc_composite_ld",
                 "--input-tbc-json",
-                self.tbc_json,
+                str(self.tbc_json),
                 "--threads",
                 "4",
             ],
@@ -166,7 +178,7 @@ class TestWrappersNTSCCompositeLD(unittest.TestCase):
             str(ffmpeg_wrapper.command),
             " ".join(
                 [
-                    "ffmpeg",
+                    f"{self.files.get_tool(ProcessName.FFMPEG)}",
                     "-hide_banner",
                     "-loglevel verbose",
                     "-progress pipe:2",
@@ -252,7 +264,7 @@ class TestWrappersNTSCCompositeLD(unittest.TestCase):
         """  # noqa: E501
         opts = self.parse_opts(
             [
-                self.path,
+                str(self.path),
                 "ntsc_composite_ld",
                 "--threads",
                 "4",
@@ -281,7 +293,7 @@ class TestWrappersNTSCCompositeLD(unittest.TestCase):
             str(ffmpeg_wrapper.command),
             " ".join(
                 [
-                    "ffmpeg",
+                    f"{self.files.get_tool(ProcessName.FFMPEG)}",
                     "-hide_banner",
                     "-loglevel verbose",
                     "-progress pipe:2",
@@ -365,7 +377,7 @@ class TestWrappersNTSCCompositeLD(unittest.TestCase):
         """  # noqa: E501
         opts = self.parse_opts(
             [
-                self.path,
+                str(self.path),
                 "ntsc_composite_ld",
                 "--threads",
                 "4",
@@ -395,7 +407,7 @@ class TestWrappersNTSCCompositeLD(unittest.TestCase):
             str(ffmpeg_wrapper.command),
             " ".join(
                 [
-                    "ffmpeg",
+                    f"{self.files.get_tool(ProcessName.FFMPEG)}",
                     "-hide_banner",
                     "-loglevel verbose",
                     "-progress pipe:2",

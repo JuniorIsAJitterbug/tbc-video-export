@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import unittest
 from functools import partial
+from pathlib import Path
 
-from path import Path
-from tbc_video_export.common.enums import TBCType, VideoSystem
+from tbc_video_export.common.enums import ProcessName, TBCType, VideoSystem
 from tbc_video_export.common.file_helper import FileHelper
 from tbc_video_export.config import Config as ProgramConfig
 from tbc_video_export.opts import opts_parser
@@ -32,12 +32,12 @@ class TestWrappersPALMSvideo(unittest.TestCase):
         self.pipe = PipeFactory.create_dummy_pipe()
 
     def test_videosystem(self) -> None:  # noqa: D102
-        opts = self.parse_opts([self.path, "palm_svideo"])
+        opts = self.parse_opts([str(self.path), "palm_svideo"])
         self.files = FileHelper(opts, self.config)
         self.assertTrue(self.files.tbc_json.video_system, VideoSystem.PAL)
 
     def test_decoder_default_luma_decoder_palm_svideo(self) -> None:  # noqa: D102
-        opts = self.parse_opts([self.path, "palm_svideo", "--threads", "4"])
+        opts = self.parse_opts([str(self.path), "palm_svideo", "--threads", "4"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -53,7 +53,7 @@ class TestWrappersPALMSvideo(unittest.TestCase):
 
         self.assertEqual(
             str(decoder.command),
-            f"ld-chroma-decoder "
+            f"{self.files.get_tool(ProcessName.LD_CHROMA_DECODER)} "
             f"--chroma-gain 0 "
             f"-p y4m "
             f"-f mono "
@@ -64,7 +64,7 @@ class TestWrappersPALMSvideo(unittest.TestCase):
         )
 
     def test_decoder_default_chroma_decoder_palm_svideo(self) -> None:  # noqa: D102
-        opts = self.parse_opts([self.path, "palm_svideo", "--threads", "4"])
+        opts = self.parse_opts([str(self.path), "palm_svideo", "--threads", "4"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -80,7 +80,7 @@ class TestWrappersPALMSvideo(unittest.TestCase):
 
         self.assertEqual(
             str(decoder.command),
-            f"ld-chroma-decoder "
+            f"{self.files.get_tool(ProcessName.LD_CHROMA_DECODER)} "
             f"--luma-nr 0 "
             f"-p y4m "
             f"-f transform2d "
@@ -141,7 +141,7 @@ class TestWrappersPALMSvideo(unittest.TestCase):
         MaxSlicesCount                           : 24
         ErrorDetectionType                       : Per slice
         """  # noqa: E501
-        opts = self.parse_opts([self.path, "palm_svideo", "--threads", "4"])
+        opts = self.parse_opts([str(self.path), "palm_svideo", "--threads", "4"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -164,7 +164,7 @@ class TestWrappersPALMSvideo(unittest.TestCase):
             str(ffmpeg_wrapper.command),
             " ".join(
                 [
-                    "ffmpeg",
+                    f"{self.files.get_tool(ProcessName.FFMPEG)}",
                     "-hide_banner",
                     "-loglevel verbose",
                     "-progress pipe:2",
@@ -250,7 +250,7 @@ class TestWrappersPALMSvideo(unittest.TestCase):
         """  # noqa: E501
         opts = self.parse_opts(
             [
-                self.path,
+                str(self.path),
                 "palm_svideo",
                 "--threads",
                 "4",
@@ -279,7 +279,7 @@ class TestWrappersPALMSvideo(unittest.TestCase):
             str(ffmpeg_wrapper.command),
             " ".join(
                 [
-                    "ffmpeg",
+                    f"{self.files.get_tool(ProcessName.FFMPEG)}",
                     "-hide_banner",
                     "-loglevel verbose",
                     "-progress pipe:2",
@@ -363,7 +363,7 @@ class TestWrappersPALMSvideo(unittest.TestCase):
         """  # noqa: E501
         opts = self.parse_opts(
             [
-                self.path,
+                str(self.path),
                 "palm_svideo",
                 "--threads",
                 "4",
@@ -393,7 +393,7 @@ class TestWrappersPALMSvideo(unittest.TestCase):
             str(ffmpeg_wrapper.command),
             " ".join(
                 [
-                    "ffmpeg",
+                    f"{self.files.get_tool(ProcessName.FFMPEG)}",
                     "-hide_banner",
                     "-loglevel verbose",
                     "-progress pipe:2",
