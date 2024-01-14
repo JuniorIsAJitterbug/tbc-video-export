@@ -63,16 +63,20 @@ class WrapperFFmpeg(Wrapper):
 
     def _get_verbosity_opts(self) -> FlatList:
         """Return opts for verbosity."""
-        verbosity_opts = FlatList(("-hide_banner", "-loglevel", "verbose"))
+        verbosity_opts = FlatList("-hide_banner")
 
         # enable progress reporting if we are not displaying output
         if not self._state.opts.show_process_output:
             verbosity_opts.append(
                 (
+                    "-loglevel",
+                    "error",
                     "-progress",
                     "pipe:2",
                 )
             )
+        else:
+            verbosity_opts.append(("-loglevel", "verbose"))
 
         return verbosity_opts
 
