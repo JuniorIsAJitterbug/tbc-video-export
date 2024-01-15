@@ -40,10 +40,10 @@ You can find the latest self-contained binaries on the [releases](https://github
 
 ## Help 
 
-`--help` - List all available arguments.  
-`--list-profiles` - List all FFmpeg profiles.  
-`--profile` - Define FFmpeg profile.
-`--dump-default-config` - Dump the FFmpeg profiles config to `tbc-video-export.json`, allowing creation and editing of profiles.
+- `--help` - List all available arguments.  
+- `--list-profiles` - List all FFmpeg profiles.  
+- `--profile` - Define FFmpeg profile.
+- `--dump-default-config` - Dump the FFmpeg profiles config to `tbc-video-export.json`, allowing creation and editing of profiles.
 
 ## Readout Terminal
 
