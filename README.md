@@ -1,3 +1,5 @@
+# TBC-Video-Export
+
 <img alt="tbc-video-export icon" src="assets/icon.ico" width=100>
 
 ---
@@ -12,38 +14,50 @@ To playback a 4FSC TBC file on physical playout systems check:
 
 
 # Installation
+
+
 ### Windows
+
 You can find the latest self-contained binaries on the [releases](https://github.com/JuniorIsAJitterbug/tbc-video-export/releases) page.
 
 ### Linux & macOS:
-```
-pip install tbc-video-export
-```
 
+    pip install tbc-video-export
 
 # Basic Usage 
+
 ### Windows
-```
-tbc-video-export.exe input.tbc
-```
+
+
+    tbc-video-export.exe input.tbc
+
+
 ### Linux & macOS:
-```
-tbc-video-export input.tbc
-```
+
+
+    tbc-video-export input.tbc
+
 
 ## Help 
+
 `--help` - List all available arguments.  
 `--list-profiles` - List all FFmpeg profiles.  
+`--profile` - Define FFmpeg profile.
 `--dump-default-config` - Dump the FFmpeg profiles config to `tbc-video-export.json`, allowing creation and editing of profiles.
 
 ## Readout Terminal
+
 ### CVBS (Combined)
+
 ![tbc-video-export-readout-cvbs](https://github.com/JuniorIsAJitterbug/tbc-video-export/wiki/assets/gifs/Windows_Terminal_tbc-video-export_v0.1.0b2_Composite.gif)
 
 ### S-Video (Y + C)
+
 ![tbc-video-export-readout-s-video](https://github.com/JuniorIsAJitterbug/tbc-video-export/wiki/assets/gifs/Windows_Terminal_tbc-video-export_v0.1.0b2_S-Video.gif)
 
+
 ## Features
+
 - FFmpeg Encoding Profiles
 - Automatic CVBS / S-Video input detection
 - Clear processing readout screen & logging
@@ -52,18 +66,22 @@ tbc-video-export input.tbc
 - Advanced audio input options
 - ...
 
+
 ## Internal function
+
+
 `input.tbc` + `[input_chroma.tbc]` + `input.json` ⟶ `ld-process-*` ⟶ `ld-chroma-decoder` ⟶ `YUV stream` ⟶ `FFmpeg` ⟶ `Output Video [w/audio & metadata]`
 
 
 # Changelog & Development Notes
+
 [This has a dedicated Wiki Page](https://github.com/JuniorIsAJitterbug/tbc-video-export/wiki/Changelog-&-Devlog)
 
-
 # Credits 
+
 - [JuniorIsAJitterbug](https://github.com/JuniorIsAJitterbug/) - Development & Implementation
 - [Harry Munday](https://github.com/harrypm/) - Development Direction, Testing, Icon
 
-
 # Disclaimer
+
 This is my first major Python project. There are likely bugs and code that go against best practices. If you have any comments, suggestions or improvements feel free to create an issue, do a pull request or contact **Jitterbug** or **Harry** on the [Domesday86](https://discord.gg/pVVrrxd) discord.
