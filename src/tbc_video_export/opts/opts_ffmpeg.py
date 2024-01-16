@@ -36,7 +36,8 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
         metavar="profile_name",
         help="Specify an FFmpeg profile to use. "
         f"(default: {profile_default})\n"
-        "See --list-profiles to see the available profiles.",
+        "See --list-profiles to see the available profiles."
+        "\n\n",
     )
 
     # luma profiles
@@ -49,16 +50,17 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
         choices=luma_profile_names,
         default=luma_profile_default,
         metavar="profile_name",
-        help="Specify an FFmpeg profile to use for luma. "
+        help="Specify an FFmpeg profile to use for Luma. "
         f"(default: {luma_profile_default})\n"
-        "See --list-profiles to see the available profiles.",
+        "See --list-profiles to see the available profiles."
+        "\n\n",
     )
 
     ffmpeg_opts.add_argument(
         "--list-profiles",
         action=_ActionListProfiles,
         profiles=config.profiles,
-        help="Show available profiles.",
+        help="Show available profiles.\n\n",
     )
 
     ffmpeg_opts.add_argument(
@@ -68,7 +70,7 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
         default=[],
         type=_validate_audio_track_opts,
         metavar="file_name",
-        help="Audio track to mux.\nYou can use this option multiple times.",
+        help="Audio track to mux.\nYou can use this option multiple times.\n\n",
     )
 
     ffmpeg_opts.add_argument(
@@ -96,7 +98,8 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
         '\'["/path/to/file.flac", "HiFi", "eng", 192000]\'\n'
         '\'["/path/to/file.flac", "Linear", "eng", None, None, None, None, 0.15]\'\n'
         '\'["/path/to/file.pcm", "Analog Audio", None, 44100, "s16le", 2]\'\n'
-        '\'["/path/to/file.dts", "PCM Surround", "eng", 44100, "s16le", 6, "5.1"]\'\n',
+        '\'["/path/to/file.dts", "PCM Surround", "eng", 44100, "s16le", 6, "5.1"]\'\n'
+        "\n\n",
     )
 
     ffmpeg_opts.add_argument(
@@ -105,10 +108,11 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
         default=[],
         action="append",
         metavar=("key", "value"),
-        help="Add metadata to output file.\n"
+        help="Add metadata to output the file.\n"
         "You can use this option multiple times.\n"
         "Example:\n"
-        "--metadata Title foo --metadata Year 2024",
+        "--metadata Title foo --metadata Year 2024"
+        "\n\n",
     )
 
     ffmpeg_opts.add_argument(
@@ -117,12 +121,14 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
         default=[],
         action="append",
         metavar="filename",
-        help="Add metadata to output file from ffmetadata files.\n"
+        help="Add metadata to the output the file using ffmetadata files.\n"
+        "You can use this option multiple times.\n"
         "See https://ffmpeg.org/ffmpeg-formats.html#Metadata-1 for details.\n"
         "Note: When using --export-metadata the generated ffmetadata file is also "
         "used.\n"
         "Files defined here are used before any generated metadata and take "
-        "priority.\n",
+        "priority.\n"
+        "\n\n",
     )
 
     ffmpeg_opts.add_argument(
@@ -133,14 +139,15 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
         metavar="order",
         help="Set a field order. (default: tff)\n"
         "Available formats:\n  "
-        + "\n  ".join(f"{e.name.lower()!s:<5s} {e.value}" for e in FieldOrder),
+        + "\n  ".join(f"{e.name.lower()!s:<5s} {e.value}" for e in FieldOrder)
+        + "\n\n",
     )
 
     ffmpeg_opts.add_argument(
         "--force-anamorphic",
         action="store_true",
         default=False,
-        help="Force widescreen aspect ratio.",
+        help="Force widescreen aspect ratio.\n\n",
     )
 
     ffmpeg_opts.add_argument(
@@ -149,8 +156,9 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
         metavar="R[,G,B]",
         default=None,
         help="Force black levels using the colorlevels filter.\n"
-        "Use a comma sperated list of numbers to provide values for colorlevels.\n"
-        "If a single number is provided it is used for all 3.",
+        "Use a comma-seperated list of numbers to provide values for colorlevels.\n"
+        "If a single number is provided, it is used for all 3."
+        "\n\n",
     )
 
     ffmpeg_opts.add_argument(
@@ -158,9 +166,10 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
         type=int,
         default=1024,
         metavar="int",
-        help="Sets the thread queue size for FFmpeg. (default: 1024)\n"
-        "Reduce this if you are having OOM issues as a higher value\n"
-        "will allow the decoder to consume more memory.",
+        help="Set the thread queue size for FFmpeg. (default: 1024)\n"
+        "Reduce this if you are having out-of-memory issues as a higher value\n"
+        "will allow the decoder to consume more memory."
+        "\n\n",
     )
 
     ffmpeg_opts.add_argument(
@@ -169,7 +178,8 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
         default=False,
         help="Enable SHA256 checksumming on the output streams. (default: no)\n"
         "This will create a .sha256 file next to your output file.\n"
-        "This may reduce export FPS slightly. FFmpeg must be used to verify checksums.",
+        "This may reduce export FPS slightly. FFmpeg must be used to verify checksums."
+        "\n\n",
     )
 
 

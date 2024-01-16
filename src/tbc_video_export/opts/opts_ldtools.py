@@ -15,7 +15,7 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--start",
         type=int,
         metavar="int",
-        help="Specify the start frame number.",
+        help="Specify the start frame number.\n\n",
     )
 
     decoder_opts.add_argument(
@@ -23,21 +23,21 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--length",
         type=int,
         metavar="int",
-        help="Specify the number of frames to process.",
+        help="Specify the number of frames to process.\n\n",
     )
 
     decoder_opts.add_argument(
         "--reverse",
         action="store_true",
         default=False,
-        help="Reverse the field order to second/first.",
+        help="Reverse the field order to second/first.\n\n",
     )
 
     decoder_opts.add_argument(
         "--output-padding",
         type=int,
         metavar="int",
-        help="Pad the output frame to a multiple of this many pixels.",
+        help="Pad the output frame to a multiple of these many pixels.\n\n",
     )
 
     decoder_vbi_opts = decoder_opts.add_mutually_exclusive_group()
@@ -46,14 +46,14 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--vbi",
         action="store_true",
         default=False,
-        help="Adjust FFLL/LFLL/FFRL/LFRL for full vertical export.",
+        help="Adjust FFLL/LFLL/FFRL/LFRL for full vertical export.\n\n",
     )
 
     decoder_vbi_opts.add_argument(
         "--letterbox",
         action="store_true",
         default=False,
-        help="Adjust FFLL/LFLL/FFRL/LFRL for letterbox crop.",
+        help="Adjust FFLL/LFLL/FFRL/LFRL for letterbox crop.\n\n",
     )
 
     decoder_opts.add_argument(
@@ -61,9 +61,10 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--ffll",
         type=int,
         metavar="int",
-        help="The first visible line of a field.\n"
+        help="The first visible line of a field.\n\n"
         "  Range 1-259 for NTSC (default: 20)\n"
-        "        2-308 for PAL  (default: 22)",
+        "        2-308 for PAL  (default: 22)"
+        "\n\n",
     )
 
     decoder_opts.add_argument(
@@ -71,9 +72,10 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--lfll",
         type=int,
         metavar="int",
-        help="The last visible line of a field.\n"
+        help="The last visible line of a field.\n\n"
         "  Range 1-259 for NTSC (default: 259)\n"
-        "        2-308 for PAL  (default: 308)",
+        "        2-308 for PAL  (default: 308)"
+        "\n\n",
     )
 
     decoder_opts.add_argument(
@@ -81,9 +83,10 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--ffrl",
         type=int,
         metavar="int",
-        help="The first visible line of a field.\n"
+        help="The first visible line of a field.\n\n"
         "  Range 1-525 for NTSC (default: 40)\n"
-        "        1-620 for PAL  (default: 44)",
+        "        1-620 for PAL  (default: 44)"
+        "\n\n",
     )
 
     decoder_opts.add_argument(
@@ -91,9 +94,10 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--lfrl",
         type=int,
         metavar="int",
-        help="The last visible line of a field.\n"
+        help="The last visible line of a field.\n\n"
         "  Range 1-525 for NTSC (default: 525)\n"
-        "        1-620 for PAL  (default: 620)",
+        "        1-620 for PAL  (default: 620)"
+        "\n\n",
     )
 
     decoder_opts.add_argument(
@@ -101,44 +105,47 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         type=ChromaDecoder,
         choices=list(ChromaDecoder),
         metavar="decoder",
-        help="Chroma decoder to use.\n"
-        "Available decoders:\n"
-        f"  {ChromaDecoder.MONO} (default for LUMA)\n"
+        help="Set the chroma decoder to be used.\n"
+        "Available decoders:\n\n"
+        f"  {ChromaDecoder.MONO} (default for LUMA)\n\n"
         f"  {ChromaDecoder.PAL2D}\n"
-        f"  {ChromaDecoder.TRANSFORM2D} (default for PAL/PAL-M)\n"
-        f"  {ChromaDecoder.TRANSFORM3D} (default for PAL LD/CVBS)\n"
+        f"  {ChromaDecoder.TRANSFORM2D} (default for PAL/PAL-M S-Video)\n"
+        f"  {ChromaDecoder.TRANSFORM3D} (default for PAL/PAL-M CVBS)\n\n"
         f"  {ChromaDecoder.NTSC1D}\n"
-        f"  {ChromaDecoder.NTSC2D} (default for NTSC)\n"
-        f"  {ChromaDecoder.NTSC3D} (default for NTSC CVBS)\n"
-        f"  {ChromaDecoder.NTSC3DNOADAPT}",
+        f"  {ChromaDecoder.NTSC2D} (default for NTSC S-Video & CVBS)\n"
+        f"  {ChromaDecoder.NTSC3D} (default for NTSC CVBS LD)\n"
+        f"  {ChromaDecoder.NTSC3DNOADAPT}"
+        "\n\n",
     )
 
     decoder_opts.add_argument(
         "--chroma-gain",
         type=float,
         metavar="float",
-        help="Gain factor applied to chroma components.",
+        help="Gain factor applied to chroma components.\n\n",
     )
 
     decoder_opts.add_argument(
         "--chroma-phase",
         type=float,
         metavar="float",
-        help="Phase rotation applied to chroma components (degrees).",
+        help="Phase rotation applied to chroma components in degrees.\n\n",
     )
 
     decoder_opts.add_argument(
         "--luma-nr",
         type=float,
         metavar="float",
-        help="Luma noise reduction level in dB.",
+        help="Luma noise reduction level in dB.\n"
+        "This is only applied to the luma decoder for Y/C-seperated TBCs."
+        "\n\n",
     )
 
     decoder_opts.add_argument(
         "--transform-threshold",
         type=float,
         metavar="float",
-        help="Transform: Uniform similarity threshold in 'threshold' mode.",
+        help="Transform: Uniform similarity threshold in 'threshold' mode.\n\n",
     )
 
     decoder_opts.add_argument(
@@ -146,7 +153,8 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         type=str,
         metavar="file_name",
         help="Transform: File containing per-bin similarity thresholds in "
-        "'threshold' mode.",
+        "'threshold' mode."
+        "\n\n",
     )
 
     # decoder (ntsc)
@@ -155,22 +163,25 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--chroma-nr",
         type=float,
         metavar="float",
-        help="Chroma noise reduction level in dB.",
+        help="Chroma noise reduction level in dB.\n"
+        "This is only applied to the chroma decoder."
+        "\n\n",
     )
 
     ntsc_decoder_opts.add_argument(
         "--ntsc-phase-comp",
         action=argparse.BooleanOptionalAction,
-        help="Enable or disable adjusting phase per-line using burst phase.\n"
-        "Enabled by default on S-Video and Composite.\n"
-        "Disabled by default on Composite (LD).",
+        help="Enable or disable adjusting phase per line using burst phase.\n"
+        "S-Video and CVBS have this option enabled by default.\n"
+        "CVBS LD has this option disabled by default."
+        "\n\n",
     )
 
     ntsc_decoder_opts.add_argument(
         "--oftest",
         action="store_true",
         default=False,
-        help="Overlay the adaptive filter map (only used for testing).",
+        help="Overlay the adaptive filter map (only used for testing).\n\n",
     )
 
     # decoder (pal)
@@ -179,7 +190,7 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--simple-pal",
         action="store_true",
         default=False,
-        help="Transform: Use 1D UV filter.",
+        help="Transform: Use 1D UV filter.\n\n",
     )
 
     # dropout-correct
@@ -190,7 +201,8 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         action="store_true",
         default=False,
         help="Disable dropout correction. (default: no)\n"
-        "This will run ld-chroma-decoder without dropout correction.",
+        "This will run ld-chroma-decoder without dropout correction."
+        "\n\n",
     )
 
     # process-vbi
@@ -199,15 +211,16 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--process-vbi",
         action="store_true",
         default=False,
-        help="Run ld-process-vbi before export. (default: no)\n"
-        "Note: The generated JSON file will be used for decoding.",
+        help="Run ld-process-vbi before exporting. (default: no)\n"
+        "Note: The generated JSON file will be used for decoding."
+        "\n\n",
     )
 
     process_vbi.add_argument(
         "--process-vbi-keep-going",
         action="store_true",
         default=False,
-        help="Keep going on error. (default: no)",
+        help="Keep going on errors. (default: no)\n\n",
     )
 
     # process-efm (EXPTERIMENTAL)
@@ -216,21 +229,21 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--process-efm",
         action="store_true",
         default=False,
-        help="Run ld-process-efm before export. (default: no)",
+        help="Run ld-process-efm before exporting. (default: no)\n\n",
     )
 
     process_efm.add_argument(
         "--process-efm-keep-going",
         action="store_true",
         default=False,
-        help="Keep going on error. (default: no)",
+        help="Keep going on errors. (default: no)\n\n",
     )
 
     process_efm.add_argument(
         "--process-efm-dts",
         action="store_true",
         default=False,
-        help="Audio is DTS rather than PCM. (default: no)",
+        help="Audio is DTS rather than PCM. (default: no)\n\n",
     )
 
     # export-metadata
@@ -240,13 +253,14 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--export-metadata",
         action="store_true",
         default=False,
-        help="Run ld-export-metadata before export. (default: no)\n"
-        "Note: The generated subtitles and ffmetadata will be used when encoding.",
+        help="Run ld-export-metadata before exporting. (default: no)\n"
+        "Note: The generated subtitles and ffmetadata will be muxed when encoding."
+        "\n\n",
     )
 
     export_metadata.add_argument(
         "--export-metadata-keep-going",
         action="store_true",
         default=False,
-        help="Keep going on error. (default: no)",
+        help="Keep going on errors. (default: no)\n\n",
     )
