@@ -4,11 +4,11 @@
 
 ---
 
-Cross-platform tool for exporting S-Video & CVBS type TBC files to standard video files created by the decode projects:
+Cross-platform tool for exporting S-Video and CVBS-type TBC files to standard video files created by the decode projects:
 
 [VHS-Decode (Tape Decoding)](https://github.com/oyvindln/vhs-decode/wiki/) / [LaserDisc-Decode](https://github.com/happycube/ld-decode) / [CVBS-Decode (Composite Decoding)](CVBS-Composite-Decode) / [HiFi-Decode (FM Audio Decoding)](https://github.com/oyvindln/vhs-decode/wiki/hifi-decode)
 
-To playback a 4FSC TBC file on physical playout systems check:
+To playback a 4FSC TBC file on physical playout systems, check:
 
 [FL2K TBC Player](https://github.com/oyvindln/vhs-decode/wiki/TBC-To-Analogue)
 
@@ -20,11 +20,11 @@ To playback a 4FSC TBC file on physical playout systems check:
 
 You can find the latest self-contained binaries on the [releases](https://github.com/JuniorIsAJitterbug/tbc-video-export/releases) page.
 
-### Linux & macOS:
+### Linux and macOS:
 
     pip install tbc-video-export
 
-# Basic Usage 
+# Basic Usage
 
 ### Windows
 
@@ -32,7 +32,7 @@ You can find the latest self-contained binaries on the [releases](https://github
     tbc-video-export.exe input.tbc
 
 
-### Linux & macOS:
+### Linux and macOS:
 
 
     tbc-video-export input.tbc
@@ -43,7 +43,7 @@ You can find the latest self-contained binaries on the [releases](https://github
 - `--help` - List all available arguments.  
 - `--list-profiles` - List all FFmpeg profiles.  
 - `--profile` - Define FFmpeg profile.
-- `--dump-default-config` - Dump the FFmpeg profiles config to `tbc-video-export.json`, allowing creation and editing of profiles.
+- `--dump-default-config` - Dump the FFmpeg profiles config to `tbc-video-export.json`, allowing the creation and editing of profiles.
 
 ## Readout Terminal
 
@@ -59,10 +59,10 @@ You can find the latest self-contained binaries on the [releases](https://github
 ## Features
 
 - FFmpeg Encoding Profiles
-- Automatic CVBS / S-Video input detection
-- Clear processing readout screen & logging
+- Automatic CVBS/S-Video input detection
+- Clear processing readout screen and logging
 - Automated `ld-tool` interactions
-- Checksums for Audio & Video streams
+- Checksums for Audio and Video streams
 - Advanced audio input options
 - ...
 
@@ -70,7 +70,7 @@ You can find the latest self-contained binaries on the [releases](https://github
 ## Internal function
 
 
-`input.tbc` + `[input_chroma.tbc]` + `input.json` ⟶ `ld-process-*` ⟶ `ld-chroma-decoder` ⟶ `YUV stream` ⟶ `FFmpeg` ⟶ `Output Video [w/audio & metadata]`
+`input.tbc` + `[input_chroma.tbc]` + `input.json` ⟶ `ld-process-*` ⟶ `ld-chroma-decoder` ⟶ `YUV stream` ⟶ `FFmpeg` ⟶ `Output Video [w/audio and metadata]`
 
 
 # Changelog & Development Notes
@@ -79,9 +79,9 @@ You can find the latest self-contained binaries on the [releases](https://github
 
 # Credits 
 
-- [JuniorIsAJitterbug](https://github.com/JuniorIsAJitterbug/) - Development & Implementation
-- [Harry Munday](https://github.com/harrypm/) - Development Direction, Testing, Icon
+- [JuniorIsAJitterbug](https://github.com/JuniorIsAJitterbug/) - Development and Implementation
+- [Harry Munday](https://github.com/harrypm/) - Development Direction, Testing, and Icon
 
 # Disclaimer
 
-This is my first major Python project. There are likely bugs and code that go against best practices. If you have any comments, suggestions or improvements feel free to create an issue, do a pull request or contact **Jitterbug** or **Harry** on the [Domesday86](https://discord.gg/pVVrrxd) discord.
+This is my first major Python project. There are likely bugs and code that go against best practices. If you have any comments, suggestions, or improvements, feel free to create an issue, do a pull request, or contact **Jitterbug** or **Harry** on the [Domesday86](https://discord.gg/pVVrrxd) discord.
