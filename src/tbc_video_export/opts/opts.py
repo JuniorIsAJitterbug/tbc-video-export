@@ -54,7 +54,6 @@ class Opts(argparse.Namespace):
     luma_nr: float | None
     transform_threshold: float | None
     transform_thresholds: str | None
-    show_ffts: bool
 
     # decoder (ntsc)
     ntsc_phase_comp: bool | None

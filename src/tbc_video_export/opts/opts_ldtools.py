@@ -149,13 +149,6 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "'threshold' mode.",
     )
 
-    decoder_opts.add_argument(
-        "--show-ffts",
-        action="store_true",
-        default=False,
-        help="Transform: Overlay the input and output FFTs.",
-    )
-
     # decoder (ntsc)
     ntsc_decoder_opts = parent.add_argument_group("decoder (ntsc)")
     ntsc_decoder_opts.add_argument(

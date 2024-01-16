@@ -201,7 +201,6 @@ class WrapperLDChromaDecoder(Wrapper):
                 self._state.opts.convert_opt("output_padding", "--pad"),
                 self._state.opts.convert_opt("oftest", "-o"),
                 self._state.opts.convert_opt("simple_pal", "--simple-pal"),
-                self._state.opts.convert_opt("show_ffts", "--show-ffts"),
                 self._state.opts.convert_opt(
                     "transform_threshold", "--transform-threshold"
                 ),
