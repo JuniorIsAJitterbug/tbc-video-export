@@ -231,14 +231,14 @@ class ProcessHandler:
                     else ""
                 )
 
-                tbc_tbc_str = (
+                tbc_type_str = (
                     f"({FlagHelper.get_flags_str(wrapper.tbc_type, '+')})"
                     if wrapper.tbc_type is not TBCType.NONE
                     else ""
                 )
 
                 logging.getLogger("console").info(
-                    ansi.dim(f"{wrapper.process_name} {tbc_tbc_str}\n")
+                    ansi.dim(f"{wrapper.process_name} {tbc_type_str}\n")
                     + f"{env_variables}{wrapper.command}\n"
                 )
 
