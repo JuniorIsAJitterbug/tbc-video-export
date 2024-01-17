@@ -51,26 +51,29 @@ class WrapperLDChromaDecoder(Wrapper):
 
     def _get_gain_nr_opts(self) -> FlatList:
         """Return ld-chroma-decoder opts."""
-        match self._config.tbc_type:
-            case TBCType.LUMA:
-                # chroma-gain not used by mono decoder, set anyway
-                return FlatList(
-                    (
-                        self._state.opts.convert_opt("luma_nr", "--luma-nr"),
-                        ("--chroma-gain", "0"),
-                    )
-                )
+        gain_nr_opts = FlatList()
 
-            case _:
-                return FlatList(
-                    (
-                        self._state.opts.convert_opt("chroma_gain", "--chroma-gain"),
-                        self._state.opts.convert_opt("chroma_nr", "--chroma-nr"),
-                        self._state.opts.convert_opt("chroma_phase", "--chroma-phase"),
-                        "--luma-nr",
-                        "0",
-                    )
+        if self._config.tbc_type in (TBCType.LUMA, TBCType.COMBINED):
+            gain_nr_opts.append(self._state.opts.convert_opt("luma_nr", "--luma-nr"))
+
+        if self._config.tbc_type in (TBCType.CHROMA, TBCType.COMBINED):
+            gain_nr_opts.append(
+                (
+                    self._state.opts.convert_opt("chroma_gain", "--chroma-gain"),
+                    self._state.opts.convert_opt("chroma_nr", "--chroma-nr"),
+                    self._state.opts.convert_opt("chroma_phase", "--chroma-phase"),
                 )
+            )
+
+        # set defaults for separated TBC
+        if self._config.tbc_type is TBCType.LUMA:
+            # chroma-gain not used by mono decoder, set anyway
+            gain_nr_opts.append(("--chroma-gain", "0"))
+
+        if self._config.tbc_type is TBCType.CHROMA:
+            gain_nr_opts.append(("--luma-nr", "0"))
+
+        return gain_nr_opts
 
     def _get_decoder_opts(self) -> FlatList:
         """Return decoder to use."""

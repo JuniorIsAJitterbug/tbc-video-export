@@ -66,7 +66,6 @@ class TestWrappersPALComposite(unittest.TestCase):
         self.assertEqual(
             str(decoder.command),
             f"{self.files.get_tool(ProcessName.LD_CHROMA_DECODER)} "
-            f"--luma-nr 0 "
             f"-p y4m "
             f"-f transform3d "
             f"-t 4 "

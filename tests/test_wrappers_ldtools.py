@@ -258,6 +258,134 @@ class TestWrappersLDTools(unittest.TestCase):
             )
         )
 
+    def test_decoder_nr_gain_svideo(self) -> None:  # noqa: D102
+        path = Path.joinpath(Path(__file__).parent, "files", "pal_svideo")
+        tbc_json = Path.joinpath(Path(__file__).parent, "files", "pal_svideo.tbc.json")
+        opts = opts_parser.parse_opts(
+            self.config,
+            [
+                str(path),
+                "pal_svideo",
+                "--input-tbc-json",
+                str(tbc_json),
+                "--threads",
+                "4",
+                "--luma-nr",
+                "5",
+                "--chroma-gain",
+                "6",
+                "--chroma-nr",
+                "7",
+                "--chroma-phase",
+                "8",
+            ],
+        )
+        self.files = FileHelper(opts, self.config)
+        state = ProgramState(opts, self.config, self.files)
+
+        # check luma decoder
+        decoder = WrapperLDChromaDecoder(
+            state,
+            WrapperConfig[Pipe, Pipe](
+                state.current_export_mode,
+                TBCType.LUMA,
+                input_pipes=self.pipe,
+                output_pipes=self.pipe,
+            ),
+        )
+
+        self.assertEqual(
+            str(decoder.command),
+            f"{self.files.get_tool(ProcessName.LD_CHROMA_DECODER)} "
+            f"--luma-nr 5.0 "
+            f"--chroma-gain 0 "
+            f"-p y4m "
+            f"-f mono "
+            f"-t 4 "
+            f"--input-json {tbc_json} "
+            f"PIPE_IN "
+            f"PIPE_OUT",
+        )
+
+        # check chroma decoder
+        decoder = WrapperLDChromaDecoder(
+            state,
+            WrapperConfig[Pipe, Pipe](
+                state.current_export_mode,
+                TBCType.CHROMA,
+                input_pipes=self.pipe,
+                output_pipes=self.pipe,
+            ),
+        )
+
+        self.assertEqual(
+            str(decoder.command),
+            f"{self.files.get_tool(ProcessName.LD_CHROMA_DECODER)} "
+            f"--chroma-gain 6.0 "
+            f"--chroma-nr 7.0 "
+            f"--chroma-phase 8.0 "
+            f"--luma-nr 0 "
+            f"-p y4m "
+            f"-f transform2d "
+            f"-t 4 "
+            f"--input-json {tbc_json} "
+            f"PIPE_IN "
+            f"PIPE_OUT",
+        )
+
+    def test_decoder_nr_gain_cvbs(self) -> None:  # noqa: D102
+        path = Path.joinpath(Path(__file__).parent, "files", "pal_composite")
+        tbc_json = Path.joinpath(
+            Path(__file__).parent, "files", "pal_composite.tbc.json"
+        )
+        opts = opts_parser.parse_opts(
+            self.config,
+            [
+                str(path),
+                "pal_svideo",
+                "--input-tbc-json",
+                str(tbc_json),
+                "--threads",
+                "4",
+                "--luma-nr",
+                "5",
+                "--chroma-gain",
+                "6",
+                "--chroma-nr",
+                "7",
+                "--chroma-phase",
+                "8",
+            ],
+        )
+        self.files = FileHelper(opts, self.config)
+        state = ProgramState(opts, self.config, self.files)
+
+        # check combined decoder
+        decoder = WrapperLDChromaDecoder(
+            state,
+            WrapperConfig[Pipe, Pipe](
+                state.current_export_mode,
+                TBCType.COMBINED,
+                input_pipes=self.pipe,
+                output_pipes=self.pipe,
+            ),
+        )
+
+        self.assertEqual(
+            str(decoder.command),
+            f"{self.files.get_tool(ProcessName.LD_CHROMA_DECODER)} "
+            f"--luma-nr 5.0 "
+            f"--chroma-gain 6.0 "
+            f"--chroma-nr 7.0 "
+            f"--chroma-phase 8.0 "
+            f"-p y4m "
+            f"-f transform3d "
+            f"-t 4 "
+            f"--input-json {tbc_json} "
+            f"PIPE_IN "
+            f"PIPE_OUT",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
