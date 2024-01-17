@@ -121,7 +121,7 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
         default=[],
         action="append",
         metavar="filename",
-        help="Add metadata to the output the file using ffmetadata files.\n"
+        help="Add metadata to the output of the file using ffmetadata files.\n"
         "You can use this option multiple times.\n"
         "See https://ffmpeg.org/ffmpeg-formats.html#Metadata-1 for details.\n"
         "Note: When using --export-metadata the generated ffmetadata file is also "
@@ -156,7 +156,7 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
         metavar="R[,G,B]",
         default=None,
         help="Force black levels using the colorlevels filter.\n"
-        "Use a comma-seperated list of numbers to provide values for colorlevels.\n"
+        "Use a comma-separated list of numbers to provide values for colorlevels.\n"
         "If a single number is provided, it is used for all 3."
         "\n\n",
     )

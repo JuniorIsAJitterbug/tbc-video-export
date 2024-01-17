@@ -186,7 +186,7 @@ def parse_opts(config: Config, args: list[str] | None = None) -> Opts:
         action="store_true",
         default=False,
         help="Only output a luma video. (default: no)\n"
-        "For Y/C-seperated TBCs, this is direct.\n"
+        "For Y/C-separated TBCs, this is direct.\n"
         "For combined TBCs, filtering is applied to strip the color carrier signal out."
         "\n\n",
     )

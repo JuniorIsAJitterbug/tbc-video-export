@@ -112,7 +112,7 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         f"  {ChromaDecoder.TRANSFORM2D} (default for PAL/PAL-M S-Video)\n"
         f"  {ChromaDecoder.TRANSFORM3D} (default for PAL/PAL-M CVBS)\n\n"
         f"  {ChromaDecoder.NTSC1D}\n"
-        f"  {ChromaDecoder.NTSC2D} (default for NTSC S-Video & CVBS)\n"
+        f"  {ChromaDecoder.NTSC2D} (default for NTSC S-Video and CVBS)\n"
         f"  {ChromaDecoder.NTSC3D} (default for NTSC CVBS LD)\n"
         f"  {ChromaDecoder.NTSC3DNOADAPT}"
         "\n\n",
@@ -122,14 +122,18 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--chroma-gain",
         type=float,
         metavar="float",
-        help="Gain factor applied to chroma components.\n\n",
+        help="Gain factor applied to chroma components.\n"
+        "This does not apply to the luma decoder for Y/C-separated TBCs.\n"
+        "\n\n",
     )
 
     decoder_opts.add_argument(
         "--chroma-phase",
         type=float,
         metavar="float",
-        help="Phase rotation applied to chroma components in degrees.\n\n",
+        help="Phase rotation applied to chroma components in degrees.\n"
+        "This does not apply to the luma decoder for Y/C-separated TBCs.\n"
+        "\n\n",
     )
 
     decoder_opts.add_argument(
@@ -137,7 +141,7 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         type=float,
         metavar="float",
         help="Luma noise reduction level in dB.\n"
-        "This is only applied to the luma decoder for Y/C-seperated TBCs."
+        "This does not apply to the chroma decoder for Y/C-separated TBCs.\n"
         "\n\n",
     )
 
@@ -158,13 +162,13 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
     )
 
     # decoder (ntsc)
-    ntsc_decoder_opts = parent.add_argument_group("decoder (ntsc)")
+    ntsc_decoder_opts = parent.add_argument_group("decoder (NTSC)")
     ntsc_decoder_opts.add_argument(
         "--chroma-nr",
         type=float,
         metavar="float",
         help="Chroma noise reduction level in dB.\n"
-        "This is only applied to the chroma decoder."
+        "This does not apply to the luma decoder for Y/C-separated TBCs.\n"
         "\n\n",
     )
 
@@ -185,7 +189,7 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
     )
 
     # decoder (pal)
-    pal_decoder_opts = parent.add_argument_group("decoder (pal)")
+    pal_decoder_opts = parent.add_argument_group("decoder (PAL)")
     pal_decoder_opts.add_argument(
         "--simple-pal",
         action="store_true",
