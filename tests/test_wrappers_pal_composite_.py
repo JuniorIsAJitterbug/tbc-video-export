@@ -32,14 +32,14 @@ class TestWrappersPALComposite(unittest.TestCase):
         self.pipe = PipeFactory.create_dummy_pipe()
 
     def test_videosystem_pal(self) -> None:  # noqa: D102
-        opts = self.parse_opts(
+        _, opts = self.parse_opts(
             [str(self.path), "pal_composite", "--input-tbc-json", str(self.tbc_json)]
         )
         self.files = FileHelper(opts, self.config)
         self.assertTrue(self.files.tbc_json.video_system, VideoSystem.PAL)
 
     def test_decoder_default_decoder_opts_pal(self) -> None:  # noqa: D102
-        opts = opts_parser.parse_opts(
+        _, opts = opts_parser.parse_opts(
             self.config,
             [
                 str(self.path),
@@ -125,7 +125,7 @@ class TestWrappersPALComposite(unittest.TestCase):
         MaxSlicesCount                           : 24
         ErrorDetectionType                       : Per slice
         """  # noqa: E501
-        opts = opts_parser.parse_opts(
+        _, opts = opts_parser.parse_opts(
             self.config,
             [
                 str(self.path),
@@ -242,7 +242,7 @@ class TestWrappersPALComposite(unittest.TestCase):
         MaxSlicesCount                           : 24
         ErrorDetectionType                       : Per slice
         """  # noqa: E501
-        opts = self.parse_opts(
+        _, opts = self.parse_opts(
             [
                 str(self.path),
                 "pal_composite",
@@ -355,7 +355,7 @@ class TestWrappersPALComposite(unittest.TestCase):
         MaxSlicesCount                           : 24
         ErrorDetectionType                       : Per slice
         """  # noqa: E501
-        opts = self.parse_opts(
+        _, opts = self.parse_opts(
             [
                 str(self.path),
                 "pal_composite",

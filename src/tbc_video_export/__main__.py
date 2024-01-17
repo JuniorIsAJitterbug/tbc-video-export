@@ -28,7 +28,7 @@ async def _run() -> None:
 
     try:
         config = Config()
-        opts = opts_parser.parse_opts(config)
+        parser, opts = opts_parser.parse_opts(config)
         log.set_verbosity(opts)
 
         files = FileHelper(opts, config)
@@ -37,6 +37,8 @@ async def _run() -> None:
             config,
             files,
         )
+
+        opts_parser.validate_opts(state, parser, opts)
 
         handler = ProcessHandler(state)
 

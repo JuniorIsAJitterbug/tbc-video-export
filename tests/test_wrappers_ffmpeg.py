@@ -27,7 +27,7 @@ class TestWrappersFFmpeg(unittest.TestCase):
 
     def test_ffmpeg_audio_track_opts(self) -> None:  # noqa: D102
         audio_track = "tests/files/audio.flac"
-        opts = self.parse_opts(
+        _, opts = self.parse_opts(
             [str(self.path), "pal_svideo", "--audio-track", "tests/files/audio.flac"]
         )
         self.files = FileHelper(opts, self.config)
@@ -53,7 +53,7 @@ class TestWrappersFFmpeg(unittest.TestCase):
 
     def test_ffmpeg_audio_track_advanced_opts(self) -> None:  # noqa: D102
         audio_track = "tests/files/audio.flac"
-        opts = self.parse_opts(
+        _, opts = self.parse_opts(
             [
                 str(self.path),
                 "pal_svideo",
@@ -107,7 +107,7 @@ class TestWrappersFFmpeg(unittest.TestCase):
         )
 
     def test_ffmpeg_metadata_opts(self) -> None:  # noqa: D102
-        opts = self.parse_opts(
+        _, opts = self.parse_opts(
             [
                 str(self.path),
                 "pal_svideo",

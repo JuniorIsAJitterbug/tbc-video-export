@@ -16,9 +16,12 @@ if TYPE_CHECKING:
     from typing import Any
 
     from tbc_video_export.config import Config
+    from tbc_video_export.program_state import ProgramState
 
 
-def parse_opts(config: Config, args: list[str] | None = None) -> Opts:
+def parse_opts(
+    config: Config, args: list[str] | None = None
+) -> tuple[argparse.ArgumentParser, Opts]:
     """Parse program opts."""
     parser = argparse.ArgumentParser(
         prog=consts.APPLICATION_NAME,
@@ -205,18 +208,17 @@ def parse_opts(config: Config, args: list[str] | None = None) -> Opts:
     opts_ffmpeg.add_ffmpeg_opts(config, parser)
 
     opts = parser.parse_intermixed_args(args, namespace=Opts())
-    _validate_opts(config, parser, opts)
-
-    return opts
+    return (parser, opts)
 
 
-def _validate_opts(config: Config, parser: argparse.ArgumentParser, opts: Opts) -> None:
+def validate_opts(
+    state: ProgramState, parser: argparse.ArgumentParser, opts: Opts
+) -> None:
     """Validate any nonsensical opt combinations."""
     _validate_line_opts(parser, opts)
-    _validate_video_system(parser, opts)
+    _validate_video_system(state, parser, opts)
     _validate_ansi_support(opts)
-    _validate_luma_only_opts(config, parser, opts)
-    _validate_verbosity_opts(opts)
+    _validate_luma_only_opts(state, parser, opts)
 
 
 def _validate_line_opts(parser: argparse.ArgumentParser, opts: Opts) -> None:
@@ -241,9 +243,11 @@ def _validate_line_opts(parser: argparse.ArgumentParser, opts: Opts) -> None:
             )
 
 
-def _validate_video_system(parser: argparse.ArgumentParser, opts: Opts) -> None:
+def _validate_video_system(
+    state: ProgramState, parser: argparse.ArgumentParser, opts: Opts
+) -> None:
     # check video system incompatible opts
-    match opts.video_system:
+    match state.video_system:
         case VideoSystem.PAL | VideoSystem.PAL_M:
             if opts.oftest:
                 parser.error(
@@ -267,9 +271,6 @@ def _validate_video_system(parser: argparse.ArgumentParser, opts: Opts) -> None:
                     "arguments --simple-pal: not allowed when --video-system is ntsc"
                 )
 
-        case _:
-            pass
-
 
 def _validate_ansi_support(opts: Opts) -> None:
     # check if ansi is supported on Windows and disable progress if not
@@ -291,34 +292,26 @@ def _validate_ansi_support(opts: Opts) -> None:
 
 
 def _validate_luma_only_opts(
-    config: Config, parser: argparse.ArgumentParser, opts: Opts
+    state: ProgramState, parser: argparse.ArgumentParser, opts: Opts
 ) -> None:
     # check luma only redundant opts
     if opts.luma_only or opts.luma_4fsc:
         if opts.chroma_decoder is not None:
             parser.error(
-                "arguments --chroma-decoder: not allowed when --luma-only or "
+                "arguments --chroma-decoder: not allowed with --luma-only or "
                 "--luma-4fsc (redundant)"
             )
 
-        if opts.profile != config.get_default_profile(ProfileType.DEFAULT).name:
+        if opts.profile != state.config.get_default_profile(ProfileType.DEFAULT).name:
             parser.error(
-                "arguments --profile: not allowed when --luma-only or "
-                "--luma-4fsc (redundant)"
+                "arguments --profile: not allowed with --luma-only or "
+                "--luma-4fsc (redundant), try --profile-luma"
             )
 
-    elif opts.profile_luma != config.get_default_profile(ProfileType.LUMA).name:
+    elif opts.profile_luma != state.config.get_default_profile(ProfileType.LUMA).name:
         parser.error(
-            "arguments --profile-luma: not allowed when not --luma-only or "
-            "--luma-4fsc (redundant)"
+            "arguments --profile-luma: only allowed with --luma-only or --luma-4fsc"
         )
-
-
-def _validate_verbosity_opts(opts: Opts) -> None:
-    # verbosity
-    # disable debug logging to console if progress is displayed or quiet enabled
-    if opts.debug and opts.no_progress:
-        logging.getLogger("console").setLevel(logging.DEBUG)
 
 
 class _ActionDumpConfig(argparse.Action):

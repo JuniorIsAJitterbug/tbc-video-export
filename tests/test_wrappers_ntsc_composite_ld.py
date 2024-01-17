@@ -34,7 +34,7 @@ class TestWrappersNTSCCompositeLD(unittest.TestCase):
         self.maxDiff = 99999
 
     def test_videosystem(self) -> None:  # noqa: D102
-        opts = self.parse_opts(
+        _, opts = self.parse_opts(
             [
                 str(self.path),
                 "ntsc_composite_ld",
@@ -46,7 +46,7 @@ class TestWrappersNTSCCompositeLD(unittest.TestCase):
         self.assertTrue(self.files.tbc_json.video_system, VideoSystem.NTSC)
 
     def test_ld_detect(self) -> None:  # noqa: D102
-        opts = self.parse_opts(
+        _, opts = self.parse_opts(
             [
                 str(self.path),
                 "ntsc_composite_ld",
@@ -58,7 +58,7 @@ class TestWrappersNTSCCompositeLD(unittest.TestCase):
         self.assertTrue(self.files.is_combined_ld)
 
     def test_default_decoder_ntsc_ld(self) -> None:  # noqa: D102
-        opts = opts_parser.parse_opts(
+        _, opts = opts_parser.parse_opts(
             self.config,
             [
                 str(self.path),
@@ -144,7 +144,7 @@ class TestWrappersNTSCCompositeLD(unittest.TestCase):
         MaxSlicesCount                           : 24
         ErrorDetectionType                       : Per slice
         """  # noqa: E501
-        opts = opts_parser.parse_opts(
+        _, opts = opts_parser.parse_opts(
             self.config,
             [
                 str(self.path),
@@ -261,7 +261,7 @@ class TestWrappersNTSCCompositeLD(unittest.TestCase):
         MaxSlicesCount                           : 24
         ErrorDetectionType                       : Per slice
         """  # noqa: E501
-        opts = self.parse_opts(
+        _, opts = self.parse_opts(
             [
                 str(self.path),
                 "ntsc_composite_ld",
@@ -374,7 +374,7 @@ class TestWrappersNTSCCompositeLD(unittest.TestCase):
         MaxSlicesCount                           : 24
         ErrorDetectionType                       : Per slice
         """  # noqa: E501
-        opts = self.parse_opts(
+        _, opts = self.parse_opts(
             [
                 str(self.path),
                 "ntsc_composite_ld",

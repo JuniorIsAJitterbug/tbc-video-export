@@ -35,7 +35,7 @@ class TestWrappersLDTools(unittest.TestCase):
         self.pipe = PipeFactory.create_dummy_pipe()
 
     def test_process_vbi_default_opts(self) -> None:  # noqa: D102
-        opts = self.parse_opts(
+        _, opts = self.parse_opts(
             [str(self.path), "pal_svideo", "--threads", "4", "--process-vbi"]
         )
         self.files = FileHelper(opts, self.config)
@@ -62,7 +62,7 @@ class TestWrappersLDTools(unittest.TestCase):
             Path(__file__).parent, "files", "ntsc_svideo.tbc.json"
         )
 
-        opts = self.parse_opts(
+        _, opts = self.parse_opts(
             [
                 str(self.path),
                 "pal_svideo",
@@ -93,7 +93,7 @@ class TestWrappersLDTools(unittest.TestCase):
         )
 
     def test_dropout_correct_default_opts(self) -> None:  # noqa: D102
-        opts = opts_parser.parse_opts(
+        _, opts = opts_parser.parse_opts(
             self.config, [str(self.path), "pal_svideo", "--threads", "4"]
         )
         self.files = FileHelper(opts, self.config)
@@ -118,7 +118,7 @@ class TestWrappersLDTools(unittest.TestCase):
         )
 
     def test_decoder_invalid_videosystem(self) -> None:  # noqa: D102
-        opts = self.parse_opts(
+        _, opts = self.parse_opts(
             [str(self.path), "pal_svideo", "--chroma-decoder", "ntsc2d"]
         )
         self.files = FileHelper(opts, self.config)
@@ -137,7 +137,7 @@ class TestWrappersLDTools(unittest.TestCase):
 
     def test_decoder_letterbox_pal(self) -> None:  # noqa: D102
         path = Path.joinpath(Path(__file__).parent, "files", "pal_svideo")
-        opts = self.parse_opts([str(path), "pal_svideo", "--letterbox"])
+        _, opts = self.parse_opts([str(path), "pal_svideo", "--letterbox"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -159,7 +159,7 @@ class TestWrappersLDTools(unittest.TestCase):
 
     def test_decoder_letterbox_ntsc(self) -> None:  # noqa: D102
         path = Path.joinpath(Path(__file__).parent, "files", "ntsc_svideo")
-        opts = self.parse_opts([str(path), "ntsc_svideo", "--letterbox"])
+        _, opts = self.parse_opts([str(path), "ntsc_svideo", "--letterbox"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -181,7 +181,7 @@ class TestWrappersLDTools(unittest.TestCase):
 
     def test_decoder_letterbox_palm(self) -> None:  # noqa: D102
         path = Path.joinpath(Path(__file__).parent, "files", "palm_svideo")
-        opts = self.parse_opts([str(path), "palm_svideo", "--letterbox"])
+        _, opts = self.parse_opts([str(path), "palm_svideo", "--letterbox"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -198,7 +198,7 @@ class TestWrappersLDTools(unittest.TestCase):
 
     def test_decoder_vbi_pal(self) -> None:  # noqa: D102
         path = Path.joinpath(Path(__file__).parent, "files", "pal_svideo")
-        opts = self.parse_opts([str(path), "pal_svideo", "--vbi"])
+        _, opts = self.parse_opts([str(path), "pal_svideo", "--vbi"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -217,7 +217,7 @@ class TestWrappersLDTools(unittest.TestCase):
 
     def test_decoder_vbi_ntsc(self) -> None:  # noqa: D102
         path = Path.joinpath(Path(__file__).parent, "files", "ntsc_svideo")
-        opts = self.parse_opts([str(path), "ntsc_svideo", "--vbi"])
+        _, opts = self.parse_opts([str(path), "ntsc_svideo", "--vbi"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -239,7 +239,7 @@ class TestWrappersLDTools(unittest.TestCase):
 
     def test_decoder_vbi_palm(self) -> None:  # noqa: D102
         path = Path.joinpath(Path(__file__).parent, "files", "palm_svideo")
-        opts = self.parse_opts([str(path), "palm_svideo", "--vbi"])
+        _, opts = self.parse_opts([str(path), "palm_svideo", "--vbi"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -261,7 +261,7 @@ class TestWrappersLDTools(unittest.TestCase):
     def test_decoder_nr_gain_svideo(self) -> None:  # noqa: D102
         path = Path.joinpath(Path(__file__).parent, "files", "pal_svideo")
         tbc_json = Path.joinpath(Path(__file__).parent, "files", "pal_svideo.tbc.json")
-        opts = opts_parser.parse_opts(
+        _, opts = opts_parser.parse_opts(
             self.config,
             [
                 str(path),
@@ -338,7 +338,7 @@ class TestWrappersLDTools(unittest.TestCase):
         tbc_json = Path.joinpath(
             Path(__file__).parent, "files", "pal_composite.tbc.json"
         )
-        opts = opts_parser.parse_opts(
+        _, opts = opts_parser.parse_opts(
             self.config,
             [
                 str(path),

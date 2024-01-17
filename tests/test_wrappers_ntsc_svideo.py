@@ -32,12 +32,12 @@ class TestWrappersNTSCSvideo(unittest.TestCase):
         self.pipe = PipeFactory.create_dummy_pipe()
 
     def test_videosystem(self) -> None:  # noqa: D102
-        opts = self.parse_opts([str(self.path), "ntsc_svideo"])
+        _, opts = self.parse_opts([str(self.path), "ntsc_svideo"])
         self.files = FileHelper(opts, self.config)
         self.assertTrue(self.files.tbc_json.video_system, VideoSystem.PAL)
 
     def test_decoder_default_luma_decoder_ntsc_svideo(self) -> None:  # noqa: D102
-        opts = self.parse_opts([str(self.path), "ntsc_svideo", "--threads", "4"])
+        _, opts = self.parse_opts([str(self.path), "ntsc_svideo", "--threads", "4"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -65,7 +65,7 @@ class TestWrappersNTSCSvideo(unittest.TestCase):
         )
 
     def test_decoder_default_chroma_decoder_ntsc_svideo(self) -> None:  # noqa: D102
-        opts = self.parse_opts([str(self.path), "ntsc_svideo", "--threads", "4"])
+        _, opts = self.parse_opts([str(self.path), "ntsc_svideo", "--threads", "4"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -143,7 +143,7 @@ class TestWrappersNTSCSvideo(unittest.TestCase):
         MaxSlicesCount                           : 24
         ErrorDetectionType                       : Per slice
         """  # noqa: E501
-        opts = self.parse_opts([str(self.path), "ntsc_svideo", "--threads", "4"])
+        _, opts = self.parse_opts([str(self.path), "ntsc_svideo", "--threads", "4"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -250,7 +250,7 @@ class TestWrappersNTSCSvideo(unittest.TestCase):
         MaxSlicesCount                           : 24
         ErrorDetectionType                       : Per slice
         """  # noqa: E501
-        opts = self.parse_opts(
+        _, opts = self.parse_opts(
             [
                 str(self.path),
                 "ntsc_svideo",
@@ -363,7 +363,7 @@ class TestWrappersNTSCSvideo(unittest.TestCase):
         MaxSlicesCount                           : 24
         ErrorDetectionType                       : Per slice
         """  # noqa: E501
-        opts = self.parse_opts(
+        _, opts = self.parse_opts(
             [
                 str(self.path),
                 "ntsc_svideo",

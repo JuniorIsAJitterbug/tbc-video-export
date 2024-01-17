@@ -32,12 +32,12 @@ class TestWrappersPALSvideo(unittest.TestCase):
         self.pipe = PipeFactory.create_dummy_pipe()
 
     def test_videosystem(self) -> None:  # noqa: D102
-        opts = self.parse_opts([str(self.path), "pal_svideo"])
+        _, opts = self.parse_opts([str(self.path), "pal_svideo"])
         self.files = FileHelper(opts, self.config)
         self.assertTrue(self.files.tbc_json.video_system, VideoSystem.PAL)
 
     def test_decoder_default_luma_decoder_pal_svideo(self) -> None:  # noqa: D102
-        opts = self.parse_opts([str(self.path), "pal_svideo", "--threads", "4"])
+        _, opts = self.parse_opts([str(self.path), "pal_svideo", "--threads", "4"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -64,7 +64,7 @@ class TestWrappersPALSvideo(unittest.TestCase):
         )
 
     def test_decoder_default_chroma_decoder_pal_svideo(self) -> None:  # noqa: D102
-        opts = self.parse_opts([str(self.path), "pal_svideo", "--threads", "4"])
+        _, opts = self.parse_opts([str(self.path), "pal_svideo", "--threads", "4"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -141,7 +141,7 @@ class TestWrappersPALSvideo(unittest.TestCase):
         MaxSlicesCount                           : 24
         ErrorDetectionType                       : Per slice
         """  # noqa: E501
-        opts = self.parse_opts([str(self.path), "pal_svideo", "--threads", "4"])
+        _, opts = self.parse_opts([str(self.path), "pal_svideo", "--threads", "4"])
         self.files = FileHelper(opts, self.config)
         state = ProgramState(opts, self.config, self.files)
 
@@ -248,7 +248,7 @@ class TestWrappersPALSvideo(unittest.TestCase):
         MaxSlicesCount                           : 24
         ErrorDetectionType                       : Per slice
         """  # noqa: E501
-        opts = self.parse_opts(
+        _, opts = self.parse_opts(
             [
                 str(self.path),
                 "pal_svideo",
@@ -361,7 +361,7 @@ class TestWrappersPALSvideo(unittest.TestCase):
         MaxSlicesCount                           : 24
         ErrorDetectionType                       : Per slice
         """  # noqa: E501
-        opts = self.parse_opts(
+        _, opts = self.parse_opts(
             [
                 str(self.path),
                 "pal_svideo",

@@ -26,7 +26,7 @@ class TestVerbosityOpts(unittest.TestCase):
         self.parse_opts = partial(opts_parser.parse_opts, self.config)
 
     def test_quiet_mode(self) -> None:  # noqa: D102
-        opts = self.parse_opts([str(self.path),"pal_svideo", "-q"])
+        _, opts = self.parse_opts([str(self.path), "pal_svideo", "-q"])
         self.files = FileHelper(opts, self.config)
         log.set_verbosity(opts)
 
@@ -36,8 +36,8 @@ class TestVerbosityOpts(unittest.TestCase):
         self.assertEqual(logging.getLogger("console").level, logging.ERROR)
 
     def test_debug_mode(self) -> None:  # noqa: D102
-        opts = self.parse_opts(
-            [str(self.path),"pal_svideo", "-d", "--no-progress", "--no-debug-log"]
+        _, opts = self.parse_opts(
+            [str(self.path), "pal_svideo", "-d", "--no-progress", "--no-debug-log"]
         )
         self.files = FileHelper(opts, self.config)
         log.set_verbosity(opts)
@@ -48,7 +48,9 @@ class TestVerbosityOpts(unittest.TestCase):
         # self.assertGreater(len(logging.getLogger("console").handlers), 1)
 
     def test_show_process_output(self) -> None:  # noqa: D102
-        opts = self.parse_opts([str(self.path),"pal_svideo", "--show-process-output"])
+        _, opts = self.parse_opts(
+            [str(self.path), "pal_svideo", "--show-process-output"]
+        )
         self.files = FileHelper(opts, self.config)
         log.set_verbosity(opts)
 
