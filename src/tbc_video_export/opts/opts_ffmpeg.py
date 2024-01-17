@@ -93,7 +93,7 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
         ),
         help="Audio track to mux (advanced).\n"
         "You can use this option multiple times.\n"
-        "Only file_name is required. None must be used when skipping an argument.\n"
+        "Only file_name is required. None must be used when skipping an argument.\n\n"
         "Examples:\n"
         '\'["/path/to/file.flac", "HiFi", "eng", 192000]\'\n'
         '\'["/path/to/file.flac", "Linear", "eng", None, None, None, None, 0.15]\'\n'
@@ -110,7 +110,7 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
         metavar=("key", "value"),
         help="Add metadata to output the file.\n"
         "You can use this option multiple times.\n"
-        "Example:\n"
+        "Example:\n\n"
         "--metadata Title foo --metadata Year 2024"
         "\n\n",
     )
@@ -122,8 +122,8 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
         action="append",
         metavar="filename",
         help="Add metadata to the output of the file using ffmetadata files.\n"
-        "You can use this option multiple times.\n"
-        "See https://ffmpeg.org/ffmpeg-formats.html#Metadata-1 for details.\n"
+        "You can use this option multiple times.\n\n"
+        "See https://ffmpeg.org/ffmpeg-formats.html#Metadata-1 for details.\n\n"
         "Note: When using --export-metadata the generated ffmetadata file is also "
         "used.\n"
         "Files defined here are used before any generated metadata and take "
@@ -138,7 +138,7 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
         default=FieldOrder.TFF,
         metavar="order",
         help="Set a field order. (default: tff)\n"
-        "Available formats:\n  "
+        "Available formats:\n\n  "
         + "\n  ".join(f"{e.name.lower()!s:<5s} {e.value}" for e in FieldOrder)
         + "\n\n",
     )

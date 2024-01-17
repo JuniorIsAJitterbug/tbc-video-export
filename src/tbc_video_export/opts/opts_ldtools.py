@@ -215,7 +215,7 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--process-vbi",
         action="store_true",
         default=False,
-        help="Run ld-process-vbi before exporting. (default: no)\n"
+        help="Run ld-process-vbi before exporting. (default: no)\n\n"
         "Note: The generated JSON file will be used for decoding."
         "\n\n",
     )
@@ -257,7 +257,7 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--export-metadata",
         action="store_true",
         default=False,
-        help="Run ld-export-metadata before exporting. (default: no)\n"
+        help="Run ld-export-metadata before exporting. (default: no)\n\n"
         "Note: The generated subtitles and ffmetadata will be muxed when encoding."
         "\n\n",
     )

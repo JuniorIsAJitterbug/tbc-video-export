@@ -90,7 +90,7 @@ def parse_opts(config: Config, args: list[str] | None = None) -> Opts:
         choices=list(VideoSystem),
         metavar="format",
         help="Force a video system format. (default: from input.tbc.json)\n"
-        "Available formats:\n  " + "\n  ".join(str(e) for e in VideoSystem) + "\n\n",
+        "Available formats:\n\n  " + "\n  ".join(str(e) for e in VideoSystem) + "\n\n",
     )
 
     general_opts.add_argument(
