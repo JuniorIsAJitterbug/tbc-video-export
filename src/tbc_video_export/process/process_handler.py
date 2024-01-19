@@ -186,7 +186,7 @@ class ProcessHandler:
     async def _proc_killer(self, procs: list[Process]) -> None:
         """Proc killing task.
 
-        This watches proc states and kills if if the only remaining are flagged with
+        This watches proc states and kills if the only remaining procs are flagged with
         stop_on_last_alive.
 
         Some procs (ld-dropout-correct) do not support certain arguments (-s/-l) will
