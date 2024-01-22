@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import unittest
 from functools import partial
+from io import StringIO
 from pathlib import Path
+from unittest.mock import patch
 
 from tbc_video_export.common.enums import TBCType
 from tbc_video_export.common.file_helper import FileHelper
@@ -136,6 +138,59 @@ class TestWrappersFFmpeg(unittest.TestCase):
 
         self.assertTrue({"-metadata", "foo=bar"}.issubset(cmd))
         self.assertTrue({"-metadata", "bar=foo"}.issubset(cmd))
+
+    def test_ffmpeg_default_field_order_opt(self) -> None:  # noqa: D102
+        _, opts = self.parse_opts([str(self.path), "pal_svideo"])
+        self.files = FileHelper(opts, self.config)
+        state = ProgramState(opts, self.config, self.files)
+
+        ffmpeg_wrapper = WrapperFFmpeg(
+            state,
+            WrapperConfig[tuple[Pipe], None](
+                state.current_export_mode,
+                TBCType.CHROMA,
+                input_pipes=(self.pipe, self.pipe),
+                output_pipes=None,
+            ),
+        )
+
+        cmd = ffmpeg_wrapper.command.data
+
+        self.assertTrue(any("setfield=tff" in cmds for cmds in cmd))
+
+    def test_ffmpeg_field_order_opt(self) -> None:  # noqa: D102
+        _, opts = self.parse_opts(
+            [str(self.path), "pal_svideo", "--field-order", "bff"]
+        )
+        self.files = FileHelper(opts, self.config)
+        state = ProgramState(opts, self.config, self.files)
+
+        ffmpeg_wrapper = WrapperFFmpeg(
+            state,
+            WrapperConfig[tuple[Pipe], None](
+                state.current_export_mode,
+                TBCType.CHROMA,
+                input_pipes=(self.pipe, self.pipe),
+                output_pipes=None,
+            ),
+        )
+
+        cmd = ffmpeg_wrapper.command.data
+
+        self.assertTrue(any("setfield=bff" in cmds for cmds in cmd))
+
+    @patch("sys.stderr", new_callable=StringIO)
+    def test_ffmpeg_field_order_invalid_opt(self, mock_stderr: StringIO) -> None:  # noqa: D102
+        # invalid option
+        with self.assertRaises(SystemExit):
+            _, __ = self.parse_opts(
+                [str(self.path), "pal_svideo", "--field-order", "invalid"]
+            )
+
+        self.assertRegex(
+            mock_stderr.getvalue(),
+            r"error: argument --field-order: invalid FieldOrder value: 'invalid'",
+        )
 
 
 if __name__ == "__main__":

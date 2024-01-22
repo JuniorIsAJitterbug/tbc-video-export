@@ -133,7 +133,7 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
 
     ffmpeg_opts.add_argument(
         "--field-order",
-        type=FieldOrder,
+        type=_TypeFieldOrder(parent),
         choices=list(FieldOrder),
         default=FieldOrder.TFF,
         metavar="order",
@@ -248,6 +248,21 @@ class _ActionListProfiles(argparse.Action):
 
             logging.getLogger("console").info("")
         parser.exit()
+
+
+class _TypeFieldOrder:
+    """Return FieldOrder value if it exists."""
+
+    def __init__(self, parser: argparse.ArgumentParser) -> None:
+        self._parser = parser
+
+    def __call__(self, value: str) -> FieldOrder:
+        try:
+            return FieldOrder[value.upper()]
+        except KeyError:
+            self._parser.error(
+                f"argument --field-order: invalid FieldOrder value: '{value}'"
+            )
 
 
 def _check_metadata_file_exists(value: str) -> Path:
