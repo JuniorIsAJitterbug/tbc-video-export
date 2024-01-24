@@ -1,18 +1,22 @@
-name: "Publish"
+name: "Publish Test"
 
 on:
   workflow_run:
-    workflows: [Release]
+    workflows: [Build]
+    branches:
+      - master
 
 jobs:
-  publish-to-pypi:
+  publish-to-testpypi:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
-    name: Publish to PyPI
+    name: Publish to TestPyPI
     runs-on: ubuntu-latest
+
     environment:
-      name: pypi
-      url: https://pypi.org/p/tbc-video-export
+      name: testpypi
+      url: https://test.pypi.org/p/tbc-video-export
+
     permissions:
       id-token: write # IMPORTANT: mandatory for trusted publishing
 
@@ -23,5 +27,7 @@ jobs:
           name: python-package-distributions
           path: dist/
 
-      - name: Publish distribution package to PyPI
+      - name: Publish distribution TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
