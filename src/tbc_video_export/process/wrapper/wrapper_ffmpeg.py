@@ -286,6 +286,10 @@ class WrapperFFmpeg(Wrapper):
                     f"{other_filters_opts}"
                 )
 
+            case _ as mode if mode is ExportMode.LUMA and self._state.opts.two_step:
+                # luma step in two-step should not use any filters
+                complex_filter = "[0:v]null[v_output]"
+
             case _:
                 complex_filter = (
                     f"[0:v]null{common_filter}[v_output]{other_filters_opts}"
