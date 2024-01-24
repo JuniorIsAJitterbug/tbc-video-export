@@ -59,7 +59,7 @@ class Config:
             return [ProfileVideo(p) for p in self._data["video_profiles"]]
         except KeyError as e:
             raise exceptions.InvalidProfileError(
-                "Could not read video profiles."
+                "Could not read video profiles.", self.get_config_file()
             ) from e
 
     @cached_property
@@ -69,7 +69,7 @@ class Config:
             return [ProfileAudio(p) for p in self._data["audio_profiles"]]
         except KeyError as e:
             raise exceptions.InvalidProfileError(
-                "Could not load audio profiles."
+                "Could not load audio profiles.", self.get_config_file()
             ) from e
 
     @cached_property
@@ -79,7 +79,7 @@ class Config:
             return [ProfileFilter(p) for p in self._data["filter_profiles"]]
         except KeyError as e:
             raise exceptions.InvalidProfileError(
-                "Could not load filter profiles."
+                "Could not load filter profiles.", self.get_config_file()
             ) from e
 
     @property
@@ -102,7 +102,9 @@ class Config:
         if profile := next((p for p in profiles if p.is_default), False):
             profile = profiles[0]
         else:
-            raise exceptions.InvalidProfileError("Unable to find default profile.")
+            raise exceptions.InvalidProfileError(
+                "Unable to find default profile.", self.get_config_file()
+            )
 
         return self.get_profile(profile.name)
 
@@ -161,8 +163,9 @@ class Config:
         """
         file_name_stock = consts.EXPORT_CONFIG_FILE_NAME
 
+        # check current dir
         if Path(file_name_stock).is_file():
-            return Path(file_name_stock)
+            return Path(file_name_stock).absolute()
 
         if (
             path := files.get_runtime_directory()
@@ -185,7 +188,9 @@ class Config:
                 for p in self._data["profiles"]
             ]
         except KeyError as e:
-            raise exceptions.InvalidProfileError("Could not load profiles.") from e
+            raise exceptions.InvalidProfileError(
+                "Could not load profiles.", self.get_config_file()
+            ) from e
 
     def _get_profiles_from_type(self, profile_type: ProfileType) -> list[Profile]:
         """Return a list of profiles for a given type."""
@@ -199,7 +204,9 @@ class Config:
                 if profile["name"] == profile_name
             )
         except KeyError as e:
-            raise exceptions.InvalidProfileError("Could not load profiles.") from e
+            raise exceptions.InvalidProfileError(
+                "Could not load profiles.", self.get_config_file()
+            ) from e
 
     def _get_video_profile(self, profile_name: str) -> ProfileVideo:
         """Return a video profile for a given profile name."""
@@ -219,7 +226,8 @@ class Config:
         ) is None:
             raise exceptions.InvalidProfileError(
                 f"Unable to find video profile {video_profile_name} "
-                f"for profile {profile_name}."
+                f"for profile {profile_name}.",
+                self.get_config_file(),
             )
 
         return video_profile
@@ -245,7 +253,8 @@ class Config:
         ) is None:
             raise exceptions.InvalidProfileError(
                 f"Unable to find audio profile {audio_profile_name} "
-                f"for profile {profile_name}."
+                f"for profile {profile_name}.",
+                self.get_config_file(),
             )
 
         return audio_profile
@@ -269,7 +278,8 @@ class Config:
         # ensure we found all the profiles
         if len(filter_profiles) < len(filter_names):
             raise exceptions.InvalidProfileError(
-                f"Unable to find filter profile(s) for profile {profile_name}."
+                f"Unable to find filter profile(s) for profile {profile_name}.",
+                self.get_config_file(),
             )
 
         return filter_profiles

@@ -8,6 +8,7 @@ from tbc_video_export.common.utils import ansi
 
 if TYPE_CHECKING:
     import asyncio
+    from pathlib import Path
     from typing import Any
 
 
@@ -38,8 +39,10 @@ def handle_exceptions(e: BaseException | None):
             _print_exception(e)
         case InvalidProfileError():
             _print_exception(e)
+            logging.getLogger("console").critical(f"\nError parsing {e.config_path}.")
             logging.getLogger("console").critical(
-                "If you have an old tbc-video-export.json, move it and try again."
+                "If you have upgraded this may not be compatible.\n"
+                "Try moving or deleting the file and trying again."
             )
         case SampleRequiredError():
             logging.getLogger("console").critical(
@@ -82,6 +85,10 @@ class SampleRequiredError(Exception):
 
 class InvalidProfileError(Exception):
     """General profile errors."""
+
+    def __init__(self, message: str, config_path: Path | None) -> None:
+        super().__init__(message)
+        self.config_path = config_path
 
 
 class InvalidFilterProfileError(Exception):
