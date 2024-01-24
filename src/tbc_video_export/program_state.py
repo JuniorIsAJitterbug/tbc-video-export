@@ -218,12 +218,14 @@ class ProgramState:
             output_file.append(str(self.file_helper.output_video_file_luma))
 
             luma_profile = self.profiles[ProfileType.LUMA]
-            luma_subprofiles = self.config.get_subprofile_names(luma_profile, True)
+            luma_subprofiles = self.config.get_subprofile_descriptions(
+                luma_profile, True
+            )
 
             profile.append(f"{luma_profile.name} ({luma_subprofiles})")
 
         output_file.append(str(self.file_helper.output_video_file))
-        sub_profiles = self.config.get_subprofile_names(self.profile, True)
+        sub_profiles = self.config.get_subprofile_descriptions(self.profile, True)
         profile.append(f"{self.profile.name} ({sub_profiles})")
 
         output_files = ", ".join(output_file)

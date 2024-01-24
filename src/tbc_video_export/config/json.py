@@ -28,6 +28,7 @@ class JsonSubProfile(TypedDict):
     """Raw mapping of subprofile from JSON."""
 
     name: str
+    description: str
 
 
 class JsonSubProfileVideo(JsonSubProfile):

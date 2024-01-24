@@ -114,20 +114,22 @@ class Config:
         self._profiles = self._generate_profiles()
 
     @staticmethod
-    def get_subprofile_names(profile: Profile, show_format: bool) -> str:
-        """Return a comma separated list of sub profiles for a profile."""
+    def get_subprofile_descriptions(profile: Profile, show_format: bool) -> str:
+        """Return a comma separated list of sub profile descriptions for a profile."""
         # whether to append the profile video format to the profile name
         sub_profiles = FlatList(
-            f"{profile.video_profile.name} {profile.video_format}"
+            f"{profile.video_profile.description} {profile.video_format}"
             if show_format
-            else profile.video_profile.name
+            else profile.video_profile.description
         )
 
         if profile.audio_profile is not None:
-            sub_profiles.append(profile.audio_profile.name)
+            sub_profiles.append(profile.audio_profile.description)
 
         if profile.filter_profiles is not None:
-            sub_profiles.append(profile.name for profile in profile.filter_profiles)
+            sub_profiles.append(
+                profile.description for profile in profile.filter_profiles
+            )
 
         return ", ".join(sub_profiles.data)
 
