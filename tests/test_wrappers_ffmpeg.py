@@ -227,7 +227,7 @@ class TestWrappersFFmpeg(unittest.TestCase):
                 str(self.path),
                 "pal_svideo",
                 "--profile-add-filter",
-                "BWDIF",
+                "bwdif",
             ]
         )
         self.files = FileHelper(opts, self.config)
@@ -254,7 +254,7 @@ class TestWrappersFFmpeg(unittest.TestCase):
                     str(self.path),
                     "pal_svideo",
                     "--profile-add-filter",
-                    "bwdif",
+                    "invalid",
                 ]
             )
 
