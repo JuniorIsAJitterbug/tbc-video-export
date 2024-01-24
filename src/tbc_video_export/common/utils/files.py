@@ -14,7 +14,7 @@ def get_runtime_directory() -> Path:
     """Return the runtime directory.
 
     When the script is built to a single executable using PyInstaller __file__ is
-    somewhere in TEMP, so the executablelocation must be used instead.
+    somewhere in TEMP, so the executable location must be used instead.
     """
     return (
         Path(sys.executable)
