@@ -153,7 +153,7 @@ class ProgramState:
             ProfileType.LUMA: self.config.get_profile(self.opts.profile_luma),
         }
 
-    @cached_property
+    @property
     def profile(self) -> Profile:
         """Selected profiles for Luma/Chroma."""
         match self.current_export_mode:

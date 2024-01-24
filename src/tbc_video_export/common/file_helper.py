@@ -26,6 +26,7 @@ class FileHelper:
         self._config = config
 
         self._profile = self._config.get_profile(self._opts.profile)
+        self._profile_luma = self._config.get_profile(self._opts.profile_luma)
 
         # initially set both input and output files to the input file
         # file without file extension
@@ -144,7 +145,7 @@ class FileHelper:
         This is used when two-step is enabled when merging.
         """
         return self.get_output_file_from_ext(
-            f"{consts.TWO_STEP_OUT_FILE_LUMA_SUFFIX}.{self._profile.video_profile.container}"
+            f"{consts.TWO_STEP_OUT_FILE_LUMA_SUFFIX}.{self._profile_luma.video_profile.container}"
         )
 
     def get_log_file(self, process_name: ProcessName, tbc_type: TBCType):
