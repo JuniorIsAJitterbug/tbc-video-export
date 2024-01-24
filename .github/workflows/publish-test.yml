@@ -3,8 +3,6 @@ name: "Publish Test"
 on:
   workflow_run:
     workflows: [Build]
-    branches:
-      - master
 
 jobs:
   publish-to-testpypi:

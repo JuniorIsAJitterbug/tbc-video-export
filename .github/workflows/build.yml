@@ -3,6 +3,8 @@ name: "Build"
 on:
   workflow_run:
     workflows: [Tests]
+    branches:
+      - master
 
 jobs:
   build:
