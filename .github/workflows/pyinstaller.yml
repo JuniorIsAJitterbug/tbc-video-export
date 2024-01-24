@@ -5,6 +5,10 @@ on:
     #workflows: [PyPI]
     workflows: [Tests]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   pyinstaller-win:
     name: pyinstaller-win
