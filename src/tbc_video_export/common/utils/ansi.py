@@ -245,7 +245,7 @@ def _reset_dim() -> str:
 @cache
 def _underlined() -> str:
     """Return underlined escape code."""
-    return "\x1B[4m{str(text)}\x1B[24m" if has_ansi_support() else ""
+    return "\x1B[4m" if has_ansi_support() else ""
 
 
 @cache
