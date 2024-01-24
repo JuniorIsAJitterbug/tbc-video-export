@@ -86,6 +86,7 @@ class Opts(argparse.Namespace):
     # ffmpeg
     profile: str
     profile_luma: str
+    profile_container: str | None
     audio_track: list[AudioTrackOpt]
     metadata: list[list[str]]
     metadata_file: list[Path]

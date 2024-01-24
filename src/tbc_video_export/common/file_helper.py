@@ -134,9 +134,18 @@ class FileHelper:
         raise exceptions.TBCError("Unable to find luma TBC.")
 
     @cached_property
+    def output_container(self) -> str:
+        """Return container used for output video file."""
+        return (
+            self._opts.profile_container
+            if self._opts.profile_container is not None
+            else self._profile.video_profile.container
+        )
+
+    @cached_property
     def output_video_file(self) -> Path:
         """Return absolute path to the output video file."""
-        return self.get_output_file_from_ext(f"{self._profile.video_profile.container}")
+        return self.get_output_file_from_ext(self.output_container)
 
     @cached_property
     def output_video_file_luma(self) -> Path:

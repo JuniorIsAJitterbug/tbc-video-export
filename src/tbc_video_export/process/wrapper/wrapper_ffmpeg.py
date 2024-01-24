@@ -493,13 +493,13 @@ class WrapperFFmpeg(Wrapper):
 
     def _get_supports_attachments(self) -> bool:
         """Return True if attachments are supported by the profile container."""
-        return self._get_profile().video_profile.container.lower() == "mkv"
+        return self._state.file_helper.output_container.lower() == "mkv"
 
     def _get_subtitle_format(self) -> str:
         """Return subtitle format based on the profile container."""
         return (
             "srt"
-            if self._get_profile().video_profile.container.lower() != "mov"
+            if self._state.file_helper.output_container.lower() != "mov"
             else "mov_text"
         )
 

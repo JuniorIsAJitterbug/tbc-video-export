@@ -192,6 +192,34 @@ class TestWrappersFFmpeg(unittest.TestCase):
             r"error: argument --field-order: invalid FieldOrder value: 'invalid'",
         )
 
+    def test_ffmpeg_override_container_opt(self) -> None:  # noqa: D102
+        _, opts = self.parse_opts(
+            [
+                str(self.path),
+                "pal_svideo",
+                "--profile",
+                "prores_hq",
+                "--profile-container",
+                "mxf",
+            ]
+        )
+        self.files = FileHelper(opts, self.config)
+        state = ProgramState(opts, self.config, self.files)
+
+        ffmpeg_wrapper = WrapperFFmpeg(
+            state,
+            WrapperConfig[tuple[Pipe], None](
+                state.current_export_mode,
+                TBCType.CHROMA,
+                input_pipes=(self.pipe, self.pipe),
+                output_pipes=None,
+            ),
+        )
+
+        cmd = ffmpeg_wrapper.command.data
+
+        self.assertTrue(any("pal_svideo.mxf" in cmds for cmds in cmd))
+
 
 if __name__ == "__main__":
     unittest.main()
