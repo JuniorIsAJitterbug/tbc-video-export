@@ -229,7 +229,10 @@ class ProgramState:
         profile.append(f"{self.profile.name} ({sub_profiles})")
 
         output_files = ", ".join(output_file)
-        profiles = ", ".join(profile)
+        profiles = (
+            f"{', '.join(profile)} "
+            f"{'[external]' if self.config.get_config_file() is not None else ''}"
+        )
 
         col_w: dict[str, int] = {
             "k1": 32,
