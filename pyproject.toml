@@ -9,7 +9,7 @@ repository = "https://github.com/JuniorIsAJitterbug/tbc-video-export"
 keywords = ["vhs-decode", "ld-decode", "cvbs-decode", "tbc", "rf capture"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.10,<3.13"
 pywin32 = [{ version = "^306", platform = "win32", source = "pypi" }]
 
 [tool.poetry.scripts]
@@ -29,13 +29,16 @@ optional = true
 [tool.poetry.group.appimage.dependencies]
 python-appimage = "^1.2.5"
 
+[tool.poetry.group.pyinstaller]
+optional = true
+
+[tool.poetry.group.pyinstaller.dependencies]
+pyinstaller = "^6.3.0"
+pyinstaller-versionfile = "^2.1.1"
+dunamai = "^1.19.0"
+
 [build-system]
-requires = [
-    "poetry-core>=1.0.0",
-    "poetry-dynamic-versioning>=1.0.0,<2.0.0",
-    "pyinstaller",
-    "pyinstaller_versionfile",
-]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.pyright]
