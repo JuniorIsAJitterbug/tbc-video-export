@@ -78,6 +78,11 @@ class SubProfile:
         """Return profile name."""
         return self._profile["name"]
 
+    @property
+    def description(self) -> str:
+        """Return the profile description."""
+        return self._profile["description"]
+
 
 class ProfileVideo(SubProfile):
     """Holds FFmpeg video profile."""
