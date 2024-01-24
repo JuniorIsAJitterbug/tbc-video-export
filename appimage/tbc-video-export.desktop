@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=tbc-video-export
+Exec=tbc-video-export
+Comment=tbc-video-export on Python {{ python-fullversion }}
+Categories=AudioVideo;
+Icon=icon
+Terminal=true

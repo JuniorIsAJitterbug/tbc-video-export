@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>scipy</id>
+    <metadata_license>MIT</metadata_license>
+    <project_license>GPL-3.0</project_license>
+    <name>tbc-video-export</name>
+    <summary>Cross-platform tool for exporting S-Video and CVBS-type TBC files to standard video files</summary>
+    <description>
+        <p> A relocated Python {{ python-fullversion }} installation containing
+            the tbc-video-export package and running from an AppImage.
+        </p>
+    </description>
+    <launchable type="desktop-id">tbc-video-export.desktop</launchable>
+    <url type="homepage">https://github.com/JuniorIsAJitterbug/tbc-video-export</url>
+    <provides>
+        <binary>python{{ python-version }}</binary>
+    </provides>
+</component>
