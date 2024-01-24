@@ -59,6 +59,8 @@ jobs:
 
   publish-to-testpypi:
     name: Publish to TestPyPI
+    if: startsWith(github.ref, 'refs/heads/master')  # only publish to TestPyPI on master updates
+
     needs:
     - build
     runs-on: ubuntu-latest
