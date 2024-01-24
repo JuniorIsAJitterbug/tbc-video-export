@@ -31,9 +31,10 @@ jobs:
         run: nix develop --impure --accept-flake-config --command poetry run python-appimage build app -p 3.10 appimage/
 
       - name: Rename AppImage file
-        run: >-
-          mv tbc-video-export-x86_64.AppImage tbc-video-export.AppImage
-          file tbc-video-export.AppImage
+        run: mv tbc-video-export-x86_64.AppImage tbc-video-export.AppImage
+
+      - name: Check AppImage file
+        run: file tbc-video-export.AppImage
 
       #- name: Upload AppImage to GitHub Release
       #  env:
