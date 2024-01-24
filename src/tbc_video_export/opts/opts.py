@@ -87,6 +87,7 @@ class Opts(argparse.Namespace):
     profile: str
     profile_luma: str
     profile_container: str | None
+    profile_additional_filters: list[str]
     audio_track: list[AudioTrackOpt]
     metadata: list[list[str]]
     metadata_file: list[Path]

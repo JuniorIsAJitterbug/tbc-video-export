@@ -84,6 +84,10 @@ class InvalidProfileError(Exception):
     """General profile errors."""
 
 
+class InvalidFilterProfileError(Exception):
+    """Filter profile errors."""
+
+
 class InvalidOptsError(Exception):
     """Invalid program opts."""
 

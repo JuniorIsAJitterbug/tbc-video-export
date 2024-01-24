@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from tbc_video_export.common.enums import TBCType
+from tbc_video_export.common.exceptions import InvalidFilterProfileError
 from tbc_video_export.common.file_helper import FileHelper
 from tbc_video_export.config import Config as ProgramConfig
 from tbc_video_export.opts import opts_parser
@@ -219,6 +220,43 @@ class TestWrappersFFmpeg(unittest.TestCase):
         cmd = ffmpeg_wrapper.command.data
 
         self.assertTrue(any("pal_svideo.mxf" in cmds for cmds in cmd))
+
+    def test_ffmpeg_add_filter_profile_opt(self) -> None:  # noqa: D102
+        _, opts = self.parse_opts(
+            [
+                str(self.path),
+                "pal_svideo",
+                "--profile-add-filter",
+                "BWDIF",
+            ]
+        )
+        self.files = FileHelper(opts, self.config)
+        state = ProgramState(opts, self.config, self.files)
+
+        ffmpeg_wrapper = WrapperFFmpeg(
+            state,
+            WrapperConfig[tuple[Pipe], None](
+                state.current_export_mode,
+                TBCType.CHROMA,
+                input_pipes=(self.pipe, self.pipe),
+                output_pipes=None,
+            ),
+        )
+
+        cmd = ffmpeg_wrapper.command.data
+
+        self.assertTrue(any(",bwdif" in cmds for cmds in cmd))
+
+    def test_ffmpeg_add_invalid_filter_profile_opt(self) -> None:  # noqa: D102
+        with self.assertRaises(InvalidFilterProfileError):
+            _, __ = self.parse_opts(
+                [
+                    str(self.path),
+                    "pal_svideo",
+                    "--profile-add-filter",
+                    "bwdif",
+                ]
+            )
 
 
 if __name__ == "__main__":

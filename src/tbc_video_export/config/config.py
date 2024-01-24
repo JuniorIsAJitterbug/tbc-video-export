@@ -32,6 +32,7 @@ class Config:
 
     def __init__(self) -> None:
         self._data: JsonConfig
+        self._additional_filters: list[ProfileFilter] = []
 
         with suppress(FileNotFoundError, PermissionError, json.JSONDecodeError):
             # attempt to load the file if it exists
@@ -44,21 +45,12 @@ class Config:
         if not getattr(self, "_data", False):
             self._data = DEFAULT_CONFIG
 
-    @cached_property
+        self._profiles: list[Profile] = self._generate_profiles()
+
+    @property
     def profiles(self) -> list[Profile]:
         """Return list of available profiles."""
-        try:
-            return [
-                Profile(
-                    p,
-                    self.__get_video_profile(p["name"]),
-                    self.__get_audio_profile(p["name"]),
-                    self.__get_filter_profiles(p["name"]),
-                )
-                for p in self._data["profiles"]
-            ]
-        except KeyError as e:
-            raise exceptions.InvalidProfileError("Could not load profiles.") from e
+        return self._profiles
 
     @cached_property
     def video_profiles(self) -> list[ProfileVideo]:
@@ -90,6 +82,11 @@ class Config:
                 "Could not load filter profiles."
             ) from e
 
+    @property
+    def additional_filters(self) -> list[ProfileFilter]:
+        """Return list of additional filter profiles."""
+        return self._additional_filters
+
     def get_profile(self, name: str) -> Profile:
         """Return a profile from a name."""
         return next(p for p in self.profiles if p.name == name)
@@ -108,6 +105,13 @@ class Config:
             raise exceptions.InvalidProfileError("Unable to find default profile.")
 
         return self.get_profile(profile.name)
+
+    def add_additional_filter_profile(self, profile: ProfileFilter) -> None:
+        """Add an additional filter to be used when encoding."""
+        self._additional_filters.append(profile)
+
+        # regenerate profiles on filter add
+        self._profiles = self._generate_profiles()
 
     @staticmethod
     def get_subprofile_names(profile: Profile, show_format: bool) -> str:
@@ -166,6 +170,20 @@ class Config:
             return path
 
         return None
+
+    def _generate_profiles(self) -> list[Profile]:
+        try:
+            return [
+                Profile(
+                    p,
+                    self.__get_video_profile(p["name"]),
+                    self.__get_audio_profile(p["name"]),
+                    self.__get_filter_profiles(p["name"]) + self._additional_filters,
+                )
+                for p in self._data["profiles"]
+            ]
+        except KeyError as e:
+            raise exceptions.InvalidProfileError("Could not load profiles.") from e
 
     def __get_profiles_from_type(self, profile_type: ProfileType) -> list[Profile]:
         """Return a list of profiles for a given type."""
@@ -230,14 +248,14 @@ class Config:
 
         return audio_profile
 
-    def __get_filter_profiles(self, profile_name: str) -> list[ProfileFilter] | None:
+    def __get_filter_profiles(self, profile_name: str) -> list[ProfileFilter]:
         """Return all filter profiles for a given profile name."""
         profile_data = self.__get_raw_profile_data(profile_name)
         filter_names = profile_data["filter_profiles"]
 
         # no filter profiles for profile
         if filter_names is None:
-            return None
+            return []
 
         filter_profiles = [
             profile

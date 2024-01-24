@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from typing import Any
 
     from tbc_video_export.config import Config, Profile, SubProfile
+    from tbc_video_export.config.profile import ProfileFilter
 
 
 def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
@@ -62,6 +63,19 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
         metavar="profile_container",
         help="Override an FFmpeg profile to use a specific container. Compatibility \n"
         "with profile is not guaranteed."
+        "\n\n",
+    )
+
+    ffmpeg_opts.add_argument(
+        "--profile-add-filter",
+        dest="profile_additional_filters",
+        action="append",
+        default=[],
+        type=_AdditionalFilter(config),
+        metavar="filter_name",
+        help="Use an additional filter profile when encoding. Compatibility \n"
+        "with profile is not guaranteed.\n"
+        "You can use this option muiltiple times."
         "\n\n",
     )
 
@@ -272,6 +286,32 @@ class _TypeFieldOrder:
             self._parser.error(
                 f"argument --field-order: invalid FieldOrder value: '{value}'"
             )
+
+
+class _AdditionalFilter:
+    """Return ProfileFilter if it exists."""
+
+    def __init__(self, config: Config) -> None:
+        self._config = config
+
+    def __call__(self, value: str) -> ProfileFilter:
+        profile = next(
+            (
+                profile
+                for profile in self._config.filter_profiles
+                if profile.name == value
+            ),
+            None,
+        )
+
+        if profile is None:
+            raise exceptions.InvalidFilterProfileError(
+                f"Could not find filter profile '{value}'. See --list-profiles."
+            )
+
+        # add to config
+        self._config.add_additional_filter_profile(profile)
+        return profile
 
 
 def _check_metadata_file_exists(value: str) -> Path:
