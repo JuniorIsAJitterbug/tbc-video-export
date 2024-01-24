@@ -160,4 +160,4 @@ class ProfileFilter(SubProfile):
 
         These go after the main video filter and can contain any other type of filter.
         """
-        return self._profile.get("others_filter", None)
+        return self._profile.get("other_filter", None)
