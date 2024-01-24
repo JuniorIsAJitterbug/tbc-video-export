@@ -16,14 +16,13 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - uses: cachix/install-nix-action@v23
+      - uses: cachix/install-nix-action@v25
 
       - name: Install
         run: nix develop --impure --accept-flake-config --command poetry install
 
-      - name: Run Unit Tests
-        run: |
-          echo "Creating fake binary files to satisfy tests (FIXME)"
-          touch ffmpeg ld-dropout-correct ld-chroma-decoder ld-process-vbi ld-process-efm ld-export-metadata
+      - name: Create fake binaries to satisfy tests (fixme)
+        run: touch ffmpeg ld-dropout-correct ld-chroma-decoder ld-process-vbi ld-process-efm ld-export-metadata
 
-          nix develop --impure --accept-flake-config --command poetry run python -m unittest
+      - name: Run unit tests
+        run: nix develop --impure --accept-flake-config --command poetry run python -m unittest
