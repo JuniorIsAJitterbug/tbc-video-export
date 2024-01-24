@@ -346,5 +346,11 @@ DEFAULT_CONFIG: JsonConfig = {
             "video_filter": None,
             "other_filter": "[2:a]pan=stereo|FL=FL|FR=FL",
         },
+        {
+            "name": "map_r_to_lr",
+            "description": "Map R to L+R",
+            "video_filter": None,
+            "other_filter": "[2:a]pan=stereo|FR=FR|FL=FR",
+        },
     ],
 }
