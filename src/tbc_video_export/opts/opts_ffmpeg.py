@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Any
 
-    from tbc_video_export.config import Config, Profile, SubProfile
+    from tbc_video_export.config import Config, SubProfile
     from tbc_video_export.config.profile import ProfileFilter
 
 
@@ -82,7 +82,7 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
     ffmpeg_opts.add_argument(
         "--list-profiles",
         action=_ActionListProfiles,
-        profiles=config.profiles,
+        config=config,
         help="Show available profiles.\n\n",
     )
 
@@ -212,8 +212,9 @@ class _ActionListProfiles(argparse.Action):
     This exits the application after use.
     """
 
-    def __init__(self, profiles: list[Profile], nargs: int = 0, **kwargs: Any) -> None:
-        self._profiles = profiles
+    def __init__(self, config: Config, nargs: int = 0, **kwargs: Any) -> None:
+        self._profiles = config.profiles
+        self._profiles_filters = config.filter_profiles
         super().__init__(nargs=nargs, **kwargs)
 
     def __call__(
@@ -224,6 +225,8 @@ class _ActionListProfiles(argparse.Action):
         option_strings: str,  # noqa: ARG002
         **kwargs: Any,  # noqa: ARG002
     ) -> None:
+        logging.getLogger("console").info(ansi.underlined("Profiles\n"))
+
         for profile in self._profiles:
             sub_profiles: list[SubProfile] = [profile.video_profile]
 
@@ -270,6 +273,28 @@ class _ActionListProfiles(argparse.Action):
             )
 
             logging.getLogger("console").info("")
+
+        logging.getLogger("console").info(ansi.underlined("Filter Profiles\n"))
+
+        for profile in self._profiles_filters:
+            logging.getLogger("console").info(profile.name)
+
+            logging.getLogger("console").info(
+                f"  {ansi.dim('Description:')} {profile.description}"
+            )
+
+            profile_filter = (
+                profile.video_filter
+                if profile.video_filter is not None
+                else profile.other_filter
+            )
+
+            logging.getLogger("console").info(
+                f"  {ansi.dim('Filter:')} {profile_filter}"
+            )
+
+            logging.getLogger("console").info("")
+
         parser.exit()
 
 
