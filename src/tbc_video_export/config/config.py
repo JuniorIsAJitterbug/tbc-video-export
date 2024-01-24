@@ -93,11 +93,11 @@ class Config:
 
     def get_profile_names(self, profile_type: ProfileType) -> list[str]:
         """Return a list of profile names for a given profile type."""
-        return [p.name for p in self.__get_profiles_from_type(profile_type)]
+        return [p.name for p in self._get_profiles_from_type(profile_type)]
 
     def get_default_profile(self, profile_type: ProfileType) -> Profile:
         """Return the first default profile for a given profile type."""
-        profiles = self.__get_profiles_from_type(profile_type)
+        profiles = self._get_profiles_from_type(profile_type)
 
         if profile := next((p for p in profiles if p.is_default), False):
             profile = profiles[0]
@@ -176,20 +176,20 @@ class Config:
             return [
                 Profile(
                     p,
-                    self.__get_video_profile(p["name"]),
-                    self.__get_audio_profile(p["name"]),
-                    self.__get_filter_profiles(p["name"]) + self._additional_filters,
+                    self._get_video_profile(p["name"]),
+                    self._get_audio_profile(p["name"]),
+                    self._get_filter_profiles(p["name"]) + self._additional_filters,
                 )
                 for p in self._data["profiles"]
             ]
         except KeyError as e:
             raise exceptions.InvalidProfileError("Could not load profiles.") from e
 
-    def __get_profiles_from_type(self, profile_type: ProfileType) -> list[Profile]:
+    def _get_profiles_from_type(self, profile_type: ProfileType) -> list[Profile]:
         """Return a list of profiles for a given type."""
         return [p for p in self.profiles if p.profile_type is profile_type]
 
-    def __get_raw_profile_data(self, profile_name: str) -> JsonProfile:
+    def _get_raw_profile_data(self, profile_name: str) -> JsonProfile:
         try:
             return next(
                 profile
@@ -199,9 +199,9 @@ class Config:
         except KeyError as e:
             raise exceptions.InvalidProfileError("Could not load profiles.") from e
 
-    def __get_video_profile(self, profile_name: str) -> ProfileVideo:
+    def _get_video_profile(self, profile_name: str) -> ProfileVideo:
         """Return a video profile for a given profile name."""
-        profile_data = self.__get_raw_profile_data(profile_name)
+        profile_data = self._get_raw_profile_data(profile_name)
         video_profile_name = profile_data["video_profile"]
 
         # return first video profile matching name
@@ -222,9 +222,9 @@ class Config:
 
         return video_profile
 
-    def __get_audio_profile(self, profile_name: str) -> ProfileAudio | None:
+    def _get_audio_profile(self, profile_name: str) -> ProfileAudio | None:
         """Return a audio profile for a given profile name."""
-        profile_data = self.__get_raw_profile_data(profile_name)
+        profile_data = self._get_raw_profile_data(profile_name)
 
         # no profile given
         if (audio_profile_name := profile_data["audio_profile"]) is None:
@@ -248,9 +248,9 @@ class Config:
 
         return audio_profile
 
-    def __get_filter_profiles(self, profile_name: str) -> list[ProfileFilter]:
+    def _get_filter_profiles(self, profile_name: str) -> list[ProfileFilter]:
         """Return all filter profiles for a given profile name."""
-        profile_data = self.__get_raw_profile_data(profile_name)
+        profile_data = self._get_raw_profile_data(profile_name)
         filter_names = profile_data["filter_profiles"]
 
         # no filter profiles for profile
