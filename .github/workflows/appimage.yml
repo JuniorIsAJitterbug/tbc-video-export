@@ -2,16 +2,16 @@ name: "Build and Release AppImage"
 
 on:
   workflow_run:
-    workflows: [Tests, PyPI]
+    workflows: [PyPI]
+    types:
+      - completed
 
 jobs:
   appimage:
     name: appimage
     runs-on: ubuntu-latest
 
-    if: |
-      ${{ github.event.workflow_run.conclusion == 'success' }} &&
-      startsWith(github.ref, 'refs/tags/v')
+    if: ${{ github.event.workflow_run.conclusion == 'success' }} && startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - uses: actions/checkout@v4
