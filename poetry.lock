@@ -941,6 +941,16 @@ files = [
 tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
 
 [[package]]
+name = "python-appimage"
+version = "1.2.5"
+description = "Appimage releases of Python"
+optional = false
+python-versions = ">=2.7"
+files = [
+    {file = "python_appimage-1.2.5-py2.py3-none-any.whl", hash = "sha256:3b91d5929f632a8ccec9d9941d89bf36c80e09888f4a2a622639155c1e68fa63"},
+]
+
+[[package]]
 name = "pywin32"
 version = "306"
 description = "Python for Window Extensions"
@@ -1308,4 +1318,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "d331f72342cab13598e614e23a6404fdd8273a887897f16a671b1232ceae517a"
+content-hash = "f73f0eda1e7336acfd038840ba67296ef84fc7e17f5e7fb03a8cb067f4a44fec"

@@ -23,6 +23,12 @@ tbc-video-export = "tbc_video_export.__main__:main"
 poetry-dynamic-versioning = { extras = ["plugin"], version = "^1.2.0" }
 coverage = { extras = ["toml"], version = "^7.4.0" }
 
+[tool.poetry.group.appimage]
+optional = true
+
+[tool.poetry.group.appimage.dependencies]
+python-appimage = "^1.2.5"
+
 [build-system]
 requires = [
     "poetry-core>=1.0.0",
