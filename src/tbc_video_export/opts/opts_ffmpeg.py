@@ -57,6 +57,15 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
     )
 
     ffmpeg_opts.add_argument(
+        "--profile-container",
+        type=str,
+        metavar="profile_container",
+        help="Override an FFmpeg profile to use a specific container. Compatibility \n"
+        "with profile is not guaranteed."
+        "\n\n",
+    )
+
+    ffmpeg_opts.add_argument(
         "--list-profiles",
         action=_ActionListProfiles,
         profiles=config.profiles,
