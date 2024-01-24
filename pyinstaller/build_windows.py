@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import os
 
-import dunamai
-
 if os.name != "nt":
     raise SystemExit("Must be run on Windows")
 
 import importlib.metadata
 
+import dunamai
 import PyInstaller.__main__
 from pyinstaller_versionfile import (  # pyright: ignore[reportMissingTypeStubs]
     create_versionfile,  # pyright: ignore[reportUnknownVariableType]
