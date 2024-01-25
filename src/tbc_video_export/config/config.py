@@ -164,15 +164,14 @@ class Config:
         file_name_stock = consts.EXPORT_CONFIG_FILE_NAME
 
         # check current dir
-        if Path(file_name_stock).is_file():
-            return Path(file_name_stock).absolute()
+        if (path := Path(file_name_stock)).is_file():
+            return path.absolute()
 
+        # check binary dir
         if (
-            path := files.get_runtime_directory()
-            .with_name(str(file_name_stock))
-            .absolute()
-        ):
-            return path
+            path := Path(files.get_runtime_directory().joinpath(file_name_stock))
+        ).is_file():
+            return path.absolute()
 
         return None
 
