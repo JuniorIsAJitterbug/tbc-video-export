@@ -1,8 +1,8 @@
-name: "Publish"
+name: "Publish to PyPI and release packages"
 
 on:
   workflow_run:
-    workflows: [Test]
+    workflows: [Run unit tests]
     types:
       - completed
 

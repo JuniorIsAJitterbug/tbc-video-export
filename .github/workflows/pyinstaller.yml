@@ -1,9 +1,10 @@
-name: "Build and Release PyInstaller Binaries"
+name: "Build and release binaries"
 
 on:
   workflow_run:
-    #workflows: [PyPI]
-    workflows: [Tests]
+    workflows: [Publish to PyPI and release packages]
+    types:
+      - completed
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}

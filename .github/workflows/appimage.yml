@@ -1,8 +1,8 @@
-name: "Build and Release AppImage"
+name: "Build and release AppImage"
 
 on:
   workflow_run:
-    workflows: [PyPI]
+    workflows: [Publish to PyPI and release packages]
     types:
       - completed
 
