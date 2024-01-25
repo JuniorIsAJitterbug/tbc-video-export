@@ -10,8 +10,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    name: Run unit tests
+  # tests
+  build:
+    name: Run unit tests and build
     runs-on: ubuntu-latest
 
     steps:
@@ -20,45 +21,53 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - uses: cachix/install-nix-action@v25
+      - uses: nixbuild/nix-quick-install-action@v26
 
       - name: Install
-        run: nix develop --impure --accept-flake-config --command poetry install
+        run: >-
+          nix develop
+          --impure
+          --accept-flake-config
+          .#ci
+          --command
+          poetry install
 
       - name: Create fake binaries to satisfy tests (fixme)
-        run: touch ffmpeg ld-dropout-correct ld-chroma-decoder ld-process-vbi ld-process-efm ld-export-metadata
+        run: >-
+          touch
+          ffmpeg
+          ld-dropout-correct
+          ld-chroma-decoder
+          ld-process-vbi
+          ld-process-efm
+          ld-export-metadata
 
       - name: Run unit tests
-        run: nix develop --impure --accept-flake-config --command poetry run python -m unittest
-
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-
-    if: github.ref == 'refs/heads/master'
-    needs:
-      - test
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
-
-      - uses: cachix/install-nix-action@v25
-
-      - name: Install
-        run: nix develop --impure --accept-flake-config --command poetry install
+        run: >-
+          nix develop
+          --impure
+          --accept-flake-config
+          .#ci
+          --command
+          poetry run python -m unittest
 
       - name: Build
-        run: nix develop --impure --accept-flake-config --command poetry build
+        run: >-
+          nix develop
+          --impure
+          --accept-flake-config
+          .#ci
+          --command
+          poetry build
 
       - name: Store the distribution packages
         uses: actions/upload-artifact@v4
         with:
           name: python-package-distributions
           path: dist/
+          if-no-files-found: error
 
+  # pypi
   publish-to-testpypi:
     name: Publish to TestPyPI
     runs-on: ubuntu-latest
@@ -80,7 +89,6 @@ jobs:
         with:
           name: python-package-distributions
           path: dist/
-
       - name: Publish distribution TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
@@ -106,73 +114,48 @@ jobs:
         with:
           name: python-package-distributions
           path: dist/
-
       - name: Publish distribution package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
 
-  github-release:
-    name: Sign the packages with Sigstore and upload them to GitHub Release
-    runs-on: ubuntu-latest
+  # builds
+  build-linux-appimage:
+    name: Build Linux AppImage package
+    runs-on: ubuntu-22.04
 
+    # uses pip to install latest version, so run after pypi
+    if: startsWith(github.ref, 'refs/tags/v')
     needs:
       - publish-to-pypi
 
-    permissions:
-      contents: write # IMPORTANT: mandatory for making GitHub Releases
-      id-token: write # IMPORTANT: mandatory for sigstore
-
     steps:
-      - name: Download all the dists
-        uses: actions/download-artifact@v4
-        with:
-          name: python-package-distributions
-          path: dist/
+      - name: Ensure PyPI package is updated
+        run: sleep 15
+        shell: bash
 
-      - name: Sign the dists with Sigstore
-        uses: sigstore/gh-action-sigstore-python@v2.1.1
-        with:
-          inputs: >-
-            ./dist/*.tar.gz
-            ./dist/*.whl
-
-      - name: Create GitHub Release
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: >-
-          gh release create
-          '${{ github.ref_name }}'
-          --repo '${{ github.repository }}'
-          --notes ""
-
-      - name: Upload artifact signatures to GitHub Release
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-        run: >-
-          gh release upload
-          '${{ github.ref_name }}' dist/**
-          --repo '${{ github.repository }}'
-
-  build-appimage:
-    name: Build AppImage package
-    runs-on: ubuntu-latest
-
-    needs:
-      - github-release
-
-    steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           fetch-tags: true
 
-      - uses: cachix/install-nix-action@v25
+      - uses: nixbuild/nix-quick-install-action@v26
 
       - name: Install
-        run: nix develop --impure --accept-flake-config --command poetry install --with=appimage
+        run: >-
+          nix develop
+          --impure
+          --accept-flake-config
+          .#ci
+          --command
+          poetry install --with=appimage
 
       - name: Build AppImage
-        run: nix develop --impure --accept-flake-config --command poetry run python-appimage build app -p 3.10 appimage/
+        run: >-
+          nix develop
+          --impure
+          --accept-flake-config
+          .#ci
+          --command
+          poetry run python-appimage build app -p 3.10 appimage/
 
       - name: Rename AppImage file
         run: mv tbc-video-export-x86_64.AppImage tbc-video-export.AppImage
@@ -186,21 +169,20 @@ jobs:
       - name: Test AppImage
         run: ./tbc-video-export.AppImage --version
 
-      - name: Upload AppImage to GitHub Release
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-        run: >-
-          gh release upload
-          '${{ github.ref_name }}' 'tbc-video-export.AppImage#tbc-video-export-${{ github.ref_name }}.AppImage'
-          --repo '${{ github.repository }}'
+      - name: Store the AppImage binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-appimage
+          path: ./tbc-video-export.AppImage
+          if-no-files-found: error
 
   build-windows-binary:
     name: Build Windows binary with PyInstaller
     runs-on: windows-latest
 
+    if: startsWith(github.ref, 'refs/tags/v')
     needs:
-      - github-release
+      - build
 
     steps:
       - uses: actions/checkout@v4
@@ -228,16 +210,142 @@ jobs:
       - name: Create PyInstaller binary
         run: |
           .\.venv\Scripts\Activate.ps1
+          poetry-dynamic-versioning
           poetry run python .\pyinstaller\build_windows.py
 
       - name: Test binary
         run: .\dist\tbc-video-export.exe --version
 
-      - name: Upload binary to GitHub Release
+      - name: Store the Windows binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-binary
+          path: .\dist\tbc-video-export.exe
+          if-no-files-found: error
+
+  build-macos-binary:
+    name: Build macOS binary with PyInstaller
+    runs-on: macos-11
+
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs:
+      - build
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11" # use 3.11+ for universal2
+
+      - name: Install utilities
+        run: brew install create-dmg
+
+      - name: Setup python environment
+        run: |
+          python3.11 -m venv .venv
+          source .venv/bin/activate
+          pip install poetry
+
+      - name: Setup dependencies
+        run: |
+          source .venv/bin/activate
+          poetry install --with=pyinstaller
+
+      - name: Create PyInstaller binary
+        run: |
+          source .venv/bin/activate
+          poetry-dynamic-versioning
+          poetry run python pyinstaller/build_macos.py
+
+      - name: Test binary
+        run: dist/tbc-video-export --version
+
+      - name: Build DMG file
+        run: >-
+          create-dmg
+          --volname "tbc-video-export"
+          --volicon "assets/icon.icns"
+          --window-pos 200 128
+          --window-size 600 300
+          --icon-size 100
+          --icon "tbc-video-export.app" 172 120
+          --app-drop-link 425 128
+          --skip-jenkins
+          --hide-extension "tbc-video-export.app"
+          "dist/tbc-video-export.dmg"
+          "dist/tbc-video-export.app"
+
+      - name: Store the macOS binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-binary
+          path: dist/tbc-video-export.dmg
+          if-no-files-found: error
+
+  github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs:
+      - build
+      - build-linux-appimage
+      - build-windows-binary
+      - build-macos-binary
+
+    permissions:
+      contents: write # IMPORTANT: mandatory for making GitHub Releases
+      id-token: write # IMPORTANT: mandatory for sigstore
+
+    steps:
+      - name: Download all the artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Sign the dists with Sigstore
+        uses: sigstore/gh-action-sigstore-python@v2.1.1
+        with:
+          inputs: >-
+            ./python-package-distributions/*.tar.gz
+            ./python-package-distributions/*.whl
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create
+          '${{ github.ref_name }}'
+          --repo '${{ github.repository }}'
+          --title '${{ github.ref_name }}'
+          --notes ""
+
+      - name: Upload artifact signatures to GitHub Release
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-        run: >-
-          gh release upload
-          '${{ github.ref_name }}' '.\dist\tbc-video-export.exe#tbc-video-export-${{ github.ref_name }}.exe'
+        run: |
+          # python distribution
+          gh release upload \
+          '${{ github.ref_name }}' \
+          ./python-package-distributions/** \
+          --repo '${{ github.repository }}'
+
+          # linux appimage binary
+          gh release upload \
+          '${{ github.ref_name }}' \
+          './linux-appimage/tbc-video-export.AppImage#tbc-video-export-${{ github.ref_name }}-amd64.AppImage' \
+          --repo '${{ github.repository }}'
+
+          # windows binary
+          gh release upload \
+          '${{ github.ref_name }}' \
+          './windows-binary/tbc-video-export.exe#tbc-video-export-${{ github.ref_name }}-amd64.exe' \
+          --repo '${{ github.repository }}'
+
+          # macos binary
+          gh release upload \
+          '${{ github.ref_name }}' \
+          './macos-binary/tbc-video-export.dmg#tbc-video-export-${{ github.ref_name }}-multiarch.dmg' \
           --repo '${{ github.repository }}'

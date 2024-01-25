@@ -101,6 +101,10 @@ vcs = "git"
 style = "pep440"
 metadata = false
 
+[tool.poetry-dynamic-versioning.substitution]
+files = ["tbc_video_export/common/consts.py"]
+folders = [{ path = "src" }]
+
 [tool.coverage.run]
 omit = [".*", "*/site-packages/*"]
 

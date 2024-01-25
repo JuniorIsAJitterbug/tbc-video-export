@@ -15,30 +15,44 @@ To playback a 4FSC TBC file on physical playout systems, check:
 
 # Installation
 
-
-### Windows
+### Windows, Linux and macOS
 
 You can find the latest self-contained binaries on the [releases](https://github.com/JuniorIsAJitterbug/tbc-video-export/releases) page.
 
-### Linux and macOS:
-
-    pip install tbc-video-export
+### PyPI
+```
+pipx install tbc-video-export
+```
 
 # Basic Usage
 
 ### Windows
+```
+tbc-video-export.exe input.tbc
+```
 
+### Linux
+```
+tbc-video-export.AppImage input.tbc
+```
 
-    tbc-video-export.exe input.tbc
+### macOS
+```
+/Applications/tbc-video-export.app/Contents/MacOS/tbc-video-export input.tbc
+```
+**Note:** You can symlink this to `/usr/local/bin`.
+```
+ln -s /Applications/tbc-video-export.app/Contents/MacOS/tbc-video-export /usr/local/bin/tbc-video-export
+tbc-video-export input.tbc
+```
 
+### PyPI
+**Note:** Ensure the install location for `pip`/`pipx` is in `PATH`.
+```
+tbc-video-export input.tbc
+```
 
-### Linux and macOS:
-
-
-    tbc-video-export input.tbc
-
-
-## Help 
+# Help 
 
 - `--help` - List all available arguments.  
 - `--list-profiles` - List all FFmpeg profiles.  
@@ -56,7 +70,7 @@ You can find the latest self-contained binaries on the [releases](https://github
 ![tbc-video-export-readout-s-video](https://github.com/JuniorIsAJitterbug/tbc-video-export/wiki/assets/gifs/Windows_Terminal_tbc-video-export_v0.1.0b2_S-Video.gif)
 
 
-## Features
+# Features
 
 - FFmpeg Encoding Profiles
 - Automatic CVBS/S-Video input detection
