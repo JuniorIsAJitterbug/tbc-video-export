@@ -34,6 +34,15 @@ jobs:
       - name: Rename AppImage file
         run: mv tbc-video-export-x86_64.AppImage tbc-video-export.AppImage
 
+      # AppImages require libfuse to run
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: fuse
+          version: 1.0
+
+      - name: Test AppImage
+        run: ./tbc-video-export.AppImage --version
+
       - name: Upload AppImage to GitHub Release
         env:
           GITHUB_TOKEN: ${{ github.token }}
