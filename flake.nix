@@ -36,40 +36,66 @@
             ];
         in
         {
-          devenv.shells.default = {
-            name = "tbc-video-export";
+          devenv.shells = {
+            default = {
+              name = "tbc-video-export";
 
-            imports = [ ];
+              imports = [ ];
 
-            packages = with pkgs;
-              [
-                stdenv.cc.cc.lib
-                ruff
-                inputs.jitterbug.packages.${pkgs.system}.vhs-decode
-                (python310.withPackages python-packages)
-              ];
+              packages = with pkgs;
+                [
+                  stdenv.cc.cc.lib
+                  ruff
+                  inputs.jitterbug.packages.${pkgs.system}.vhs-decode
+                  (python310.withPackages python-packages)
+                ];
 
-            languages.python = {
-              enable = true;
-              version = "3.10";
-              poetry = {
+              languages.python = {
                 enable = true;
-                activate.enable = true;
-                install.enable = true;
-                install.allExtras = true;
+                version = "3.10";
+                poetry = {
+                  enable = true;
+                  activate.enable = true;
+                  install.enable = true;
+                  install.allExtras = true;
+                };
+              };
+
+              pre-commit.hooks = {
+                ruff.enable = true;
+                pyright.enable = true;
+              };
+
+              pre-commit.settings = {
+                yamllint.relaxed = true;
               };
             };
 
-            pre-commit.hooks = {
-              ruff.enable = true;
-              pyright.enable = true;
-            };
+            ci = {
+              name = "tbc-video-export (CI)";
 
-            pre-commit.settings = {
-              yamllint.relaxed = true;
+              imports = [ ];
+
+              packages = with pkgs;
+                [
+                  stdenv.cc.cc.lib
+                  ruff
+                  fuse
+                  (python310.withPackages python-packages)
+                ];
+
+              languages.python = {
+                enable = true;
+                version = "3.10";
+                poetry = {
+                  enable = true;
+                  activate.enable = true;
+                  install.enable = true;
+                  install.allExtras = true;
+                };
+              };
             };
           };
-
         };
       flake = { };
     };

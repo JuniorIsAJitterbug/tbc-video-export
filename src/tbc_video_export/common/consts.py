@@ -10,14 +10,17 @@ if TYPE_CHECKING:
 
 _metadata = importlib.metadata.metadata("tbc-video-export")
 
+# substituted by poetry-dynamic-versioning when doing pyinstaller builds
+__version__ = "0.0.0"
+
 APPLICATION_NAME: Final = _metadata["Name"]
-PROJECT_VERSION: Final = _metadata["Version"]
+PROJECT_VERSION: Final = _metadata["Version"] if __version__ == "0.0.0" else __version__
 PROJECT_SUMMARY: Final = _metadata["Summary"]
 PROJECT_URL: Final = _metadata["Home-Page"]
 PROJECT_URL_ISSUES: Final = next(
     (
         url.split(" ")[1]
-        for url in _metadata.get_all("Project-URL")
+        for url in _metadata.get_all("Project-URL")  # pyright: ignore[reportOptionalIterable]
         if str(url).startswith("Issues")
     ),
     "issues_url",
@@ -26,7 +29,7 @@ PROJECT_URL_ISSUES: Final = next(
 PROJECT_URL_DISCORD: Final = next(
     (
         url.split(" ")[1]
-        for url in _metadata.get_all("Project-URL")
+        for url in _metadata.get_all("Project-URL")  # pyright: ignore[reportOptionalIterable]
         if str(url).startswith("Discord")
     ),
     "discord_url",

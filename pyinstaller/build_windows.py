@@ -5,17 +5,18 @@ import os
 if os.name != "nt":
     raise SystemExit("Must be run on Windows")
 
-import importlib.metadata
-
 import dunamai
 import PyInstaller.__main__
 from pyinstaller_versionfile import (  # pyright: ignore[reportMissingTypeStubs]
     create_versionfile,  # pyright: ignore[reportUnknownVariableType]
 )
+from tbc_video_export.common import consts
 
-full_ver = importlib.metadata.version("tbc-video-export")
-is_final = dunamai.Version.parse(full_ver).stage == ""
-version = f"{dunamai.Version.parse(full_ver).base}{'' if is_final else '.99'}"
+# use .99 as the 4th integer if non-final release
+is_final = dunamai.Version.parse(consts.PROJECT_VERSION).stage == ""
+version = (
+    f"{dunamai.Version.parse(consts.PROJECT_VERSION).base}{'' if is_final else '.99'}"
+)
 
 print(f"Building Windows binary version {version}")
 
