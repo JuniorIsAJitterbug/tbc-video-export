@@ -35,7 +35,6 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
 
-    if: github.ref == 'refs/heads/master'
     needs:
       - test
 
