@@ -15,7 +15,7 @@ jobs:
     name: build
     runs-on: ubuntu-latest
 
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.ref_name == 'master' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -41,6 +41,7 @@ jobs:
     name: Publish to TestPyPI
     runs-on: ubuntu-latest
 
+    if: github.ref == 'refs/heads/master'
     needs:
       - build
 
