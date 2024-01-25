@@ -1,21 +1,43 @@
 name: "Publish to PyPI and release packages"
 
 on:
-  workflow_run:
-    workflows: [Run unit tests]
-    types:
-      - completed
+  pull_request:
+  workflow_call:
+  push:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
+  test:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: cachix/install-nix-action@v25
+
+      - name: Install
+        run: nix develop --impure --accept-flake-config --command poetry install
+
+      - name: Create fake binaries to satisfy tests (fixme)
+        run: touch ffmpeg ld-dropout-correct ld-chroma-decoder ld-process-vbi ld-process-efm ld-export-metadata
+
+      - name: Run unit tests
+        run: nix develop --impure --accept-flake-config --command poetry run python -m unittest
+
   build:
     name: Build
     runs-on: ubuntu-latest
 
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: github.ref == 'refs/heads/master'
+    needs:
+      - test
 
     steps:
       - uses: actions/checkout@v4
