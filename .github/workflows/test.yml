@@ -10,8 +10,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  tests:
-    name: tests
+  test:
+    name: test
     runs-on: ubuntu-latest
 
     steps:

@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   build:
-    name: build
+    name: Build
     runs-on: ubuntu-latest
 
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
@@ -129,4 +129,93 @@ jobs:
         run: >-
           gh release upload
           '${{ github.ref_name }}' dist/**
+          --repo '${{ github.repository }}'
+
+  build-appimage:
+    name: Build AppImage package
+    runs-on: ubuntu-latest
+
+    needs:
+      - github-release
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: cachix/install-nix-action@v25
+
+      - name: Install
+        run: nix develop --impure --accept-flake-config --command poetry install --with=appimage
+
+      - name: Build AppImage
+        run: nix develop --impure --accept-flake-config --command poetry run python-appimage build app -p 3.10 appimage/
+
+      - name: Rename AppImage file
+        run: mv tbc-video-export-x86_64.AppImage tbc-video-export.AppImage
+
+      # AppImages require libfuse to run
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: fuse
+          version: 1.0
+
+      - name: Test AppImage
+        run: ./tbc-video-export.AppImage --version
+
+      - name: Upload AppImage to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+        run: >-
+          gh release upload
+          '${{ github.ref_name }}' 'tbc-video-export.AppImage#tbc-video-export-${{ github.ref_name }}.AppImage'
+          --repo '${{ github.repository }}'
+
+  build-windows-binary:
+    name: Build Windows binary with PyInstaller
+    runs-on: windows-latest
+
+    needs:
+      - github-release
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Setup Environment
+        run: |
+          python -m venv .venv
+          .\.venv\Scripts\Activate.ps1
+          pip install poetry
+
+          New-Item -ItemType Directory -Path .\build
+
+      - name: Setup dependencies
+        run: |
+          .\.venv\Scripts\Activate.ps1
+          poetry install --with=pyinstaller
+
+      - name: Create PyInstaller binary
+        run: |
+          .\.venv\Scripts\Activate.ps1
+          poetry run python .\pyinstaller\build_windows.py
+
+      - name: Test binary
+        run: .\dist\tbc-video-export.exe --version
+
+      - name: Upload binary to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+        run: >-
+          gh release upload
+          '${{ github.ref_name }}' '.\dist\tbc-video-export.exe#tbc-video-export-${{ github.ref_name }}.exe'
           --repo '${{ github.repository }}'
