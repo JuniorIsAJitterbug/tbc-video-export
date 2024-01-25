@@ -258,6 +258,38 @@ class TestWrappersFFmpeg(unittest.TestCase):
                 ]
             )
 
+    def test_ffmpeg_test_invalid_filter_str_opt(self) -> None:  # noqa: D102
+        _, opts = self.parse_opts(
+            [
+                str(self.path),
+                "pal_svideo",
+                "--profile-add-filter",
+                "bwdif",
+                "--profile-add-filter",
+                "colorlevels32",
+                "--profile-add-filter",
+                "map_r_to_lr",
+                "--force-black-level",
+                "255,255,255",
+            ]
+        )
+        self.files = FileHelper(opts, self.config)
+        state = ProgramState(opts, self.config, self.files)
+
+        ffmpeg_wrapper = WrapperFFmpeg(
+            state,
+            WrapperConfig[tuple[Pipe], None](
+                state.current_export_mode,
+                TBCType.CHROMA,
+                input_pipes=(self.pipe, self.pipe),
+                output_pipes=None,
+            ),
+        )
+
+        cmd = ffmpeg_wrapper.command.data
+
+        self.assertFalse(any(",," in cmds for cmds in cmd))
+
 
 if __name__ == "__main__":
     unittest.main()
