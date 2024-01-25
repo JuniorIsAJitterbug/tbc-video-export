@@ -209,24 +209,13 @@ class WrapperFFmpeg(Wrapper):
 
     def _get_filter_complex_opts(self) -> FlatList:
         """Return opts for filter complex."""
-        colorlevels = (
-            "colorlevels="
-            f"rimin={self._state.opts.force_black_level[0]}/255:"
-            f"gimin={self._state.opts.force_black_level[1]}/255:"
-            f"bimin={self._state.opts.force_black_level[2]}/255"
-            if self._state.opts.force_black_level is not None
-            else None
-        )
+        field_filter = f"setfield={self._get_field_order()}"
+        common_filters = [field_filter]
 
-        vf_str = (
-            ",".join(
-                vf
-                for vf in (profile.video_filter for profile in filter_profiles)
-                if vf is not None
-            )
-            if (filter_profiles := self._get_profile().filter_profiles) is not None
-            else None
-        )
+        if (filter_profiles := self._get_profile().filter_profiles) is not None:
+            for vf in (profile.video_filter for profile in filter_profiles):
+                if vf is not None:
+                    common_filters.append(vf)
 
         of_str = (
             ",".join(
@@ -238,11 +227,17 @@ class WrapperFFmpeg(Wrapper):
             else ""
         )
 
-        video_filters = ",".join(vf for vf in (vf_str, colorlevels) if vf is not None)
-        filters_opts = f",{video_filters}" if video_filters else ""
-        other_filters_opts = f",{of_str}" if of_str else ""
+        # override profile colorlevels if set with opt
+        if self._state.opts.force_black_level is not None:
+            common_filters.append(
+                "colorlevels="
+                f"rimin={self._state.opts.force_black_level[0]}/255:"
+                f"gimin={self._state.opts.force_black_level[1]}/255:"
+                f"bimin={self._state.opts.force_black_level[2]}/255"
+            )
 
-        common_filter = f",setfield={self._get_field_order()}{filters_opts}"
+        filters_opts = f",{','.join(common_filters)}"
+        other_filters_opts = f",{of_str}" if of_str else ""
 
         match self._config.export_mode:
             case ExportMode.CHROMA_MERGE:
@@ -256,7 +251,7 @@ class WrapperFFmpeg(Wrapper):
                         f"[1:v]format={self._get_profile().video_format},"
                         f"extractplanes=u+v[u][v];"
                         f"[y][u][v]mergeplanes=map1s=1:map2s=2:"
-                        f"format={self._get_profile().video_format}{common_filter}"
+                        f"format={self._get_profile().video_format}{filters_opts}"
                         f"[v_output]"
                         f"{other_filters_opts}"
                     )
@@ -265,7 +260,7 @@ class WrapperFFmpeg(Wrapper):
                     complex_filter = (
                         f"[1:v]format={self._get_profile().video_format}[chroma];"
                         f"[0:v][chroma]mergeplanes=map1s=1:map1p=1:map2s=1:map2p=2:"
-                        f"format={self._get_profile().video_format}{common_filter}"
+                        f"format={self._get_profile().video_format}{filters_opts}"
                         f"[v_output]"
                         f"{other_filters_opts}"
                     )
@@ -273,7 +268,7 @@ class WrapperFFmpeg(Wrapper):
             case ExportMode.LUMA_EXTRACTED:
                 # extract Y from a Y/C input
                 complex_filter = (
-                    f"[0:v]extractplanes=y{common_filter}"
+                    f"[0:v]extractplanes=y{filters_opts}"
                     f"[v_output]"
                     f"{other_filters_opts}"
                 )
@@ -281,18 +276,18 @@ class WrapperFFmpeg(Wrapper):
             case ExportMode.LUMA_4FSC:
                 # interleve tbc fields
                 complex_filter = (
-                    f"[0:v]il=l=i:c=i{common_filter}"
+                    f"[0:v]il=l=i:c=i{filters_opts}"
                     f"[v_output]"
                     f"{other_filters_opts}"
                 )
 
             case _ as mode if mode is ExportMode.LUMA and self._state.opts.two_step:
                 # luma step in two-step should not use any filters
-                complex_filter = "[0:v]null[v_output]"
+                complex_filter = f"[0:v]null,{field_filter}[v_output]"
 
             case _:
                 complex_filter = (
-                    f"[0:v]null{common_filter}[v_output]{other_filters_opts}"
+                    f"[0:v]null{filters_opts}[v_output]{other_filters_opts}"
                 )
 
         return FlatList(("-filter_complex", complex_filter))
