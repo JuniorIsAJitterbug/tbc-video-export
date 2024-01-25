@@ -30,15 +30,20 @@ jobs:
       - name: Setup Environment
         run: |
           python -m venv .venv
-          New-Item -ItemType Directory -Path .\build
           .\.venv\Scripts\Activate.ps1
           python -m pip install poetry
 
+          New-Item -ItemType Directory -Path .\build
+
       - name: Setup dependencies
-        run: python -m poetry install --with=pyinstaller
+        run: |
+          .\.venv\Scripts\Activate.ps1
+          python -m poetry install --with=pyinstaller
 
       - name: Create PyInstaller binary
-        run: python -m poetry run pyinstaller/build_windows.py
+        run: |
+          .\.venv\Scripts\Activate.ps1
+          python -m poetry run pyinstaller/build_windows.py
 
       - name: Test
         run: Get-ChildItem .\dist\
