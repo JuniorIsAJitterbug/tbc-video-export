@@ -5,6 +5,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from tbc_video_export.common import consts
 from tbc_video_export.common.enums import (
     ExportMode,
     PipeType,
@@ -244,22 +245,36 @@ class WrapperFFmpeg(Wrapper):
                 # merge Y/C from separate Y+C inputs
 
                 if self._state.opts.two_step:
-                    # luma file, chroma decoder input (mergeplanes=0x001020)
+                    # luma file, chroma decoder input
+
+                    mergeplanes = (
+                        "0x001020"
+                        if consts.FFMPEG_USE_OLD_MERGEPLANES
+                        else "map1s=1:map2s=2"
+                    )
+
                     complex_filter = (
                         f"[0:v]format={self._get_profile().video_format},"
                         f"extractplanes=y[y];"
                         f"[1:v]format={self._get_profile().video_format},"
                         f"extractplanes=u+v[u][v];"
-                        f"[y][u][v]mergeplanes=map1s=1:map2s=2:"
+                        f"[y][u][v]mergeplanes={mergeplanes}:"
                         f"format={self._get_profile().video_format}{filters_opts}"
                         f"[v_output]"
                         f"{other_filters_opts}"
                     )
                 else:
-                    # both decoder inputs piped in (mergeplanes=0x001112)
+                    # both decoder inputs piped in
+
+                    mergeplanes = (
+                        "0x001112"
+                        if consts.FFMPEG_USE_OLD_MERGEPLANES
+                        else "map1s=1:map1p=1:map2s=1:map2p=2"
+                    )
+
                     complex_filter = (
                         f"[1:v]format={self._get_profile().video_format}[chroma];"
-                        f"[0:v][chroma]mergeplanes=map1s=1:map1p=1:map2s=1:map2p=2:"
+                        f"[0:v][chroma]mergeplanes={mergeplanes}:"
                         f"format={self._get_profile().video_format}{filters_opts}"
                         f"[v_output]"
                         f"{other_filters_opts}"

@@ -47,6 +47,9 @@ TWO_STEP_OUT_FILE_LUMA_SUFFIX: Final = "luma"
 
 FFMPEG_VIDEO_MAP: Final = "[v_out]"
 
+# Ubuntu 22.04 uses FFmpeg 4.4.1 which does not support the new format
+FFMPEG_USE_OLD_MERGEPLANES: Final = True
+
 
 # Windows 10 conhost uses unicode-less fonts by default :'(
 # SUCCESS_SYMBOL = "✓"
