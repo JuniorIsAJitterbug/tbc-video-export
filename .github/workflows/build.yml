@@ -122,10 +122,9 @@ jobs:
     name: Build Linux AppImage package
     runs-on: ubuntu-22.04
 
-    # uses pip to install latest version, so run after pypi
     if: startsWith(github.ref, 'refs/tags/v')
     needs:
-      - publish-to-pypi
+      - build
 
     steps:
       - name: Ensure PyPI package is updated
@@ -149,16 +148,17 @@ jobs:
           poetry install --with=appimage
 
       - name: Build AppImage
-        run: >-
-          nix develop
-          --impure
-          --accept-flake-config
-          .#ci
-          --command
+        run: |
+          echo ${{ github.workspace }} > appimage/requirements.txt
+
+          nix develop \
+          --impure \
+          --accept-flake-config \
+          .#ci \
+          --command \
           poetry run python-appimage build app -p 3.10 appimage/
 
-      - name: Rename AppImage file
-        run: mv tbc-video-export-x86_64.AppImage tbc-video-export.AppImage
+          mv tbc-video-export-x86_64.AppImage tbc-video-export.AppImage
 
       # AppImages require libfuse to run
       - uses: awalsh128/cache-apt-pkgs-action@latest
