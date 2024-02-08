@@ -52,7 +52,6 @@ class WrapperFFmpeg(Wrapper):
                 self._get_map_opts(),
                 self._get_timecode_opt(),
                 self._get_framerate_opt(),
-                self._get_aspect_ratio_opt(),
                 self._get_color_range_opt(),
                 self._get_color_opts(),
                 self._get_format_opts(),
@@ -228,6 +227,9 @@ class WrapperFFmpeg(Wrapper):
             else ""
         )
 
+        if self._state.opts.force_anamorphic or self._state.opts.letterbox:
+            common_filters.append(self._get_widescreen_aspect_ratio_filter())
+
         # override profile colorlevels if set with opt
         if self._state.opts.force_black_level is not None:
             common_filters.append(
@@ -363,17 +365,14 @@ class WrapperFFmpeg(Wrapper):
             )
         )
 
-    def _get_aspect_ratio_opt(self) -> FlatList | None:
-        """Return opts for aspect ratio."""
-        # do not add AR flag to file, as it must match the rawvideo from chroma on merge
-        if self._is_two_step_luma_mode():
-            return None
+    def _get_widescreen_aspect_ratio_filter(self) -> str:
+        """Return filter for widescreen aspect ratio."""
+        match self._state.video_system:
+            case VideoSystem.PAL:
+                return "setsar=512/461:max=1000"
 
-        return (
-            FlatList(("-aspect", "16:9"))
-            if (self._state.opts.force_anamorphic or self._state.opts.letterbox)
-            else None
-        )
+            case VideoSystem.NTSC | VideoSystem.PAL_M:
+                return "setsar=194/171:max=1000"
 
     def _get_color_opts(self) -> FlatList | None:
         """Return opts for color settings."""
