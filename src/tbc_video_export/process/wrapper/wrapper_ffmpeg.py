@@ -371,12 +371,8 @@ class WrapperFFmpeg(Wrapper):
 
         return (
             FlatList(("-aspect", "16:9"))
-            if (
-                self._state.file_helper.tbc_json.is_widescreen
-                or self._state.opts.force_anamorphic
-                or self._state.opts.letterbox
-            )
-            else FlatList(("-aspect", "4:3"))
+            if (self._state.opts.force_anamorphic or self._state.opts.letterbox)
+            else None
         )
 
     def _get_color_opts(self) -> FlatList | None:
