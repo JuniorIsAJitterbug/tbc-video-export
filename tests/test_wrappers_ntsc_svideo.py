@@ -81,7 +81,7 @@ class TestWrappersNTSCSvideo(unittest.TestCase):
 
         cmd = ffmpeg_wrapper.command.data
 
-        self.assertTrue(any("setsar=194/171:max=1000" in cmds for cmds in cmd))
+        self.assertTrue(any("setsar=25/22:max=1000" in cmds for cmds in cmd))
 
     def test_ffmpeg_anamorphic_ntsc_opt(self) -> None:  # noqa: D102
         _, opts = self.parse_opts([str(self.path), "ntsc_svideo", "--force-anamorphic"])
@@ -100,7 +100,7 @@ class TestWrappersNTSCSvideo(unittest.TestCase):
 
         cmd = ffmpeg_wrapper.command.data
 
-        self.assertTrue(any("setsar=194/171:max=1000" in cmds for cmds in cmd))
+        self.assertTrue(any("setsar=25/22:max=1000" in cmds for cmds in cmd))
 
     def test_decoder_default_chroma_decoder_ntsc_svideo(self) -> None:  # noqa: D102
         _, opts = self.parse_opts([str(self.path), "ntsc_svideo", "--threads", "4"])

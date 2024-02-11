@@ -369,10 +369,10 @@ class WrapperFFmpeg(Wrapper):
         """Return filter for widescreen aspect ratio."""
         match self._state.video_system:
             case VideoSystem.PAL:
-                return "setsar=512/461:max=1000"
+                return "setsar=865/779:max=1000"
 
             case VideoSystem.NTSC | VideoSystem.PAL_M:
-                return "setsar=194/171:max=1000"
+                return "setsar=25/22:max=1000"
 
     def _get_color_opts(self) -> FlatList | None:
         """Return opts for color settings."""

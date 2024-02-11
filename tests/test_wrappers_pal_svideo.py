@@ -80,7 +80,7 @@ class TestWrappersPALSvideo(unittest.TestCase):
 
         cmd = ffmpeg_wrapper.command.data
 
-        self.assertTrue(any("setsar=512/461:max=1000" in cmds for cmds in cmd))
+        self.assertTrue(any("setsar=865/779:max=1000" in cmds for cmds in cmd))
 
     def test_ffmpeg_anamorphic_pal_opt(self) -> None:  # noqa: D102
         _, opts = self.parse_opts([str(self.path), "pal_svideo", "--force-anamorphic"])
@@ -99,7 +99,7 @@ class TestWrappersPALSvideo(unittest.TestCase):
 
         cmd = ffmpeg_wrapper.command.data
 
-        self.assertTrue(any("setsar=512/461:max=1000" in cmds for cmds in cmd))
+        self.assertTrue(any("setsar=865/779:max=1000" in cmds for cmds in cmd))
 
     def test_decoder_default_chroma_decoder_pal_svideo(self) -> None:  # noqa: D102
         _, opts = self.parse_opts([str(self.path), "pal_svideo", "--threads", "4"])
