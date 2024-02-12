@@ -352,5 +352,17 @@ DEFAULT_CONFIG: JsonConfig = {
             "video_filter": None,
             "other_filter": "[2:a]pan=stereo|FR=FR|FL=FR",
         },
+        {
+            "name": "resize_pal_standard",
+            "description": "Resize to PAL standard SD resoluton (720x576)",
+            "video_filter": "scale=720x576:flags=lanczos,setdar=4/3",
+            "other_filter": None,
+        },
+        {
+            "name": "resize_ntsc_standard",
+            "description": "Resize to NTSC standard SD resoluton (720x480)",
+            "video_filter": "scale=720x480:flags=lanczos,setdar=4/3",
+            "other_filter": None,
+        },
     ],
 }
