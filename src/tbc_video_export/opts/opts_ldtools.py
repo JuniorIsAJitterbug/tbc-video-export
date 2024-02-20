@@ -142,6 +142,8 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         metavar="float",
         help="Luma noise reduction level in dB.\n"
         "This does not apply to the chroma decoder for Y/C-separated TBCs.\n"
+        "You likely do not need to use this and should instead apply any\n"
+        "noise reduction in post.\n"
         "\n\n",
     )
 
@@ -169,6 +171,8 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         metavar="float",
         help="Chroma noise reduction level in dB.\n"
         "This does not apply to the luma decoder for Y/C-separated TBCs.\n"
+        "You likely do not need to use this and should instead apply any\n"
+        "noise reduction in post.\n"
         "\n\n",
     )
 
