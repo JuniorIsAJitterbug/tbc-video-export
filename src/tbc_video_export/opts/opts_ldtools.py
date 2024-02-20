@@ -102,7 +102,7 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
 
     decoder_opts.add_argument(
         "--chroma-decoder",
-        type=ChromaDecoder,
+        type=_TypeChromaDecoder(parent),
         choices=list(ChromaDecoder),
         metavar="decoder",
         help="Set the chroma decoder to be used.\n"
@@ -268,3 +268,19 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         default=False,
         help="Keep going on errors. (default: no)\n\n",
     )
+
+
+class _TypeChromaDecoder:
+    """Return ChromaDecoder value if it exists."""
+
+    def __init__(self, parser: argparse.ArgumentParser) -> None:
+        self._parser = parser
+
+    def __call__(self, value: str) -> ChromaDecoder:
+        try:
+            return ChromaDecoder[value.upper()]
+        except KeyError:
+            self._parser.error(
+                f"argument --chroma-decoder: invalid ChromaDecoder value: '{value}', "
+                f"check --help for available options."
+            )

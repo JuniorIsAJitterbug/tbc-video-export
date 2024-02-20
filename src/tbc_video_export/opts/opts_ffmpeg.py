@@ -309,7 +309,8 @@ class _TypeFieldOrder:
             return FieldOrder[value.upper()]
         except KeyError:
             self._parser.error(
-                f"argument --field-order: invalid FieldOrder value: '{value}'"
+                f"argument --field-order: invalid FieldOrder value: '{value}', "
+                f"check --help for available options."
             )
 
 

@@ -89,7 +89,7 @@ def parse_opts(
 
     general_opts.add_argument(
         "--video-system",
-        type=VideoSystem,
+        type=_TypeVideoSystem(parser),
         choices=list(VideoSystem),
         metavar="format",
         help="Force a video system format. (default: from input.tbc.json)\n"
@@ -354,3 +354,19 @@ class _ActionSetVerbosity(argparse.Action):
         if option_strings in ("--show-process-output"):
             namespace.show_process_output = True
             namespace.no_progress = True
+
+
+class _TypeVideoSystem:
+    """Return ChromaDecoder value if it exists."""
+
+    def __init__(self, parser: argparse.ArgumentParser) -> None:
+        self._parser = parser
+
+    def __call__(self, value: str) -> VideoSystem:
+        try:
+            return VideoSystem[value.replace("-", "_").upper()]
+        except KeyError:
+            self._parser.error(
+                f"argument --video-system: invalid VideoSystem value: '{value}', "
+                f"check --help for available options."
+            )
