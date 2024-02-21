@@ -14,7 +14,6 @@ from tbc_video_export.process.process_state import ProcessState
 from tbc_video_export.process.wrapper.pipe.pipe_os import PipeOS
 
 if TYPE_CHECKING:
-    from collections.abc import Coroutine
     from typing import Any
 
     from tbc_video_export.process.wrapper import Wrapper
@@ -33,7 +32,7 @@ class Process:
 
         self._process_state = ProcessState()
         self._process: asyncio.subprocess.Process | None = None
-        self._tasks: set[asyncio.Task[Any] | Coroutine[Any, None, None]] = set()
+        self._tasks: set[asyncio.Task[Any]] = set()
 
         self._output_parser = ParserFactory.create(wrapper.process_name)
 
