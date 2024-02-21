@@ -45,7 +45,7 @@ class Process:
         """Run the process."""
         self.state.set_has_run()
 
-        if self.wrapper.log_output:
+        if self._state.opts.show_process_output or self._state.opts.log_process_output:
             # setup file logger
             log.setup_logger(
                 self._logger_name,
@@ -55,7 +55,7 @@ class Process:
                         self.wrapper.process_name, self.wrapper.tbc_type
                     )
                 )
-                if self._state.opts.log_process_output
+                if self._state.opts.log_process_output and self.wrapper.log_output
                 else None,
             )
 
