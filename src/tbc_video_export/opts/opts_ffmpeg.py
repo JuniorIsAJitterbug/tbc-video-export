@@ -87,6 +87,30 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
     )
 
     ffmpeg_opts.add_argument(
+        "--append-video-filter",
+        type=str,
+        metavar="filter",
+        help="Add a custom filter to the video segment of the complex filter.\n"
+        "Compatibility with profile is not guaranteed.\n"
+        "Use --dry-run to ensure your filter looks correct before encoding.\n\n"
+        "Examples:\n"
+        '--append-video-filter "scale=3480x2160:flags=lanczos,setdar=4/3"'
+        "\n\n",
+    )
+
+    ffmpeg_opts.add_argument(
+        "--append-other-filter",
+        type=str,
+        metavar="filter",
+        help="Add a custom filter to the end of the complex filter.\n"
+        "Compatibility with profile is not guaranteed.\n"
+        "Use --dry-run to ensure your filter looks correct before encoding.\n\n"
+        "Examples:\n"
+        '--append-other-filter "[2:a]loudnorm=i=-14"'
+        "\n\n",
+    )
+
+    ffmpeg_opts.add_argument(
         "--audio-track",
         dest="audio_track",
         action="append",

@@ -207,25 +207,20 @@ class WrapperFFmpeg(Wrapper):
 
         return input_opts
 
-    def _get_filter_complex_opts(self) -> FlatList:
+    def _get_filter_complex_opts(self) -> FlatList:  # noqa: C901
         """Return opts for filter complex."""
         field_filter = f"setfield={self._get_field_order()}"
-        common_filters = [field_filter]
+        common_filters: list[str] = [field_filter]
+        other_filters: list[str] = []
 
         if (filter_profiles := self._get_profile().filter_profiles) is not None:
             for vf in (profile.video_filter for profile in filter_profiles):
                 if vf is not None:
                     common_filters.append(vf)
 
-        of_str = (
-            ",".join(
-                of
-                for of in (profile.other_filter for profile in filter_profiles)
-                if of is not None
-            )
-            if (filter_profiles := self._get_profile().filter_profiles) is not None
-            else ""
-        )
+            for of in (profile.other_filter for profile in filter_profiles):
+                if of is not None:
+                    other_filters.append(of)
 
         if self._state.opts.force_anamorphic or self._state.opts.letterbox:
             common_filters.append(self._get_widescreen_aspect_ratio_filter())
@@ -239,8 +234,16 @@ class WrapperFFmpeg(Wrapper):
                 f"bimin={self._state.opts.force_black_level[2]}/255"
             )
 
+        if self._state.opts.append_video_filter is not None:
+            common_filters.append(self._state.opts.append_video_filter)
+
+        if self._state.opts.append_other_filter is not None:
+            other_filters.append(self._state.opts.append_other_filter)
+
         filters_opts = f",{','.join(common_filters)}"
-        other_filters_opts = f",{of_str}" if of_str else ""
+
+        other_filters_str = ",".join(other_filters)
+        other_filters_opts = f",{other_filters_str}" if len(other_filters_str) else ""
 
         match self._config.export_mode:
             case ExportMode.CHROMA_MERGE:
