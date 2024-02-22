@@ -102,6 +102,11 @@ class ProfileVideo(SubProfile):
         return self._profile["container"]
 
     @property
+    def output_format(self) -> str | None:
+        """Return the output format."""
+        return self._profile["output_format"]
+
+    @property
     def codec(self) -> str:
         """Return the video codec."""
         return self._profile["codec"]

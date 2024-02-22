@@ -476,15 +476,31 @@ class WrapperFFmpeg(Wrapper):
             else self._state.file_helper.output_video_file
         )
 
-        return (
-            FlatList(
+        # only set if the user has not manually specified a container
+        output_format = (
+            self._get_profile().video_profile.output_format
+            if not self._state.opts.profile_container
+            else None
+        )
+
+        if self._state.opts.checksum:
+            checksum_output = (
+                f"[f={output_format}]{output_file}"
+                if output_format is not None
+                else output_file
+            )
+
+            return FlatList(
                 (
                     "-f",
                     "tee",
-                    f"[f=streamhash]{output_file}.sha256|{output_file}",
+                    f"[f=streamhash]{output_file}.sha256|{checksum_output}",
                 )
             )
-            if self._state.opts.checksum
+
+        return (
+            FlatList(("-f", output_format, output_file))
+            if output_format is not None
             else FlatList(output_file)
         )
 

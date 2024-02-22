@@ -263,8 +263,15 @@ class _ActionListProfiles(argparse.Action):
                     f"  {ansi.dim('Profile Type:')} {profile.profile_type}"
                 )
 
+            output_format = (
+                f" ({profile.video_profile.output_format})"
+                if profile.video_profile.output_format is not None
+                else ""
+            )
+
             logging.getLogger("console").info(
-                f"  {ansi.dim('Container:')}\t{profile.video_profile.container}\n"
+                f"  {ansi.dim('Container:')}\t{profile.video_profile.container}"
+                f"{output_format}\n"
                 f"  {ansi.dim('Video Codec:')}\t{profile.video_profile.codec} "
                 f"({profile.video_format})"
             )

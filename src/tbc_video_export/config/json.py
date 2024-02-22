@@ -35,6 +35,7 @@ class JsonSubProfileVideo(JsonSubProfile):
     """Raw mapping of video subprofile from JSON."""
 
     container: str
+    output_format: str | None
     codec: str
     opts: list[str | int] | None
 

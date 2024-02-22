@@ -185,6 +185,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "FFV1",
             "codec": "ffv1",
             "container": "mkv",
+            "output_format": None,
             "opts": [
                 "-coder",
                 1,
@@ -205,6 +206,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "ProRes 422 HQ",
             "codec": "prores",
             "container": "mov",
+            "output_format": None,
             "opts": [
                 "-profile:v",
                 3,
@@ -223,6 +225,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "ProRes 4444 XQ",
             "codec": "prores",
             "container": "mov",
+            "output_format": None,
             "opts": [
                 "-profile:v",
                 5,
@@ -241,6 +244,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "V210",
             "codec": "v210",
             "container": "mov",
+            "output_format": None,
             "opts": None,
         },
         {
@@ -248,12 +252,14 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "V410",
             "codec": "v410",
             "container": "mov",
+            "output_format": None,
             "opts": None,
         },
         {
             "name": "x264_web",
             "description": "x264 (Web)",
             "codec": "libx264",
+            "output_format": None,
             "container": "mov",
             "opts": [
                 "-crf",
@@ -274,6 +280,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "name": "x264_lossless",
             "description": "x264 (Lossless)",
             "codec": "libx264",
+            "output_format": None,
             "container": "mov",
             "opts": ["-qp", 0, "-preset", "veryslow"],
         },
@@ -281,6 +288,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "name": "x265_web",
             "description": "x265 (Web)",
             "codec": "libx265",
+            "output_format": None,
             "container": "mov",
             "opts": [
                 "-crf",
@@ -301,6 +309,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "name": "x265_lossless",
             "description": "x265 (Lossless)",
             "codec": "libx265",
+            "output_format": None,
             "container": "mov",
             "opts": [
                 "-preset",
