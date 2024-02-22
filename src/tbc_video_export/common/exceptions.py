@@ -86,7 +86,7 @@ class SampleRequiredError(Exception):
 class InvalidProfileError(Exception):
     """General profile errors."""
 
-    def __init__(self, message: str, config_path: Path | None) -> None:
+    def __init__(self, message: str, config_path: Path | None = None) -> None:
         super().__init__(message)
         self.config_path = config_path
 
