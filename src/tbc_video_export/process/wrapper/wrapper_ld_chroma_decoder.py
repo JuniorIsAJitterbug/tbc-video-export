@@ -11,6 +11,7 @@ from tbc_video_export.common.enums import (
     ProcessName,
     TBCType,
     VideoSystem,
+    VideoSystemLines,
 )
 from tbc_video_export.common.utils import FlatList
 from tbc_video_export.process.wrapper.wrapper import Wrapper
@@ -116,72 +117,48 @@ class WrapperLDChromaDecoder(Wrapper):
 
     def _get_active_line_opts(self) -> FlatList:
         """Return active line opts."""
-        if self._state.opts.vbi:
+        values: tuple[int, ...] | None = None
+
+        if (
+            self._state.opts.full_vertical
+            or self._state.opts.vbi
+            or self._state.profile.include_vbi
+        ):
             match self._state.video_system:
                 case VideoSystem.PAL:
-                    return FlatList(
-                        (
-                            "--ffll",
-                            "2",
-                            "--lfll",
-                            "308",
-                            "--ffrl",
-                            "2",
-                            "--lfrl",
-                            "620",
-                        ),
-                    )
+                    values = VideoSystemLines.PAL_FULL_VERTICAL.value
 
                 case VideoSystem.NTSC | VideoSystem.PAL_M:
-                    return FlatList(
-                        (
-                            "--ffll",
-                            "1",
-                            "--lfll",
-                            "259",
-                            "--ffrl",
-                            "2",
-                            "--lfrl",
-                            "525",
-                        ),
-                    )
+                    values = VideoSystemLines.NTSC_FULL_VERTICAL.value
 
         if self._state.opts.letterbox:
             match self._state.video_system:
                 case VideoSystem.PAL:
-                    return FlatList(
-                        (
-                            "--ffll",
-                            "2",
-                            "--lfll",
-                            "308",
-                            "--ffrl",
-                            "118",
-                            "--lfrl",
-                            "548",
-                        ),
-                    )
+                    values = VideoSystemLines.PAL_LETTERBOX.value
 
                 case VideoSystem.NTSC:
-                    return FlatList(
-                        (
-                            "--ffll",
-                            "2",
-                            "--lfll",
-                            "308",
-                            "--ffrl",
-                            "118",
-                            "--lfrl",
-                            "453",
-                        ),
-                    )
+                    values = VideoSystemLines.NTSC_LETTERBOX.value
 
                 case VideoSystem.PAL_M:
                     raise exceptions.SampleRequiredError(
                         f"{str(self._state.video_system).upper()} letterbox"
                     )
 
-        # vbi and letterbox not set
+        if values is not None:
+            return FlatList(
+                (
+                    "--ffll",
+                    values[0],
+                    "--lfll",
+                    values[1],
+                    "--ffrl",
+                    values[2],
+                    "--lfrl",
+                    values[3],
+                )
+            )
+
+        # use default/user values
         return FlatList(
             (
                 self._state.opts.convert_opt("first_active_field_line", "--ffll"),

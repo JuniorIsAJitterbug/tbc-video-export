@@ -207,11 +207,24 @@ class WrapperFFmpeg(Wrapper):
 
         return input_opts
 
-    def _get_filter_complex_opts(self) -> FlatList:  # noqa: C901
+    def _get_vbi_crop_filter(self) -> str:
+        """Return crop filter for full vertical to VBI crop."""
+        match self._state.video_system:
+            case VideoSystem.PAL:
+                return "crop=iw:ih-12:0:9"
+
+            case VideoSystem.NTSC | VideoSystem.PAL_M:
+                return "crop=iw:ih-19:0:17"
+
+    def _get_filter_complex_opts(self) -> FlatList:  # noqa: C901, PLR0912
         """Return opts for filter complex."""
         field_filter = f"setfield={self._get_field_order()}"
         common_filters: list[str] = [field_filter]
         other_filters: list[str] = []
+
+        # add full vertical -> vbi drop
+        if self._state.opts.vbi or self._get_profile().include_vbi:
+            common_filters.append(self._get_vbi_crop_filter())
 
         if (filter_profiles := self._get_profile().filter_profiles) is not None:
             for vf in (profile.video_filter for profile in filter_profiles):

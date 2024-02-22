@@ -234,7 +234,7 @@ def _validate_line_opts(parser: argparse.ArgumentParser, opts: Opts) -> None:
     ]
 
     if any(getattr(opts, x) is not None for x in field_frame_opts):
-        if opts.vbi or opts.letterbox:
+        if opts.vbi or opts.full_vertical or opts.letterbox:
             parser.error(
                 "arguments [--vbi | --letterbox]: not allowed with arguments "
                 "[--ffll | --lfll | --ffrl | --lfrl]"

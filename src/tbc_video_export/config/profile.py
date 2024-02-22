@@ -53,6 +53,16 @@ class Profile:
         )
 
     @property
+    def include_vbi(self) -> bool:
+        """Returns True if the profile contains include_vbi as True."""
+        return (
+            self._profile["include_vbi"]
+            if "include_vbi" in self._profile
+            and self._profile["include_vbi"] is not None
+            else False
+        )
+
+    @property
     def is_default(self) -> bool:
         """Returns True if the profile is flagged as default."""
         return (

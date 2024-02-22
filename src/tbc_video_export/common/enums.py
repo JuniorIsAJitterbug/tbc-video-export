@@ -84,6 +84,24 @@ class VideoSystem(Enum):
         return None
 
 
+class VideoSystemLines(Enum):
+    """Video system line values.
+
+    FFLL / LFLL / FFRL / LFRL
+    """
+
+    PAL_DEFAULT = (22, 308, 44, 620)
+    PAL_FULL_VERTICAL = (2, 308, 2, 620)
+    PAL_LETTERBOX = (2, 308, 118, 548)
+
+    NTSC_DEFAULT = (20, 259, 40, 525)
+    NTSC_FULL_VERTICAL = (1, 259, 2, 525)
+    NTSC_LETTERBOX = (2, 308, 118, 453)
+
+    PAL_M_DEFAULT = NTSC_DEFAULT
+    PAL_M_FULL_VERTICAL = NTSC_FULL_VERTICAL
+
+
 class ChromaDecoder(Enum):
     """Available chroma decoders."""
 

@@ -18,6 +18,7 @@ class JsonProfile(TypedDict):
     name: str
     type: str | None
     default: bool | None
+    include_vbi: bool | None
     video_profile: str
     video_format: str
     audio_profile: str | None

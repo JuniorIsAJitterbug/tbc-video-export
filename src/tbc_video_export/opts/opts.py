@@ -43,6 +43,7 @@ class Opts(argparse.Namespace):
     reverse: bool
     output_padding: int
     vbi: bool
+    full_vertical: bool
     letterbox: bool
     first_active_field_line: int | None
     last_active_field_line: int | None

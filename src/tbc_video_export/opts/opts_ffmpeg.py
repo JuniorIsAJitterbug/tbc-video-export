@@ -291,6 +291,11 @@ class _ActionListProfiles(argparse.Action):
                         f"  {ansi.dim('Audio Opts:')}\t{profile.audio_profile.opts}"
                     )
 
+            if profile.include_vbi:
+                logging.getLogger("console").info(
+                    f"  {ansi.dim('Include VBI:')}\t{profile.include_vbi}"
+                )
+
             if profile.filter_profiles:
                 for _profile in profile.filter_profiles:
                     sub_profiles.append(_profile)

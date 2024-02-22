@@ -40,16 +40,23 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         help="Pad the output frame to a multiple of these many pixels.\n\n",
     )
 
-    decoder_vbi_opts = decoder_opts.add_mutually_exclusive_group()
+    decoder_lines_opts = decoder_opts.add_mutually_exclusive_group()
 
-    decoder_vbi_opts.add_argument(
+    decoder_lines_opts.add_argument(
         "--vbi",
+        action="store_true",
+        default=False,
+        help="Adjust FFLL/LFLL/FFRL/LFRL for VBI export.\n\n",
+    )
+
+    decoder_lines_opts.add_argument(
+        "--full-vertical",
         action="store_true",
         default=False,
         help="Adjust FFLL/LFLL/FFRL/LFRL for full vertical export.\n\n",
     )
 
-    decoder_vbi_opts.add_argument(
+    decoder_lines_opts.add_argument(
         "--letterbox",
         action="store_true",
         default=False,
