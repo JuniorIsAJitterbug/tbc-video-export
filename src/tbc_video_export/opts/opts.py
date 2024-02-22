@@ -88,6 +88,8 @@ class Opts(argparse.Namespace):
     profile_luma: str
     profile_container: str | None
     profile_additional_filters: list[str]
+    append_video_filter: str | None
+    append_other_filter: str | None
     audio_track: list[AudioTrackOpt]
     metadata: list[list[str]]
     metadata_file: list[Path]
