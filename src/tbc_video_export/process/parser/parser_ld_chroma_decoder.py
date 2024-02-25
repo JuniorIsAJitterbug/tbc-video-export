@@ -18,6 +18,7 @@ class ParserLDChromaDecoder(Parser):
         super().__init__(process_name)
 
         self.tracked_value_name = "frame"
+        self.tracked_value_start = 0
 
     def parse_line(self, line: str) -> ExportStateSnapshot:  # noqa: D102
         state = ExportStateSnapshot()
@@ -38,7 +39,7 @@ class ParserLDChromaDecoder(Parser):
                 elif (start_frame := reg.group(1)) is not None and (
                     frame_count := reg.group(2)
                 ) is not None:
-                    self.tracked_value = int(start_frame)
+                    self.tracked_value_start = int(start_frame)
                     self.tracked_value_total = int(frame_count)
                 elif (current_frame := reg.group(3)) is not None and (
                     current_fps := reg.group(4)
