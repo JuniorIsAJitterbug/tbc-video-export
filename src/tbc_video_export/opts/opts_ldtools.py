@@ -46,7 +46,8 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--vbi",
         action="store_true",
         default=False,
-        help="Adjust FFLL/LFLL/FFRL/LFRL for VBI export.\n\n",
+        help="Show the VBI segment in the output video.\n"
+        "This uses full-vertical and applies a crop filter.\n\n",
     )
 
     decoder_lines_opts.add_argument(
