@@ -350,6 +350,7 @@ class _ActionSetVerbosity(argparse.Action):
 
         if option_strings in ("--debug"):
             namespace.debug = True
+            namespace.no_progress = True
 
         if option_strings in ("--show-process-output"):
             namespace.show_process_output = True
