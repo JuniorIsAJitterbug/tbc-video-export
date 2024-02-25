@@ -27,6 +27,9 @@ def parse_opts(
         prog=consts.APPLICATION_NAME,
         description=consts.PROJECT_SUMMARY,
         formatter_class=argparse.RawTextHelpFormatter,
+        usage=f"{consts.APPLICATION_NAME} [options] input_file [output_file]\n\n"
+        f"See --help or {consts.PROJECT_URL_WIKI_COMMANDLIST}\n"
+        "---",
     )
 
     if (cpu_count := os.cpu_count()) is None:

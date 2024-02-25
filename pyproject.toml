@@ -17,6 +17,7 @@ tbc-video-export = "tbc_video_export.__main__:main"
 
 [tool.poetry.urls]
 "Issues" = "https://github.com/JuniorIsAJitterbug/tbc-video-export/issues"
+"Wiki" = "https://github.com/JuniorIsAJitterbug/tbc-video-export/wiki"
 "Discord" = "https://discord.com/invite/pVVrrxd"
 
 [tool.poetry.group.dev.dependencies]
