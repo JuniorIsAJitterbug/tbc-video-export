@@ -269,8 +269,8 @@ class Config:
 
         filter_profiles = [
             profile
-            for profile in self.filter_profiles
             for name in filter_names
+            for profile in self.filter_profiles
             if profile.name.lower() == name.lower()
         ]
 
