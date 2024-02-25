@@ -227,6 +227,16 @@ DEFAULT_CONFIG: JsonConfig = {
             "audio_profile": "flac",
             "filter_profiles": [],
         },
+        {
+            "name": "av1_lossless_8bit",
+            "type": None,
+            "default": None,
+            "include_vbi": None,
+            "video_profile": "av1_lossless",
+            "video_format": "yuv422p",
+            "audio_profile": "flac",
+            "filter_profiles": [],
+        },
     ],
     "video_profiles": [
         {
