@@ -93,8 +93,8 @@ tbc-video-export input.tbc
 
 # Credits 
 
-- [JuniorIsAJitterbug](https://github.com/JuniorIsAJitterbug/) - Development and Implementation
-- [Harry Munday](https://github.com/harrypm/) - Development Direction, Testing, and Icon
+- [JuniorIsAJitterbug](https://github.com/JuniorIsAJitterbug/) - Development
+- [Harry Munday](https://github.com/harrypm/) - Project Management (documentation, testing, direction, icon)
 
 # Disclaimer
 

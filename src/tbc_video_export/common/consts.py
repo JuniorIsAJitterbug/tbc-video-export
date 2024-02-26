@@ -17,7 +17,14 @@ __version__ = "0.0.0"
 
 APPLICATION_NAME: Final = _metadata["Name"]
 PROJECT_VERSION: Final = _metadata["Version"] if __version__ == "0.0.0" else __version__
-PROJECT_SUMMARY: Final = _metadata["Summary"]
+
+PROJECT_CREDITS: Final = (
+    "Credits:\n"
+    "  Jitterbug\tDevelopment (https://github.com/JuniorIsAJitterbug)\n"
+    "  Harry Munday\tProject Management (https://github.com/harrypm)\n"
+)
+
+PROJECT_SUMMARY: Final = f"{_metadata['Summary']}\n\n{PROJECT_CREDITS}"
 PROJECT_URL: Final = _metadata["Home-Page"]
 PROJECT_URL_ISSUES: Final = get_url_from_metadata("Issues")
 PROJECT_URL_WIKI: Final = get_url_from_metadata("Wiki")
