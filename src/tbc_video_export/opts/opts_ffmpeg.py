@@ -7,7 +7,7 @@ from contextlib import suppress
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from tbc_video_export.common import exceptions
+from tbc_video_export.common import consts, exceptions
 from tbc_video_export.common.enums import FieldOrder, ProfileType
 from tbc_video_export.common.utils import ansi
 from tbc_video_export.opts.opts import AudioTrackOpt
@@ -83,7 +83,9 @@ def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
         "--list-profiles",
         action=_ActionListProfiles,
         config=config,
-        help="Show available profiles.\n\n",
+        help="Show available profiles.\n\n"
+        f"You can view this in the browser here:\n"
+        f"{consts.PROJECT_URL_WIKI_PROFILES}\n\n",
     )
 
     ffmpeg_opts.add_argument(

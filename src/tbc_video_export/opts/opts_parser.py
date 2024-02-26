@@ -129,7 +129,9 @@ def parse_opts(
         config=config,
         default=False,
         help=f"Dump the default configuration json to "
-        f"{consts.EXPORT_CONFIG_FILE_NAME}."
+        f"{consts.EXPORT_CONFIG_FILE_NAME}.\n\n"
+        f"For help on creating a custom profile, see:\n"
+        f"{consts.PROJECT_URL_WIKI_PROFILES}"
         "\n\n",
     )
 
