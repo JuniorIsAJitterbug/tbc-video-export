@@ -127,10 +127,6 @@ jobs:
       - build
 
     steps:
-      - name: Ensure PyPI package is updated
-        run: sleep 15
-        shell: bash
-
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
