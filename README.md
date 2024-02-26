@@ -37,17 +37,20 @@ tbc-video-export.AppImage input.tbc
 ```
 
 ### macOS
+> [!TIP]
+> You can add the application to your `PATH` by creating a symlink:  
+> `ln -s /Applications/tbc-video-export.app/Contents/MacOS/tbc-video-export /usr/local/bin/tbc-video-export`.
+```
+tbc-video-export input.tbc
+```
+or (*without symlink*)
 ```
 /Applications/tbc-video-export.app/Contents/MacOS/tbc-video-export input.tbc
 ```
-**Note:** You can symlink this to `/usr/local/bin`.
-```
-ln -s /Applications/tbc-video-export.app/Contents/MacOS/tbc-video-export /usr/local/bin/tbc-video-export
-tbc-video-export input.tbc
-```
 
 ### PyPI
-**Note:** Ensure the install location for `pip`/`pipx` is in `PATH`.
+> [!IMPORTANT]
+> Use `pipx ensurepath` to add the application to your `PATH`. If you install via `pip` you need to do this manually.
 ```
 tbc-video-export input.tbc
 ```
@@ -98,4 +101,4 @@ tbc-video-export input.tbc
 
 # Disclaimer
 
-This is my first major Python project. There are likely bugs and code that go against best practices. If you have any comments, suggestions, or improvements, feel free to create an issue, do a pull request, or contact **Jitterbug** or **Harry** on the [Domesday86](https://discord.gg/pVVrrxd) discord.
+This is my first major Python project. If you have any comments, suggestions, or improvements, feel free to create an issue, do a pull request, or contact **Jitterbug** or **Harry** on the [Domesday86](https://discord.gg/pVVrrxd) discord.
