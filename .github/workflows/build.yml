@@ -152,7 +152,7 @@ jobs:
 
       - name: Create PyInstaller binary
         run: |
-          poetry-dynamic-versioning
+          poetry run poetry-dynamic-versioning
           poetry run python .\pyinstaller\build_windows.py
 
       - name: Test binary
@@ -195,7 +195,7 @@ jobs:
 
       - name: Create PyInstaller binary
         run: |
-          poetry-dynamic-versioning
+          poetry run poetry-dynamic-versioning
           poetry run python pyinstaller/build_macos.py
 
       - name: Test binary
