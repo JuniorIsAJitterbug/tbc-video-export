@@ -196,20 +196,16 @@ jobs:
 
       - name: Setup Environment
         run: |
-          python -m venv .venv
-          .\.venv\Scripts\Activate.ps1
           pip install poetry
 
           New-Item -ItemType Directory -Path .\build
 
       - name: Setup dependencies
         run: |
-          .\.venv\Scripts\Activate.ps1
           poetry install --with=pyinstaller
 
       - name: Create PyInstaller binary
         run: |
-          .\.venv\Scripts\Activate.ps1
           poetry-dynamic-versioning
           poetry run python .\pyinstaller\build_windows.py
 
@@ -245,18 +241,14 @@ jobs:
 
       - name: Setup python environment
         run: |
-          python3.11 -m venv .venv
-          source .venv/bin/activate
           pip install poetry
 
       - name: Setup dependencies
         run: |
-          source .venv/bin/activate
           poetry install --with=pyinstaller
 
       - name: Create PyInstaller binary
         run: |
-          source .venv/bin/activate
           poetry-dynamic-versioning
           poetry run python pyinstaller/build_macos.py
 
