@@ -9,7 +9,7 @@ class JsonConfig(TypedDict):
     profiles: list[JsonProfile]
     video_profiles: list[JsonSubProfileVideo]
     audio_profiles: list[JsonSubProfileAudio]
-    filter_profiles: list[JsonPSubrofileFilter]
+    filter_profiles: list[JsonSubProfileFilter]
 
 
 class JsonProfile(TypedDict):
@@ -48,7 +48,7 @@ class JsonSubProfileAudio(JsonSubProfile):
     opts: list[str | int] | None
 
 
-class JsonPSubrofileFilter(JsonSubProfile):
+class JsonSubProfileFilter(JsonSubProfile):
     """Raw mapping of filter subprofile from JSON."""
 
     video_filter: str | None

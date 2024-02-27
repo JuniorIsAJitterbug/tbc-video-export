@@ -9,9 +9,9 @@ from tbc_video_export.common.utils import FlatList
 if TYPE_CHECKING:
     from tbc_video_export.config.json import (
         JsonProfile,
-        JsonPSubrofileFilter,
         JsonSubProfile,
         JsonSubProfileAudio,
+        JsonSubProfileFilter,
         JsonSubProfileVideo,
     )
 
@@ -35,7 +35,7 @@ class Profile:
             key in self._profile for key in ("name", "video_profile", "video_format")
         ):
             raise exceptions.InvalidProfileError(
-                "profile requires at least a name, video_profile and video_format"
+                "Profile requires at least a name, video_profile and video_format"
             )
 
     @property
@@ -83,6 +83,15 @@ class SubProfile:
     def __init__(self, profile: JsonSubProfile):
         self._profile = profile
 
+        # ensure required fields are set
+        if "name" not in self._profile:
+            raise exceptions.InvalidProfileError("Video profile missing name.")
+
+        if "description" not in self._profile:
+            raise exceptions.InvalidProfileError(
+                f"Video profile {self._profile['name']} is missing description."
+            )
+
     @property
     def name(self) -> str:
         """Return profile name."""
@@ -98,12 +107,13 @@ class ProfileVideo(SubProfile):
     """Holds FFmpeg video profile."""
 
     def __init__(self, profile: JsonSubProfileVideo) -> None:
+        super().__init__(profile)
         self._profile = profile
 
         # ensure required fields are set
-        if not all(key in self._profile for key in ("name", "container", "codec")):
+        if not all(key in self._profile for key in ("container", "codec")):
             raise exceptions.InvalidProfileError(
-                "Video profile requires at least a name, container and codec."
+                f"Video profile {self._profile['name']} is missing container or codec."
             )
 
     @property
@@ -131,12 +141,13 @@ class ProfileAudio(SubProfile):
     """Holds FFmpeg audio profile."""
 
     def __init__(self, profile: JsonSubProfileAudio) -> None:
+        super().__init__(profile)
         self._profile = profile
 
         # ensure required fields are set
-        if not all(key in self._profile for key in ("name", "codec")):
+        if "codec" not in self._profile and self._profile["codec"]:
             raise exceptions.InvalidProfileError(
-                "Audio profile requires at least a name and codec."
+                f"Audio profile {self._profile['name']} is missing codec."
             )
 
     @property
@@ -153,15 +164,17 @@ class ProfileAudio(SubProfile):
 class ProfileFilter(SubProfile):
     """Holds FFmpeg filter profile."""
 
-    def __init__(self, profile: JsonPSubrofileFilter) -> None:
+    def __init__(self, profile: JsonSubProfileFilter) -> None:
+        super().__init__(profile)
         self._profile = profile
 
         # ensure required fields are set
-        if all(key in self._profile for key in ("name")) and any(
-            key in self._profile for key in ("video_filter", "audio_filter")
+        if not any(
+            key in self._profile and self._profile[key] is not None
+            for key in ("video_filter", "other_filter")
         ):
             raise exceptions.InvalidProfileError(
-                "Filter profile requires at least a name and a filter."
+                f"Filter profile {self._profile['name']} has no filters."
             )
 
     @property

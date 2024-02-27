@@ -190,6 +190,8 @@ class Config:
             raise exceptions.InvalidProfileError(
                 "Could not load profiles.", self.get_config_file()
             ) from e
+        except exceptions.InvalidProfileError as e:
+            raise exceptions.InvalidProfileError(str(e), self.get_config_file()) from e
 
     def _get_profiles_from_type(self, profile_type: ProfileType) -> list[Profile]:
         """Return a list of profiles for a given type."""

@@ -41,7 +41,7 @@ def handle_exceptions(e: BaseException | None):
             _print_exception(e)
             logging.getLogger("console").critical(f"\nError parsing {e.config_path}.")
             logging.getLogger("console").critical(
-                "If you have upgraded this may not be compatible.\n"
+                "If you have upgraded this config file may not be compatible.\n"
                 "Try moving or deleting the file and trying again."
             )
         case SampleRequiredError():
