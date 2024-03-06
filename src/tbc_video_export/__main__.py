@@ -8,7 +8,7 @@ from contextlib import nullcontext
 from tbc_video_export.common import FileHelper, exceptions
 from tbc_video_export.common.utils import interrupts, log, strings
 from tbc_video_export.config.config import Config
-from tbc_video_export.opts import opts_parser
+from tbc_video_export.opts import opt_validators, opts_parser
 from tbc_video_export.process.process_handler import ProcessHandler
 from tbc_video_export.program_state import ProgramState
 
@@ -38,7 +38,7 @@ async def _run() -> None:
             files,
         )
 
-        opts_parser.validate_opts(state, parser, opts)
+        opt_validators.validate_opts(state, parser, opts)
 
         handler = ProcessHandler(state)
 
