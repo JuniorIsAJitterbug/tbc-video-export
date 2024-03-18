@@ -175,12 +175,66 @@ class PipeType(Flag):
         return self.name.upper()
 
 
-class ProfileType(Enum):
-    """Profile types for FFmpeg."""
+class VideoBitDepthType(Enum):
+    """Video bitdepth types for profiles."""
 
-    DEFAULT = TBCType.CHROMA | TBCType.COMBINED
-    LUMA = TBCType.LUMA
+    BIT8 = "8bit"
+    BIT10 = "10bit"
+    BIT16 = "16bit"
 
-    def __str__(self) -> str:
-        """Return formatted enum name as string."""
-        return self.name.upper()
+
+class ProfileVideoType(Enum):
+    """Video types for profiles."""
+
+    LOSSLESS = "lossless"
+
+
+class VideoFormatType(Enum):
+    """Video format types for profiles."""
+
+    GRAY = {
+        8: "gray8",
+        10: "gray16le",
+        16: "gray16le",
+    }
+    YUV420 = {
+        8: "yuv420p",
+        10: "yuv420p10le",
+        16: "yuv420p16le",
+    }
+    YUV422 = {
+        8: "yuv422p",
+        10: "yuv422p10le",
+        16: "yuv422p16le",
+    }
+    YUV444 = {
+        8: "yuv444p",
+        10: "yuv444p10le",
+        16: "yuv444p16le",
+    }
+
+    @classmethod
+    def get_new_format(cls, current_format: str, new_bitdepth: int) -> str | None:
+        """Return new format from current format and new bitdepth."""
+        return next(
+            (
+                member.value.get(new_bitdepth)
+                for member in cls
+                for _, v in member.value.items()
+                if current_format == v
+            ),
+            None,
+        )
+
+    @classmethod
+    def get_bitdepth(cls, current_format: str) -> int | None:
+        """Return bitdepth of current format."""
+        return next(
+            (
+                k
+                for member in cls
+                for k, v in member.value.items()
+                if current_format == v
+            ),
+            None,
+        )

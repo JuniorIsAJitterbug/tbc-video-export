@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common import exceptions
-from tbc_video_export.common.enums import ProfileType
-from tbc_video_export.common.utils import FlatList
+from tbc_video_export.common.enums import ProfileVideoType, VideoSystem
+from tbc_video_export.common.utils import FlatList, ansi
 
 if TYPE_CHECKING:
     from tbc_video_export.config.json import (
@@ -24,19 +24,12 @@ class Profile:
         profile: JsonProfile,
         video_profile: ProfileVideo,
         audio_profile: ProfileAudio | None,
-        filter_profiles: list[ProfileFilter] | None,
+        filter_profiles: list[ProfileFilter],
     ) -> None:
         self._profile = profile
         self.video_profile = video_profile
         self.audio_profile = audio_profile
-        self.filter_profiles = filter_profiles
-
-        if not all(
-            key in self._profile for key in ("name", "video_profile", "video_format")
-        ):
-            raise exceptions.InvalidProfileError(
-                "Profile requires at least a name, video_profile and video_format"
-            )
+        self._filter_profiles = filter_profiles
 
     @property
     def name(self) -> str:
@@ -44,37 +37,37 @@ class Profile:
         return self._profile["name"]
 
     @property
-    def profile_type(self) -> ProfileType:
-        """Returns profile type."""
-        return (
-            ProfileType[self._profile["type"].upper()]
-            if "type" in self._profile and self._profile["type"] is not None
-            else ProfileType.DEFAULT
-        )
-
-    @property
     def include_vbi(self) -> bool:
         """Returns True if the profile contains include_vbi as True."""
-        return (
-            self._profile["include_vbi"]
-            if "include_vbi" in self._profile
-            and self._profile["include_vbi"] is not None
-            else False
-        )
+        return self._profile["include_vbi"] if "include_vbi" in self._profile else False
 
     @property
     def is_default(self) -> bool:
         """Returns True if the profile is flagged as default."""
-        return (
-            self._profile["default"]
-            if "default" in self._profile and self._profile["default"] is not None
-            else False
-        )
+        return self._profile["default"] if "default" in self._profile else False
 
     @property
-    def video_format(self) -> str:
-        """Return profile name."""
-        return self._profile["video_format"]
+    def filter_profiles(self) -> list[ProfileFilter]:
+        """Return filter profiles."""
+        return self._filter_profiles
+
+    @filter_profiles.setter
+    def filter_profiles(self, filter_profiles: list[ProfileFilter]) -> None:
+        """Set filter profiles."""
+        self._filter_profiles = filter_profiles
+
+    def __str__(self) -> str:  # noqa: D105
+        data = f"--{self.name} {'(default)' if self.is_default else ''}\n"
+
+        data += str(self.video_profile)
+
+        if self.audio_profile is not None:
+            data += str(self.audio_profile)
+
+        if self.include_vbi:
+            data += f"  {ansi.dim('Include VBI')}\t{self.include_vbi}\n"
+
+        return data
 
 
 class SubProfile:
@@ -82,15 +75,6 @@ class SubProfile:
 
     def __init__(self, profile: JsonSubProfile):
         self._profile = profile
-
-        # ensure required fields are set
-        if "name" not in self._profile:
-            raise exceptions.InvalidProfileError("Video profile missing name.")
-
-        if "description" not in self._profile:
-            raise exceptions.InvalidProfileError(
-                f"Video profile {self._profile['name']} is missing description."
-            )
 
     @property
     def name(self) -> str:
@@ -109,12 +93,7 @@ class ProfileVideo(SubProfile):
     def __init__(self, profile: JsonSubProfileVideo) -> None:
         super().__init__(profile)
         self._profile = profile
-
-        # ensure required fields are set
-        if not all(key in self._profile for key in ("container", "codec")):
-            raise exceptions.InvalidProfileError(
-                f"Video profile {self._profile['name']} is missing container or codec."
-            )
+        self._video_format = self._profile["video_format"]
 
     @property
     def container(self) -> str:
@@ -124,7 +103,9 @@ class ProfileVideo(SubProfile):
     @property
     def output_format(self) -> str | None:
         """Return the output format."""
-        return self._profile["output_format"]
+        return (
+            self._profile["output_format"] if "output_format" in self._profile else None
+        )
 
     @property
     def codec(self) -> str:
@@ -134,7 +115,104 @@ class ProfileVideo(SubProfile):
     @property
     def opts(self) -> FlatList | None:
         """Return the video opts if they exist."""
-        return FlatList(self._profile["opts"])
+        return FlatList(self._profile["opts"]) if "opts" in self._profile else None
+
+    @property
+    def video_format(self) -> str:
+        """Return the video format."""
+        return self._video_format
+
+    @video_format.setter
+    def video_format(self, video_format: str) -> None:
+        """Set video format."""
+        self._video_format = video_format
+
+    @property
+    def filter_profiles_additions(self) -> list[str]:
+        """Return the additional filters if they exists."""
+        return (
+            self._profile["filter_profiles_additions"]
+            if "filter_profiles_additions" in self._profile
+            else []
+        )
+
+    @property
+    def filter_profiles_override(self) -> list[str] | None:
+        """Return the filters to override parent filters if they exists."""
+        return (
+            self._profile["filter_profiles_override"]
+            if "filter_profiles_override" in self._profile
+            else None
+        )
+
+    @property
+    def profile_type(self) -> ProfileVideoType | None:
+        """Return the video profile type."""
+        try:
+            return ProfileVideoType(self._profile["type"])
+        except (KeyError, ValueError):
+            return None
+
+    @property
+    def video_system(self) -> VideoSystem | None:
+        """Return the video system filter."""
+        if "video_system" in self._profile:
+            try:
+                return VideoSystem(self._profile["video_system"])
+            except (KeyError, ValueError) as e:
+                raise exceptions.InvalidProfileError(
+                    f"Video profile {self._profile['name']} contains unknown "
+                    f"video_system."
+                ) from e
+
+        return None
+
+    def __str__(self) -> str:  # noqa: D105
+        data = "  "
+        data += (
+            f"--{ansi.bold(self.profile_type.value)} "
+            if self.profile_type is not None
+            else ""
+        )
+
+        if data == "  ":
+            data += "default"
+
+        data += "\n"
+        data += f"    {ansi.dim('Description')}\t{self.description} [{self.name}]\n"
+        data += f"    {ansi.dim('Video Codec')}\t{self.codec}\n"
+
+        if self.opts is not None:
+            data += f"    {ansi.dim('Video Opts')}\t{self.opts}\n"
+
+        data += f"    {ansi.dim('Format')}\t{self.video_format}\n"
+        data += f"    {ansi.dim('Container')}\t{self.container}"
+
+        if self.output_format is not None:
+            data += f" ({self.output_format})"
+
+        data += "\n"
+
+        if self.filter_profiles_additions or self.filter_profiles_override is not None:
+            data += f"    {ansi.dim('Filters')}\n"
+            if self.filter_profiles_additions:
+                data += (
+                    f"      {ansi.dim('Additions')}\t"
+                    f"{', '.join(self.filter_profiles_additions)}\n"
+                )
+
+            if self.filter_profiles_override is not None:
+                data += (
+                    f"      {ansi.dim('Override')}\t"
+                    f"{', '.join(self.filter_profiles_override)}\n"
+                )
+
+        if self.video_system is not None:
+            data += f"    {ansi.dim('System')}\t{self.video_system}\n"
+
+        # data += "\n"
+
+        return data
 
 
 class ProfileAudio(SubProfile):
@@ -144,21 +222,24 @@ class ProfileAudio(SubProfile):
         super().__init__(profile)
         self._profile = profile
 
-        # ensure required fields are set
-        if "codec" not in self._profile and self._profile["codec"]:
-            raise exceptions.InvalidProfileError(
-                f"Audio profile {self._profile['name']} is missing codec."
-            )
-
     @property
     def codec(self) -> str:
         """Return the audio codec."""
         return self._profile["codec"]
 
     @property
-    def opts(self) -> FlatList | None:
+    def opts(self) -> FlatList:
         """Return the audio opts if they exist."""
-        return FlatList(self._profile["opts"])
+        return (
+            FlatList(self._profile["opts"]) if "opts" in self._profile else FlatList()
+        )
+
+    def __str__(self) -> str:  # noqa: D105
+        data = f"  {ansi.dim('Audio Codec:')}\t{self.codec}\n"
+        if self.opts:
+            data += f"  {ansi.dim('Audio Opts')}\t{self.opts}\n"
+
+        return data
 
 
 class ProfileFilter(SubProfile):
@@ -167,15 +248,6 @@ class ProfileFilter(SubProfile):
     def __init__(self, profile: JsonSubProfileFilter) -> None:
         super().__init__(profile)
         self._profile = profile
-
-        # ensure required fields are set
-        if not any(
-            key in self._profile and self._profile[key] is not None
-            for key in ("video_filter", "other_filter")
-        ):
-            raise exceptions.InvalidProfileError(
-                f"Filter profile {self._profile['name']} has no filters."
-            )
 
     @property
     def video_filter(self) -> str | None:

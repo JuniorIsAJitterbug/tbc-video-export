@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common import exceptions
-from tbc_video_export.common.enums import ProfileType, VideoSystem
+from tbc_video_export.common.enums import VideoSystem
 from tbc_video_export.common.utils import ansi
 from tbc_video_export.opts.opts import AudioTrackOpt, Opts
 
@@ -26,7 +26,8 @@ def validate_opts(
     _validate_line_opts(parser, opts)
     _validate_video_system(state, parser, opts)
     _validate_ansi_support(opts)
-    _validate_luma_only_opts(state, parser, opts)
+    _validate_luma_only_opts(parser, opts)
+    _validate_video_format(parser, opts)
 
 
 def _validate_line_opts(parser: argparse.ArgumentParser, opts: Opts) -> None:
@@ -80,6 +81,12 @@ def _validate_video_system(
                 )
 
 
+def _validate_video_format(parser: argparse.ArgumentParser, opts: Opts) -> None:
+    # require bitdepth if format set
+    if opts.video_format is not None and opts.video_bitdepth is None:
+        parser.error("setting a video format requires a bitdepth.\n")
+
+
 def _validate_ansi_support(opts: Opts) -> None:
     # check if ansi is supported on Windows and disable progress if not
     if not ansi.has_ansi_support():
@@ -99,26 +106,12 @@ def _validate_ansi_support(opts: Opts) -> None:
         opts.no_progress = True
 
 
-def _validate_luma_only_opts(
-    state: ProgramState, parser: argparse.ArgumentParser, opts: Opts
-) -> None:
+def _validate_luma_only_opts(parser: argparse.ArgumentParser, opts: Opts) -> None:
     # check luma only redundant opts
-    if opts.luma_only or opts.luma_4fsc:
-        if opts.chroma_decoder is not None:
-            parser.error(
-                "arguments --chroma-decoder: not allowed with --luma-only or "
-                "--luma-4fsc (redundant)"
-            )
-
-        if opts.profile != state.config.get_default_profile(ProfileType.DEFAULT).name:
-            parser.error(
-                "arguments --profile: not allowed with --luma-only or "
-                "--luma-4fsc (redundant), try --profile-luma"
-            )
-
-    elif opts.profile_luma != state.config.get_default_profile(ProfileType.LUMA).name:
+    if (opts.luma_only or opts.luma_4fsc) and opts.chroma_decoder is not None:
         parser.error(
-            "arguments --profile-luma: only allowed with --luma-only or --luma-4fsc"
+            "arguments --chroma-decoder: not allowed with --luma-only or "
+            "--luma-4fsc (redundant)"
         )
 
 

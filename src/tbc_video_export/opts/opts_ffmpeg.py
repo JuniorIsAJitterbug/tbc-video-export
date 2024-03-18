@@ -2,107 +2,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from tbc_video_export.common import consts
-from tbc_video_export.common.enums import FieldOrder, ProfileType
-from tbc_video_export.opts import opt_actions, opt_types, opt_validators
+from tbc_video_export.common.enums import FieldOrder
+from tbc_video_export.opts import opt_types, opt_validators
 
 if TYPE_CHECKING:
     import argparse
 
-    from tbc_video_export.config import Config
 
-
-def add_ffmpeg_opts(config: Config, parent: argparse.ArgumentParser) -> None:
+def add_ffmpeg_opts(parent: argparse.ArgumentParser) -> None:
     """Add FFmpeg opts to the parent arg parser."""
-    # chroma/combined profiles
-    profile_names = config.get_profile_names(ProfileType.DEFAULT)
-    profile_default = config.get_default_profile(ProfileType.DEFAULT).name
-
     # ffmpeg arguments
     ffmpeg_opts = parent.add_argument_group("ffmpeg")
-
-    ffmpeg_opts.add_argument(
-        "--profile",
-        type=str,
-        choices=profile_names,
-        default=profile_default,
-        metavar="profile_name",
-        help="Specify an FFmpeg profile to use. "
-        f"(default: {profile_default})\n"
-        "See --list-profiles to see the available profiles."
-        "\n\n",
-    )
-
-    # luma profiles
-    luma_profile_names = config.get_profile_names(ProfileType.LUMA)
-    luma_profile_default = config.get_default_profile(ProfileType.LUMA).name
-
-    ffmpeg_opts.add_argument(
-        "--profile-luma",
-        type=str,
-        choices=luma_profile_names,
-        default=luma_profile_default,
-        metavar="profile_name",
-        help="Specify an FFmpeg profile to use for Luma. "
-        f"(default: {luma_profile_default})\n"
-        "See --list-profiles to see the available profiles."
-        "\n\n",
-    )
-
-    ffmpeg_opts.add_argument(
-        "--profile-container",
-        type=str,
-        metavar="profile_container",
-        help="Override an FFmpeg profile to use a specific container. Compatibility \n"
-        "with profile is not guaranteed."
-        "\n\n",
-    )
-
-    ffmpeg_opts.add_argument(
-        "--profile-add-filter",
-        dest="profile_additional_filters",
-        action="append",
-        default=[],
-        type=opt_types.TypeAdditionalFilter(config),
-        metavar="filter_name",
-        help="Use an additional filter profile when encoding. Compatibility \n"
-        "with profile is not guaranteed.\n"
-        "You can use this option muiltiple times."
-        "\n\n",
-    )
-
-    ffmpeg_opts.add_argument(
-        "--list-profiles",
-        action=opt_actions.ActionListProfiles,
-        config=config,
-        help="Show available profiles.\n\n"
-        f"You can view this in the browser here:\n"
-        f"{consts.PROJECT_URL_WIKI_PROFILES}\n\n",
-    )
-
-    ffmpeg_opts.add_argument(
-        "--append-video-filter",
-        type=str,
-        metavar="filter",
-        help="Add a custom filter to the video segment of the complex filter.\n"
-        "Compatibility with profile is not guaranteed.\n"
-        "Use --dry-run to ensure your filter looks correct before encoding.\n\n"
-        "Examples:\n"
-        '--append-video-filter "scale=3480x2160:flags=lanczos,setdar=4/3"'
-        "\n\n",
-    )
-
-    ffmpeg_opts.add_argument(
-        "--append-other-filter",
-        type=str,
-        metavar="filter",
-        help="Add a custom filter to the end of the complex filter.\n"
-        "Compatibility with profile is not guaranteed.\n"
-        "Use --dry-run to ensure your filter looks correct before encoding.\n\n"
-        "Examples:\n"
-        '--append-other-filter "[2:a]loudnorm=i=-14"'
-        "\n\n",
-    )
 
     ffmpeg_opts.add_argument(
         "--audio-track",
