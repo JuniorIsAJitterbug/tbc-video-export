@@ -82,6 +82,15 @@ def _validate_video_system(
 
 
 def _validate_video_format(parser: argparse.ArgumentParser, opts: Opts) -> None:
+    # no support for hardware accelerated profiles and bitdepth/format selection
+    if (
+        opts.video_bitdepth is not None or opts.video_format is not None
+    ) and opts.hwaccel_type is not None:
+        parser.error(
+            "unable to set bitdepth or video format when using a hardware "
+            "accelerated profile.\n"
+        )
+
     # require bitdepth if format set
     if opts.video_format is not None and opts.video_bitdepth is None:
         parser.error("setting a video format requires a bitdepth.\n")

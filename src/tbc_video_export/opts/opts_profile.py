@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts
 from tbc_video_export.common.enums import (
+    HardwareAccelType,
     ProfileVideoType,
     VideoBitDepthType,
     VideoFormatType,
@@ -123,6 +124,16 @@ def add_profile_opts(config: Config, parent: argparse.ArgumentParser) -> None:  
     )
 
     # add aliases
+    # hw accel aliases
+    hwaccel_opts = parent.add_argument_group("hwaccel opts aliases")
+    for hwaccel in HardwareAccelType:
+        hwaccel_opts.add_argument(
+            f"--{hwaccel.value}",
+            dest="hwaccel_type",
+            action=opt_actions.ActionSetVideoHardwareAccelType,
+            help=argparse.SUPPRESS,
+        )
+
     # video bit depth alias
     video_bitdepth_opts = parent.add_argument_group("video bitdepth aliases")
     for bitdepth in VideoBitDepthType:

@@ -19,7 +19,11 @@ from tbc_video_export.config.profile import (
 )
 
 if TYPE_CHECKING:
-    from tbc_video_export.common.enums import ProfileVideoType, VideoSystem
+    from tbc_video_export.common.enums import (
+        HardwareAccelType,
+        ProfileVideoType,
+        VideoSystem,
+    )
     from tbc_video_export.config.json import JsonConfig
 
 
@@ -318,6 +322,7 @@ class GetProfileFilter:
 
     name: str
     video_type: ProfileVideoType | None = None
+    hwaccel_type: HardwareAccelType | None = None
     video_system: VideoSystem | None = None
 
     def match(self, profile: Profile) -> bool:
@@ -330,6 +335,12 @@ class GetProfileFilter:
         if (
             self.video_type is not None
             and video_profile.profile_type is not self.video_type
+        ):
+            return False
+
+        if (
+            self.hwaccel_type is not None
+            and video_profile.hardware_accel is not self.hwaccel_type
         ):
             return False
 

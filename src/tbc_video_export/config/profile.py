@@ -3,7 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common import exceptions
-from tbc_video_export.common.enums import ProfileVideoType, VideoSystem
+from tbc_video_export.common.enums import (
+    HardwareAccelType,
+    ProfileVideoType,
+    VideoSystem,
+)
 from tbc_video_export.common.utils import FlatList, ansi
 
 if TYPE_CHECKING:
@@ -146,6 +150,14 @@ class ProfileVideo(SubProfile):
         )
 
     @property
+    def hardware_accel(self) -> HardwareAccelType | None:
+        """Return the hardware accel opt."""
+        try:
+            return HardwareAccelType(self._profile["hardware_accel"])
+        except (KeyError, ValueError):
+            return None
+
+    @property
     def profile_type(self) -> ProfileVideoType | None:
         """Return the video profile type."""
         try:
@@ -172,6 +184,12 @@ class ProfileVideo(SubProfile):
         data += (
             f"--{ansi.bold(self.profile_type.value)} "
             if self.profile_type is not None
+            else ""
+        )
+
+        data += (
+            f"--{ansi.bold(self.hardware_accel.value)} "
+            if self.hardware_accel is not None
             else ""
         )
 

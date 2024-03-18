@@ -153,6 +153,7 @@ class ProgramState:
             GetProfileFilter(
                 self.opts.profile,
                 self.opts.video_profile,
+                self.opts.hwaccel_type,
                 self.video_system,
             )
         )
