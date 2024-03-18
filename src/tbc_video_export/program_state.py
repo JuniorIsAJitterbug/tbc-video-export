@@ -10,16 +10,17 @@ from tbc_video_export.common.enums import (
     ChromaDecoder,
     ExportMode,
     FlagHelper,
-    ProfileType,
     TBCType,
     VideoSystem,
 )
 from tbc_video_export.common.utils import ansi
+from tbc_video_export.config.config import GetProfileFilter
 from tbc_video_export.process.parser.export_state import ExportState
 
 if TYPE_CHECKING:
     from tbc_video_export.common.file_helper import FileHelper
-    from tbc_video_export.config.config import Config, Profile
+    from tbc_video_export.config.config import Config
+    from tbc_video_export.config.profile import Profile
     from tbc_video_export.opts import Opts
 
 
@@ -151,23 +152,16 @@ class ProgramState:
         """Whether the program will execute the procs or just print them."""
         return self.opts.dry_run
 
-    @cached_property
-    def profiles(self) -> dict[ProfileType, Profile]:
-        """List of profiles loaded."""
-        return {
-            ProfileType.DEFAULT: self.config.get_profile(self.opts.profile),
-            ProfileType.LUMA: self.config.get_profile(self.opts.profile_luma),
-        }
-
     @property
     def profile(self) -> Profile:
-        """Selected profiles for Luma/Chroma."""
-        match self.current_export_mode:
-            case ExportMode.CHROMA_COMBINED | ExportMode.CHROMA_MERGE:
-                return self.profiles[ProfileType.DEFAULT]
-
-            case ExportMode.LUMA | ExportMode.LUMA_EXTRACTED | ExportMode.LUMA_4FSC:
-                return self.profiles[ProfileType.LUMA]
+        """Return selected profile."""
+        return self.config.get_profile(
+            GetProfileFilter(
+                self.opts.profile,
+                self.opts.video_profile,
+                self.video_system,
+            )
+        )
 
     @cached_property
     def total_frames(self) -> int:
@@ -223,16 +217,8 @@ class ProgramState:
         if self.opts.two_step:
             output_file.append(str(self.file_helper.output_video_file_luma))
 
-            luma_profile = self.profiles[ProfileType.LUMA]
-            luma_subprofiles = self.config.get_subprofile_descriptions(
-                luma_profile, True
-            )
-
-            profile.append(f"{luma_profile.name} ({luma_subprofiles})")
-
         output_file.append(str(self.file_helper.output_video_file))
-        sub_profiles = self.config.get_subprofile_descriptions(self.profile, True)
-        profile.append(f"{self.profile.name} ({sub_profiles})")
+        profile.append(f"{self.profile.name}")
 
         output_files = ", ".join(output_file)
         profiles = (

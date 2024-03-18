@@ -289,7 +289,7 @@ class TestWrappersPALMSvideo(unittest.TestCase):
                     "-thread_queue_size 1024",
                     "-i PIPE_IN",
                     "-filter_complex",
-                    "[0:v]null,setfield=tff[v_output]",
+                    "[0:v]setfield=tff[v_output]",
                     "-map [v_output]",
                     "-timecode 00:00:00:00",
                     "-framerate ntsc",
@@ -297,7 +297,7 @@ class TestWrappersPALMSvideo(unittest.TestCase):
                     "-colorspace bt470bg",
                     "-color_primaries bt470bg",
                     "-color_trc bt709",
-                    "-pix_fmt y8",
+                    "-pix_fmt gray16le",
                     f"-c:v {state.profile.video_profile.codec}",
                     f"{state.profile.video_profile.opts}",
                     f"-c:a {state.profile.audio_profile.codec}",  # pyright:  ignore [reportOptionalMemberAccess]
@@ -414,7 +414,7 @@ class TestWrappersPALMSvideo(unittest.TestCase):
                     "-colorspace bt470bg",
                     "-color_primaries bt470bg",
                     "-color_trc bt709",
-                    "-pix_fmt y8",
+                    "-pix_fmt gray16le",
                     f"-c:v {state.profile.video_profile.codec}",
                     f"{state.profile.video_profile.opts}",
                     f"-c:a {state.profile.audio_profile.codec}",  # pyright:  ignore [reportOptionalMemberAccess]

@@ -88,7 +88,7 @@ class InvalidProfileError(Exception):
 
     def __init__(self, message: str, config_path: Path | None = None) -> None:
         super().__init__(message)
-        self.config_path = config_path
+        self.config_path = config_path if config_path is not None else "[internal]"
 
 
 class InvalidFilterProfileError(Exception):
