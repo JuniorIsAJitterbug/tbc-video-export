@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from tbc_video_export.common.enums import (
         ChromaDecoder,
         FieldOrder,
+        HardwareAccelType,
         ProfileVideoType,
         VideoFormatType,
         VideoSystem,
@@ -98,6 +99,7 @@ class Opts(argparse.Namespace):
     field_order: FieldOrder
     force_anamorphic: bool
     force_black_level: tuple[int, int, int] | None
+    hwaccel_device: str | None
     thread_queue_size: int
     checksum: bool
 
@@ -111,6 +113,7 @@ class Opts(argparse.Namespace):
     append_video_filter: str | None
     append_other_filter: str | None
 
+    hwaccel_type: HardwareAccelType | None
     video_profile: ProfileVideoType | None
     video_format: VideoFormatType | None
     video_bitdepth: int | None

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts
 from tbc_video_export.common.enums import (
-    ProfileVideoType,
+    HardwareAccelType,
     VideoBitDepthType,
     VideoFormatType,
 )
@@ -43,33 +43,6 @@ def add_profile_opts(config: Config, parent: argparse.ArgumentParser) -> None:  
         help="Show available profiles.\n\n"
         f"You can view this in the browser here:\n"
         f"{consts.PROJECT_URL_WIKI_PROFILES}\n\n",
-    )
-
-    profile_opts.add_argument(
-        "--video-profile",
-        type=opt_types.TypeVideoProfile(parent),
-        metavar="profile",
-        help="Specify an video profile to use.\n"
-        "Not all video profiles are available for every profile, see --list-profiles.\n"
-        "Available profiles:\n\n  "
-        + "\n  ".join(f"{e.value}" for e in ProfileVideoType)
-        + "\n\n"
-        "Note: These are accessible by changing arguments e.g. --lossless, you \n"
-        "should rarely have to force a video profile."
-        "\n\n",
-    )
-
-    profile_opts.add_argument(
-        "--audio-profile",
-        type=str,
-        metavar="profile",
-        help="Specify a video profile to use.\n"
-        "Not all audio profiles are compatible with every profile or container.\n"
-        "Available profiles:\n\n  "
-        + "\n  ".join(f"{e.value}" for e in ProfileVideoType)
-        + "\n\n"
-        "Note: These are available as arguments, e.g. --pcm24"
-        "\n\n",
     )
 
     profile_opts.add_argument(
@@ -123,6 +96,16 @@ def add_profile_opts(config: Config, parent: argparse.ArgumentParser) -> None:  
     )
 
     # add aliases
+    # hw accel aliases
+    hwaccel_opts = parent.add_argument_group("hwaccel opts aliases")
+    for hwaccel in HardwareAccelType:
+        hwaccel_opts.add_argument(
+            f"--{hwaccel.value}",
+            dest="hwaccel_type",
+            action=opt_actions.ActionSetVideoHardwareAccelType,
+            help=argparse.SUPPRESS,
+        )
+
     # video bit depth alias
     video_bitdepth_opts = parent.add_argument_group("video bitdepth aliases")
     for bitdepth in VideoBitDepthType:
@@ -153,17 +136,6 @@ def add_profile_opts(config: Config, parent: argparse.ArgumentParser) -> None:  
             default=profile_default,
             dest="profile_name",
             action=opt_actions.ActionSetProfile,
-            help=argparse.SUPPRESS,
-        )
-
-    # video profile type aliases
-    video_type_opts = parent.add_argument_group("video profile type alises")
-
-    for video_type in ProfileVideoType:
-        video_type_opts.add_argument(
-            f"--{video_type.value}",
-            dest="video_type",
-            action=opt_actions.ActionSetVideoType,
             help=argparse.SUPPRESS,
         )
 

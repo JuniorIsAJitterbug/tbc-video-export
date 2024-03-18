@@ -38,6 +38,7 @@
               ruff
               mediainfo
               inputs.jitterbug.packages.${pkgs.system}.vhs-decode
+              inputs.jitterbug.packages.${pkgs.system}.ab-av1
             ];
 
             languages.python = {
@@ -55,10 +56,11 @@
             pre-commit.hooks = {
               ruff.enable = true;
               pyright.enable = true;
-            };
 
-            pre-commit.settings = {
-              yamllint.relaxed = true;
+              yamllint = {
+                enable = true;
+                settings.preset = "relaxed";
+              };
             };
           };
 
@@ -67,7 +69,7 @@
 
             packages = with pkgs;[
               ruff
-              fuse
+              mediainfo
             ];
 
             languages.python = {

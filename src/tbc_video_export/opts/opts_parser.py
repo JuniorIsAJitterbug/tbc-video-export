@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts
 from tbc_video_export.common.enums import (
-    ProfileVideoType,
     VideoBitDepthType,
     VideoFormatType,
     VideoSystem,
@@ -238,8 +237,5 @@ def _get_opt_aliases() -> str:
 
     bitdepths = ", ".join([f"--{t.value}" for t in VideoBitDepthType])
     out_str += f"  Bit Depths:\n    {bitdepths}\n\n"
-
-    video_types = ", ".join([f"--{t.value}" for t in ProfileVideoType])
-    out_str += f"  Video Profile Types:\n    {video_types}\n\n"
 
     return out_str

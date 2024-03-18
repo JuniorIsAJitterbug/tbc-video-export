@@ -183,10 +183,14 @@ class VideoBitDepthType(Enum):
     BIT16 = "16bit"
 
 
-class ProfileVideoType(Enum):
-    """Video types for profiles."""
+class HardwareAccelType(Enum):
+    """Hardware accel types for profiles."""
 
-    LOSSLESS = "lossless"
+    VAAPI = "vaapi"
+    NVENC = "nvenc"
+    QUICKSYNC = "quicksync"
+    AMF = "amf"
+    VIDEOTOOLBOX = "videotoolbox"
 
 
 class VideoFormatType(Enum):

@@ -40,9 +40,8 @@ class TestWrappersFFmpeg(unittest.TestCase):
             ),
         )
 
-        self.assertTrue(
-            {"-pix_fmt", "yuv422p10le"}.issubset(ffmpeg_wrapper.command.data)
-        )
+        cmd = ffmpeg_wrapper.command.data
+        self.assertTrue(any(",format=yuv422p10le" in cmds for cmds in cmd))
 
     def test_ffmpeg_format_16bit(self) -> None:  # noqa: D102
         _, opts = self.parse_opts([str(self.path), "pal_svideo", "--16bit"])
@@ -59,9 +58,8 @@ class TestWrappersFFmpeg(unittest.TestCase):
             ),
         )
 
-        self.assertTrue(
-            {"-pix_fmt", "yuv422p16le"}.issubset(ffmpeg_wrapper.command.data)
-        )
+        cmd = ffmpeg_wrapper.command.data
+        self.assertTrue(any(",format=yuv422p16le" in cmds for cmds in cmd))
 
     def test_ffmpeg_format_yuv444_8bit(self) -> None:  # noqa: D102
         _, opts = self.parse_opts([str(self.path), "pal_svideo", "--yuv444", "--8bit"])
@@ -78,7 +76,8 @@ class TestWrappersFFmpeg(unittest.TestCase):
             ),
         )
 
-        self.assertTrue({"-pix_fmt", "yuv444p"}.issubset(ffmpeg_wrapper.command.data))
+        cmd = ffmpeg_wrapper.command.data
+        self.assertTrue(any(",format=yuv444p" in cmds for cmds in cmd))
 
     def test_ffmpeg_format_yuv444_10bit(self) -> None:  # noqa: D102
         _, opts = self.parse_opts([str(self.path), "pal_svideo", "--yuv444", "--10bit"])
@@ -95,9 +94,8 @@ class TestWrappersFFmpeg(unittest.TestCase):
             ),
         )
 
-        self.assertTrue(
-            {"-pix_fmt", "yuv444p10le"}.issubset(ffmpeg_wrapper.command.data)
-        )
+        cmd = ffmpeg_wrapper.command.data
+        self.assertTrue(any(",format=yuv444p10le" in cmds for cmds in cmd))
 
     def test_ffmpeg_format_yuv444_16bit(self) -> None:  # noqa: D102
         _, opts = self.parse_opts([str(self.path), "pal_svideo", "--yuv444", "--16bit"])
@@ -114,9 +112,8 @@ class TestWrappersFFmpeg(unittest.TestCase):
             ),
         )
 
-        self.assertTrue(
-            {"-pix_fmt", "yuv444p16le"}.issubset(ffmpeg_wrapper.command.data)
-        )
+        cmd = ffmpeg_wrapper.command.data
+        self.assertTrue(any(",format=yuv444p16le" in cmds for cmds in cmd))
 
     def test_ffmpeg_format_luma(self) -> None:  # noqa: D102
         _, opts = self.parse_opts([str(self.path), "pal_svideo", "--luma-only"])
@@ -133,7 +130,8 @@ class TestWrappersFFmpeg(unittest.TestCase):
             ),
         )
 
-        self.assertTrue({"-pix_fmt", "gray16le"}.issubset(ffmpeg_wrapper.command.data))
+        cmd = ffmpeg_wrapper.command.data
+        self.assertTrue(any(",format=gray16le" in cmds for cmds in cmd))
 
     def test_ffmpeg_format_luma_16bit(self) -> None:  # noqa: D102
         _, opts = self.parse_opts(
@@ -152,4 +150,5 @@ class TestWrappersFFmpeg(unittest.TestCase):
             ),
         )
 
-        self.assertTrue({"-pix_fmt", "gray16le"}.issubset(ffmpeg_wrapper.command.data))
+        cmd = ffmpeg_wrapper.command.data
+        self.assertTrue(any(",format=gray16le" in cmds for cmds in cmd))

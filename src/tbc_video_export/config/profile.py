@@ -3,7 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common import exceptions
-from tbc_video_export.common.enums import ProfileVideoType, VideoSystem
+from tbc_video_export.common.enums import (
+    HardwareAccelType,
+    VideoSystem,
+)
 from tbc_video_export.common.utils import FlatList, ansi
 
 if TYPE_CHECKING:
@@ -90,8 +93,9 @@ class SubProfile:
 class ProfileVideo(SubProfile):
     """Holds FFmpeg video profile."""
 
-    def __init__(self, profile: JsonSubProfileVideo) -> None:
+    def __init__(self, parent: JsonProfile, profile: JsonSubProfileVideo) -> None:
         super().__init__(profile)
+        self._parent = parent
         self._profile = profile
         self._video_format = self._profile["video_format"]
 
@@ -137,19 +141,20 @@ class ProfileVideo(SubProfile):
         )
 
     @property
-    def filter_profiles_override(self) -> list[str] | None:
+    def filter_profiles(self) -> list[str]:
         """Return the filters to override parent filters if they exists."""
         return (
             self._profile["filter_profiles_override"]
             if "filter_profiles_override" in self._profile
-            else None
+            else self._parent["filter_profiles"] if "filter_profiles" in self._parent
+            else []
         )
 
     @property
-    def profile_type(self) -> ProfileVideoType | None:
-        """Return the video profile type."""
+    def hardware_accel(self) -> HardwareAccelType | None:
+        """Return the hardware accel opt."""
         try:
-            return ProfileVideoType(self._profile["type"])
+            return HardwareAccelType(self._profile["hardware_accel"])
         except (KeyError, ValueError):
             return None
 
@@ -168,10 +173,9 @@ class ProfileVideo(SubProfile):
         return None
 
     def __str__(self) -> str:  # noqa: D105
-        data = "  "
-        data += (
-            f"--{ansi.bold(self.profile_type.value)} "
-            if self.profile_type is not None
+        data = (
+            f"  --{ansi.bold(self.hardware_accel.value)} "
+            if self.hardware_accel is not None
             else ""
         )
 
@@ -193,19 +197,10 @@ class ProfileVideo(SubProfile):
 
         data += "\n"
 
-        if self.filter_profiles_additions or self.filter_profiles_override is not None:
-            data += f"    {ansi.dim('Filters')}\n"
-            if self.filter_profiles_additions:
-                data += (
-                    f"      {ansi.dim('Additions')}\t"
-                    f"{', '.join(self.filter_profiles_additions)}\n"
-                )
-
-            if self.filter_profiles_override is not None:
-                data += (
-                    f"      {ansi.dim('Override')}\t"
-                    f"{', '.join(self.filter_profiles_override)}\n"
-                )
+        if self.filter_profiles_additions or self.filter_profiles:
+            filters = self.filter_profiles + self.filter_profiles_additions
+            data += f"    {ansi.dim('Filters')}\t"
+            data += f"{', '.join(filters) if filters else 'None'}\n"
 
         if self.video_system is not None:
             data += f"    {ansi.dim('System')}\t{self.video_system}\n"
