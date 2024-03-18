@@ -7,7 +7,13 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from tbc_video_export.common.enums import ChromaDecoder, FieldOrder, VideoSystem
+    from tbc_video_export.common.enums import (
+        ChromaDecoder,
+        FieldOrder,
+        ProfileVideoType,
+        VideoFormatType,
+        VideoSystem,
+    )
 
 
 class Opts(argparse.Namespace):
@@ -86,12 +92,6 @@ class Opts(argparse.Namespace):
     export_metadata_keep_going: bool
 
     # ffmpeg
-    profile: str
-    profile_luma: str
-    profile_container: str | None
-    profile_additional_filters: list[str]
-    append_video_filter: str | None
-    append_other_filter: str | None
     audio_track: list[AudioTrackOpt]
     metadata: list[list[str]]
     metadata_file: list[Path]
@@ -100,6 +100,21 @@ class Opts(argparse.Namespace):
     force_black_level: tuple[int, int, int] | None
     thread_queue_size: int
     checksum: bool
+
+    # profile
+    profile: str
+    profile_luma: str
+
+    # profile overrides
+    profile_container: str | None
+    profile_additional_filters: list[str]
+    append_video_filter: str | None
+    append_other_filter: str | None
+
+    video_profile: ProfileVideoType | None
+    video_format: VideoFormatType | None
+    video_bitdepth: int | None
+    audio_profile: str | None
 
     def convert_opt(
         self, program_opt_name: str, target_opt_name: str

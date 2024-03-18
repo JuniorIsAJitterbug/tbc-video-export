@@ -3,12 +3,13 @@ from __future__ import annotations
 import json
 import logging
 from contextlib import suppress
+from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts, exceptions
-from tbc_video_export.common.utils import FlatList, files
+from tbc_video_export.common.utils import files
 from tbc_video_export.config.default import DEFAULT_CONFIG
 from tbc_video_export.config.profile import (
     Profile,
@@ -18,8 +19,8 @@ from tbc_video_export.config.profile import (
 )
 
 if TYPE_CHECKING:
-    from tbc_video_export.common.enums import ProfileType
-    from tbc_video_export.config.json import JsonConfig, JsonProfile
+    from tbc_video_export.common.enums import ProfileVideoType, VideoSystem
+    from tbc_video_export.config.json import JsonConfig
 
 
 class Config:
@@ -32,7 +33,7 @@ class Config:
 
     def __init__(self) -> None:
         self._data: JsonConfig
-        self._additional_filters: list[ProfileFilter] = []
+        self._additional_filters: list[str] = []
 
         with suppress(FileNotFoundError, PermissionError, json.JSONDecodeError):
             # attempt to load the file if it exists
@@ -45,12 +46,16 @@ class Config:
         if not getattr(self, "_data", False):
             self._data = DEFAULT_CONFIG
 
-        self._profiles: list[Profile] = self._generate_profiles()
+        self.profiles: list[Profile] = []
 
-    @property
-    def profiles(self) -> list[Profile]:
-        """Return list of available profiles."""
-        return self._profiles
+        try:
+            for json_profile in self._data["profiles"]:
+                for profile in self._generate_profile(json_profile["name"]):
+                    self.profiles.append(profile)
+        except KeyError as e:
+            raise exceptions.InvalidProfileError(
+                "Configuration file missing required fields.", self.get_config_file()
+            ) from e
 
     @cached_property
     def video_profiles(self) -> list[ProfileVideo]:
@@ -83,57 +88,84 @@ class Config:
             ) from e
 
     @property
-    def additional_filters(self) -> list[ProfileFilter]:
+    def additional_filters(self) -> list[str]:
         """Return list of additional filter profiles."""
         return self._additional_filters
 
-    def get_profile(self, name: str) -> Profile:
-        """Return a profile from a name."""
-        return next(p for p in self.profiles if p.name == name)
+    def add_additional_filter(self, filter_name: str) -> None:
+        """Append a filter to use."""
+        self._additional_filters.append(filter_name)
 
-    def get_profile_names(self, profile_type: ProfileType) -> list[str]:
-        """Return a list of profile names for a given profile type."""
-        return [p.name for p in self._get_profiles_from_type(profile_type)]
+    def get_profile(self, profile_filter: GetProfileFilter) -> Profile:
+        """Return a profile from a filter."""
+        try:
+            profile = next(
+                (profile for profile in self.profiles if profile_filter.match(profile)),
+                None,
+            )
 
-    def get_default_profile(self, profile_type: ProfileType) -> Profile:
-        """Return the first default profile for a given profile type."""
-        profiles = self._get_profiles_from_type(profile_type)
+            if profile is None:
+                raise exceptions.InvalidProfileError(
+                    f"Could not find profile {profile_filter.name}."
+                )
 
-        if profile := next((p for p in profiles if p.is_default), False):
-            profile = profiles[0]
-        else:
+            return profile
+        except KeyError as e:
+            raise exceptions.InvalidProfileError(
+                "Could not load profiles.", self.get_config_file()
+            ) from e
+        except exceptions.InvalidProfileError as e:
+            raise exceptions.InvalidProfileError(str(e), self.get_config_file()) from e
+
+    def get_profile_names(self) -> list[str]:
+        """Return a list of unique profile names for a given profile type."""
+        return list(dict.fromkeys(profile.name for profile in self.profiles))
+
+    def get_default_profile(self) -> Profile:
+        """Return the first default profile."""
+        profile = next(
+            (profile for profile in self.profiles if profile.is_default), None
+        )
+
+        if profile is None:
             raise exceptions.InvalidProfileError(
                 "Unable to find default profile.", self.get_config_file()
             )
 
-        return self.get_profile(profile.name)
+        return profile
 
-    def add_additional_filter_profile(self, profile: ProfileFilter) -> None:
-        """Add an additional filter to be used when encoding."""
-        self._additional_filters.append(profile)
+    def get_video_profiles_for_profile(self, profile_name: str) -> list[ProfileVideo]:
+        """Return list of video profiles for a given profile."""
+        video_profiles: list[ProfileVideo] = []
 
-        # regenerate profiles on filter add
-        self._profiles = self._generate_profiles()
+        for profile in self.profiles:
+            if profile.name == profile_name:
+                video_profiles.append(profile.video_profile)
 
-    @staticmethod
-    def get_subprofile_descriptions(profile: Profile, show_format: bool) -> str:
-        """Return a comma separated list of sub profile descriptions for a profile."""
-        # whether to append the profile video format to the profile name
-        sub_profiles = FlatList(
-            f"{profile.video_profile.description} {profile.video_format}"
-            if show_format
-            else profile.video_profile.description
+        return video_profiles
+
+    def get_audio_profile_names(self) -> list[str]:
+        """Return all audio profile names.."""
+        return [audio_profile.name for audio_profile in self.audio_profiles]
+
+    def get_filter_profile(self, filter_name: str) -> ProfileFilter:
+        """Return filter profile from filter name."""
+        filter_profile = next(
+            (
+                filter_profile
+                for filter_profile in self.filter_profiles
+                if filter_profile.name == filter_name
+            ),
+            None,
         )
 
-        if profile.audio_profile is not None:
-            sub_profiles.append(profile.audio_profile.description)
-
-        if profile.filter_profiles is not None:
-            sub_profiles.append(
-                profile.description for profile in profile.filter_profiles
+        if filter_profile is None:
+            raise exceptions.InvalidProfileError(
+                f"Unable to find filter profile {filter_name}.",
+                self.get_config_file(),
             )
 
-        return ", ".join(sub_profiles.data)
+        return filter_profile
 
     @staticmethod
     def dump_default_config(file_name: Path) -> None:
@@ -143,8 +175,6 @@ class Config:
                 raise exceptions.FileIOError(
                     f"Unable to create {file_name}, already exists"
                 )
-
-            # remove
 
             with Path.open(file_name, "w", encoding="utf-8") as file:
                 json.dump(DEFAULT_CONFIG, file, ensure_ascii=False, indent=4)
@@ -175,112 +205,137 @@ class Config:
 
         return None
 
-    def _generate_profiles(self) -> list[Profile]:
-        try:
-            return [
-                Profile(
-                    p,
-                    self._get_video_profile(p["name"]),
-                    self._get_audio_profile(p["name"]),
-                    self._get_filter_profiles(p["name"]) + self._additional_filters,
-                )
-                for p in self._data["profiles"]
-            ]
-        except KeyError as e:
-            raise exceptions.InvalidProfileError(
-                "Could not load profiles.", self.get_config_file()
-            ) from e
-        except exceptions.InvalidProfileError as e:
-            raise exceptions.InvalidProfileError(str(e), self.get_config_file()) from e
+    def get_profile_filters(self, profile: Profile) -> tuple[list[str], list[str]]:
+        """Adds profile filters to list opts."""
+        video_filters: list[str] = []
+        other_filters: list[str] = []
 
-    def _get_profiles_from_type(self, profile_type: ProfileType) -> list[Profile]:
-        """Return a list of profiles for a given type."""
-        return [p for p in self.profiles if p.profile_type is profile_type]
+        filter_profiles = profile.filter_profiles
 
-    def _get_raw_profile_data(self, profile_name: str) -> JsonProfile:
+        # populate filters
+        for vf in (profile.video_filter for profile in filter_profiles):
+            if vf is not None:
+                video_filters.append(vf)
+
+        for of in (profile.other_filter for profile in filter_profiles):
+            if of is not None:
+                other_filters.append(of)
+
+        # add additional video profile filters
+        for name in profile.video_profile.filter_profiles_additions:
+            self._add_filter(name, video_filters, other_filters)
+
+        # add additional opt filters
+        for name in self._additional_filters:
+            self._add_filter(name, video_filters, other_filters)
+
+        return video_filters, other_filters
+
+    def _add_filter(
+        self, filter_name: str, video_filters: list[str], other_filters: list[str]
+    ) -> None:
+        """Add ProfileFilter to lists from name."""
+        filter_profile = self.get_filter_profile(filter_name)
+
+        if (vf := filter_profile.video_filter) is not None:
+            video_filters.append(vf)
+
+        if (of := filter_profile.other_filter) is not None:
+            other_filters.append(of)
+
+    def _generate_profile(self, profile_name: str) -> list[Profile]:
         try:
-            return next(
+            profile_data = next(
                 profile
                 for profile in self._data["profiles"]
                 if profile["name"] == profile_name
             )
+
+            # get video profile(s) for profile
+            if isinstance(profile_data["video_profile"], list):
+                video_profiles = [
+                    ProfileVideo(json_video_profile)
+                    for json_video_profile in self._data["video_profiles"]
+                    for video_profile_name in profile_data["video_profile"]
+                    if json_video_profile["name"] == video_profile_name
+                ]
+            else:
+                video_profiles = [
+                    next(
+                        ProfileVideo(json_video_profile)
+                        for json_video_profile in self._data["video_profiles"]
+                        if json_video_profile["name"] == profile_data["video_profile"]
+                    )
+                ]
+
+            # get audio profile for profile
+            audio_profile = next(
+                (
+                    ProfileAudio(json_audio_profile)
+                    for json_audio_profile in self._data["audio_profiles"]
+                    if json_audio_profile["name"] == profile_data["audio_profile"]
+                ),
+                None,
+            )
+
+            # get filter profile(s) for profile
+            filter_profiles = [
+                ProfileFilter(json_filter_profile)
+                for json_filter_profile in self._data["filter_profiles"]
+                if "filter_profiles" in profile_data
+                for filter_profile_name in profile_data["filter_profiles"]
+                if json_filter_profile["name"] == filter_profile_name
+            ]
+
+            profiles: list[Profile] = []
+
+            for video_profile in video_profiles:
+                profile = Profile(
+                    profile_data, video_profile, audio_profile, filter_profiles
+                )
+
+                # set profile overrides
+                if (override := video_profile.filter_profiles_override) is not None:
+                    profile.filter_profiles = [
+                        ProfileFilter(json_filter_profile)
+                        for json_filter_profile in self._data["filter_profiles"]
+                        for filter_profile_name in override
+                        if json_filter_profile["name"] == filter_profile_name
+                    ]
+
+                profiles.append(profile)
+
+            return profiles
         except KeyError as e:
             raise exceptions.InvalidProfileError(
-                "Could not load profiles.", self.get_config_file()
+                "Unable to generate profiles.", self.get_config_file()
             ) from e
 
-    def _get_video_profile(self, profile_name: str) -> ProfileVideo:
-        """Return a video profile for a given profile name."""
-        profile_data = self._get_raw_profile_data(profile_name)
-        video_profile_name = profile_data["video_profile"]
 
-        # return first video profile matching name
+@dataclass
+class GetProfileFilter:
+    """Container class for get profile filter params."""
+
+    name: str
+    video_type: ProfileVideoType | None = None
+    video_system: VideoSystem | None = None
+
+    def match(self, profile: Profile) -> bool:
+        """Returns true if profile matches filter."""
+        video_profile = profile.video_profile
+
+        if profile.name != self.name:
+            return False
+
         if (
-            video_profile := next(
-                (
-                    profile
-                    for profile in self.video_profiles
-                    if profile.name.lower() == video_profile_name.lower()
-                ),
-                None,
-            )
-        ) is None:
-            raise exceptions.InvalidProfileError(
-                f"Unable to find video profile {video_profile_name} "
-                f"for profile {profile_name}.",
-                self.get_config_file(),
-            )
+            self.video_type is not None
+            and video_profile.profile_type is not self.video_type
+        ):
+            return False
 
-        return video_profile
-
-    def _get_audio_profile(self, profile_name: str) -> ProfileAudio | None:
-        """Return a audio profile for a given profile name."""
-        profile_data = self._get_raw_profile_data(profile_name)
-
-        # no profile given
-        if (audio_profile_name := profile_data["audio_profile"]) is None:
-            return None
-
-        # return first audio profile matching name
         if (
-            audio_profile := next(
-                (
-                    profile
-                    for profile in self.audio_profiles
-                    if profile.name.lower() == audio_profile_name.lower()
-                ),
-                None,
-            )
-        ) is None:
-            raise exceptions.InvalidProfileError(
-                f"Unable to find audio profile {audio_profile_name} "
-                f"for profile {profile_name}.",
-                self.get_config_file(),
-            )
+            self.video_system is not None and video_profile.video_system is not None
+        ) and video_profile.video_system is not self.video_system:
+            return False
 
-        return audio_profile
-
-    def _get_filter_profiles(self, profile_name: str) -> list[ProfileFilter]:
-        """Return all filter profiles for a given profile name."""
-        profile_data = self._get_raw_profile_data(profile_name)
-        filter_names = profile_data["filter_profiles"]
-
-        # no filter profiles for profile
-        if filter_names is None:
-            return []
-
-        filter_profiles = [
-            profile
-            for name in filter_names
-            for profile in self.filter_profiles
-            if profile.name.lower() == name.lower()
-        ]
-
-        # ensure we found all the profiles
-        if len(filter_profiles) < len(filter_names):
-            raise exceptions.InvalidProfileError(
-                f"Unable to find filter profile(s) for profile {profile_name}.",
-                self.get_config_file(),
-            )
-
-        return filter_profiles
+        return True

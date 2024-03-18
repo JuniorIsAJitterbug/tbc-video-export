@@ -5,14 +5,19 @@ import logging
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts
-from tbc_video_export.common.enums import ProfileType
+from tbc_video_export.common.enums import (
+    ProfileVideoType,
+    VideoBitDepthType,
+    VideoFormatType,
+)
 from tbc_video_export.common.utils import ansi
+from tbc_video_export.config.config import GetProfileFilter
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Any
 
-    from tbc_video_export.config import Config, SubProfile
+    from tbc_video_export.config import Config
 
 
 class ActionDumpConfig(argparse.Action):
@@ -69,7 +74,8 @@ class ActionListProfiles(argparse.Action):
     """
 
     def __init__(self, config: Config, nargs: int = 0, **kwargs: Any) -> None:
-        self._profiles = config.profiles
+        self._config = config
+        self._profile_names = config.get_profile_names()
         self._profiles_filters = config.filter_profiles
         super().__init__(nargs=nargs, **kwargs)
 
@@ -81,86 +87,129 @@ class ActionListProfiles(argparse.Action):
         option_strings: str,  # noqa: ARG002
         **kwargs: Any,  # noqa: ARG002
     ) -> None:
+        self._print_profiles()
+        parser.exit()
+
+    def _print_profiles(self) -> None:
         logging.getLogger("console").info(ansi.underlined("Profiles\n"))
 
-        for profile in self._profiles:
-            sub_profiles: list[SubProfile] = [profile.video_profile]
+        for profile_name in self._profile_names:
+            profile = self._config.get_profile(GetProfileFilter(profile_name))
+            video_profiles = self._config.get_video_profiles_for_profile(profile_name)
 
-            logging.getLogger("console").info(
-                f"{profile.name}{' (default)' if profile.is_default else ''}"
+            data = (
+                f"--{ansi.bold(profile.name)} "
+                f"{'(default)' if profile.is_default else ''}\n"
             )
 
-            if profile.profile_type is not ProfileType.DEFAULT:
-                logging.getLogger("console").info(
-                    f"  {ansi.dim('Profile Type:')} {profile.profile_type}"
-                )
-
-            output_format = (
-                f" ({profile.video_profile.output_format})"
-                if profile.video_profile.output_format is not None
-                else ""
-            )
-
-            logging.getLogger("console").info(
-                f"  {ansi.dim('Container:')}\t{profile.video_profile.container}"
-                f"{output_format}\n"
-                f"  {ansi.dim('Video Codec:')}\t{profile.video_profile.codec} "
-                f"({profile.video_format})"
-            )
-
-            if video_opts := profile.video_profile.opts:
-                logging.getLogger("console").info(
-                    f"  {ansi.dim('Video Opts:')}\t{video_opts}"
-                )
+            for vp in video_profiles:
+                data += f"{vp}\n"
 
             if profile.audio_profile is not None:
-                sub_profiles.append(profile.audio_profile)
-                logging.getLogger("console").info(
-                    f"  {ansi.dim('Audio Codec:')}\t{profile.audio_profile.codec}"
-                )
-                if profile.audio_profile.opts:
-                    logging.getLogger("console").info(
-                        f"  {ansi.dim('Audio Opts:')}\t{profile.audio_profile.opts}"
-                    )
+                data += str(profile.audio_profile)
 
             if profile.include_vbi:
-                logging.getLogger("console").info(
-                    f"  {ansi.dim('Include VBI:')}\t{profile.include_vbi}"
-                )
+                data += f"  {ansi.dim('Include VBI')}\t{profile.include_vbi}\n"
 
-            if profile.filter_profiles:
-                for _profile in profile.filter_profiles:
-                    sub_profiles.append(_profile)
-                    logging.getLogger("console").info(
-                        f"  {ansi.dim('Filter:')}\t{_profile.video_filter}"
-                    )
+            logging.getLogger("console").info(data)
 
-            logging.getLogger("console").info(
-                f"  {ansi.dim('Sub Profiles:')}\t"
-                f"{', '.join(profile.name for profile in sub_profiles)}"
-            )
 
-            logging.getLogger("console").info("")
+class ActionSetVideoBitDepthType(argparse.Action):
+    """Set video format type with alias opts."""
 
-        logging.getLogger("console").info(ansi.underlined("Filter Profiles\n"))
+    def __init__(self, nargs: int = 0, **kwargs: Any) -> None:
+        super().__init__(nargs=nargs, **kwargs)
 
-        for profile in self._profiles_filters:
-            logging.getLogger("console").info(profile.name)
+    def __call__(  # noqa: D102
+        self,
+        parser: argparse.ArgumentParser,  # noqa: ARG002
+        namespace: argparse.Namespace,
+        values: str | Sequence[Any] | None,  # noqa: ARG002
+        option_strings: str,
+        **kwargs: Any,  # noqa: ARG002
+    ) -> None:
+        # no need to check errors here, as option_strings can only be
+        # VideoBitDepthType values
+        match VideoBitDepthType(option_strings[2:].lower()):
+            case VideoBitDepthType.BIT8:
+                namespace.video_bitdepth = 8
 
-            logging.getLogger("console").info(
-                f"  {ansi.dim('Description:')} {profile.description}"
-            )
+            case VideoBitDepthType.BIT10:
+                namespace.video_bitdepth = 10
 
-            profile_filter = (
-                profile.video_filter
-                if profile.video_filter is not None
-                else profile.other_filter
-            )
+            case VideoBitDepthType.BIT16:
+                namespace.video_bitdepth = 16
 
-            logging.getLogger("console").info(
-                f"  {ansi.dim('Filter:')} {profile_filter}"
-            )
 
-            logging.getLogger("console").info("")
+class ActionSetVideoFormatType(argparse.Action):
+    """Set video format type with alias opts."""
 
-        parser.exit()
+    def __init__(self, nargs: int = 0, **kwargs: Any) -> None:
+        super().__init__(nargs=nargs, **kwargs)
+
+    def __call__(  # noqa: D102
+        self,
+        parser: argparse.ArgumentParser,  # noqa: ARG002
+        namespace: argparse.Namespace,
+        values: str | Sequence[Any] | None,  # noqa: ARG002
+        option_strings: str,
+        **kwargs: Any,  # noqa: ARG002
+    ) -> None:
+        for format_type in VideoFormatType:
+            if format_type.name.lower() == option_strings[2:].lower():
+                namespace.video_format = format_type
+
+
+class ActionSetProfile(argparse.Action):
+    """Set profile with alias opts."""
+
+    def __init__(self, nargs: int = 0, **kwargs: Any) -> None:
+        super().__init__(nargs=nargs, **kwargs)
+
+    def __call__(  # noqa: D102
+        self,
+        parser: argparse.ArgumentParser,  # noqa: ARG002
+        namespace: argparse.Namespace,
+        values: str | Sequence[Any] | None,  # noqa: ARG002
+        option_strings: str,
+        **kwargs: Any,  # noqa: ARG002
+    ) -> None:
+        # no need to check errors here, as option_strings can only be
+        # valid profile names
+        namespace.profile = option_strings[2:].lower()
+
+
+class ActionSetVideoType(argparse.Action):
+    """Set video profile type with alias opts."""
+
+    def __init__(self, nargs: int = 0, **kwargs: Any) -> None:
+        super().__init__(nargs=nargs, **kwargs)
+
+    def __call__(  # noqa: D102
+        self,
+        parser: argparse.ArgumentParser,  # noqa: ARG002
+        namespace: argparse.Namespace,
+        values: str | Sequence[Any] | None,  # noqa: ARG002
+        option_strings: str,
+        **kwargs: Any,  # noqa: ARG002
+    ) -> None:
+        # no need to check errors here, as option_strings can only be
+        # ProfileVideoType values
+        namespace.video_profile = ProfileVideoType(option_strings[2:].lower())
+
+
+class ActionSetAudioOverride(argparse.Action):
+    """Set audio profile override type with alias opts."""
+
+    def __init__(self, nargs: int = 0, **kwargs: Any) -> None:
+        super().__init__(nargs=nargs, **kwargs)
+
+    def __call__(  # noqa: D102
+        self,
+        parser: argparse.ArgumentParser,  # noqa: ARG002
+        namespace: argparse.Namespace,
+        values: str | Sequence[Any] | None,  # noqa: ARG002
+        option_strings: str,
+        **kwargs: Any,  # noqa: ARG002
+    ) -> None:
+        namespace.audio_profile = option_strings[2:].replace("-", "_").lower()
