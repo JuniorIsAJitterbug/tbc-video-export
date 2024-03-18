@@ -262,41 +262,24 @@ class WrapperFFmpeg(Wrapper):
             case ExportMode.CHROMA_MERGE:
                 # merge Y/C from separate Y+C inputs
 
-                if self._state.opts.two_step:
-                    # luma file, chroma decoder input
+                # using mergeplanes 0x001112 with pipe+pipe input works but there
+                # seems to be an issue when merging gray16le and 16-bit yuv(??) formats.
+                # safer to extract the 2x inputs (file+pipe/pipe+pipe) into y/u/v planes
+                # and merge to avoid any issues.
 
-                    mergeplanes = (
-                        "0x001020"
-                        if consts.FFMPEG_USE_OLD_MERGEPLANES
-                        else "map1s=1:map2s=2"
-                    )
+                mergeplanes = (
+                    "0x001020"
+                    if consts.FFMPEG_USE_OLD_MERGEPLANES
+                    else "map1s=1:map2s=2"
+                )
 
-                    complex_filter = (
-                        f"[0:v]format={self._get_profile().video_format},"
-                        f"extractplanes=y[y];"
-                        f"[1:v]format={self._get_profile().video_format},"
-                        f"extractplanes=u+v[u][v];"
-                        f"[y][u][v]mergeplanes={mergeplanes}:"
-                        f"format={self._get_profile().video_format}{filters_opts}"
-                        f"[v_output]"
-                        f"{other_filters_opts}"
-                    )
-                else:
-                    # both decoder inputs piped in
-
-                    mergeplanes = (
-                        "0x001112"
-                        if consts.FFMPEG_USE_OLD_MERGEPLANES
-                        else "map1s=1:map1p=1:map2s=1:map2p=2"
-                    )
-
-                    complex_filter = (
-                        f"[1:v]format={self._get_profile().video_format}[chroma];"
-                        f"[0:v][chroma]mergeplanes={mergeplanes}:"
-                        f"format={self._get_profile().video_format}{filters_opts}"
-                        f"[v_output]"
-                        f"{other_filters_opts}"
-                    )
+                complex_filter = (
+                    f"[0:v]format=gray16le[luma];[1:v]format=yuv444p16le[chroma];"
+                    f"[luma]extractplanes=y[y];[chroma]extractplanes=u+v[u][v];"
+                    f"[y][u][v]mergeplanes={mergeplanes}:format=yuv444p16le"
+                    f"{filters_opts}[v_output]"
+                    f"{other_filters_opts}"
+                )
 
             case ExportMode.LUMA_EXTRACTED:
                 # extract Y from a Y/C input
@@ -316,7 +299,7 @@ class WrapperFFmpeg(Wrapper):
 
             case _ as mode if mode is ExportMode.LUMA and self._state.opts.two_step:
                 # luma step in two-step should not use any filters
-                complex_filter = f"[0:v]null,{field_filter}[v_output]"
+                complex_filter = f"[0:v]{field_filter}[v_output]"
 
             case _:
                 complex_filter = (

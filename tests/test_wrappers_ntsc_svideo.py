@@ -217,7 +217,7 @@ class TestWrappersNTSCSvideo(unittest.TestCase):
                     "-thread_queue_size 1024",
                     "-i PIPE_IN",
                     "-filter_complex",
-                    "[1:v]format=yuv422p10le[chroma];[0:v][chroma]mergeplanes=0x001112:format=yuv422p10le,setfield=tff[v_output]",
+                    "[0:v]format=gray16le[luma];[1:v]format=yuv444p16le[chroma];[luma]extractplanes=y[y];[chroma]extractplanes=u+v[u][v];[y][u][v]mergeplanes=0x001020:format=yuv444p16le,setfield=tff[v_output]",
                     "-map [v_output]",
                     "-timecode 00:00:00:00",
                     "-framerate ntsc",
