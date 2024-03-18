@@ -5,9 +5,10 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from tbc_video_export.common import consts
+from tbc_video_export.common import consts, exceptions
 from tbc_video_export.common.enums import (
     ExportMode,
+    HardwareAccelType,
     PipeType,
     ProcessName,
     TBCType,
@@ -30,8 +31,12 @@ class WrapperFFmpeg(Wrapper):
     def __init__(
         self, state: ProgramState, config: WrapperConfig[tuple[Pipe], None]
     ) -> None:
+        self._additional_vopts: FlatList = FlatList()
+        self._hwaccel_opts: FlatList = FlatList()
+        self._hwaccel_filter: str = ""
         super().__init__(state, config)
         self._config = config
+        self._parse_hwaccel()
 
     def post_fn(self) -> None:  # noqa: D102
         pass
@@ -45,8 +50,7 @@ class WrapperFFmpeg(Wrapper):
                 self._get_overwrite_opt(),
                 self._get_threads_opt(),
                 "-nostdin",
-                "-hwaccel",
-                "auto",
+                self._get_hwaccel_opts(),
                 self._get_color_range_opt(),
                 self._get_input_opts(),
                 self._get_filter_complex_opts(),
@@ -55,7 +59,6 @@ class WrapperFFmpeg(Wrapper):
                 self._get_framerate_opt(),
                 self._get_color_range_opt(),
                 self._get_color_opts(),
-                self._get_format_opts(),
                 self._get_codec_opts(),
                 self._get_metadata_opts(),
                 self._get_output_opt(),
@@ -89,6 +92,49 @@ class WrapperFFmpeg(Wrapper):
         """Return opts for thread count."""
         # TODO add complex filter threads?
         return FlatList(("-threads", str(self._state.opts.threads)))
+
+    def _parse_hwaccel(self) -> None:
+        """Parse hardware acceleration opts."""
+        match self._get_profile().video_profile.hardware_accel:
+            case HardwareAccelType.VAAPI:
+                self._hwaccel_opts.append(
+                    ("-hwaccel", "vaapi", "-hwaccel_output_format", "vaapi")
+                )
+
+                if (hwaccel_device := self._state.opts.hwaccel_device) is not None:
+                    self._hwaccel_opts.append(("-vaapi_device", hwaccel_device))
+
+                self._hwaccel_filter = "hwupload"
+
+            case HardwareAccelType.NVENC:
+                if (hwaccel_device := self._state.opts.hwaccel_device) is not None:
+                    self._additional_vopts.append(("-gpu", hwaccel_device))
+
+            case HardwareAccelType.QUICKSYNC:
+                self._hwaccel_opts.append(
+                    (
+                        "-hwaccel",
+                        "qsv",
+                        "-hwaccel_output_format",
+                        "qsv",
+                    )
+                )
+
+                if (hwaccel_device := self._state.opts.hwaccel_device) is not None:
+                    self._hwaccel_opts.append(("-qsv_device", hwaccel_device))
+
+            case HardwareAccelType.AMF:
+                if self._state.opts.hwaccel_device is not None:
+                    raise exceptions.InvalidProfileError(
+                        "Unable to set device for AMD AMF encoding due to FFmpeg "
+                        "limitiations."
+                    )
+
+            case _:
+                pass
+
+    def _get_hwaccel_opts(self) -> FlatList:
+        return self._hwaccel_opts
 
     @staticmethod
     def _get_color_range_opt() -> FlatList | None:
@@ -245,6 +291,11 @@ class WrapperFFmpeg(Wrapper):
 
         if self._state.opts.append_video_filter is not None:
             video_filters.append(self._state.opts.append_video_filter)
+
+        video_filters.append(f"format={self._get_profile_video_format()}")
+
+        if self._state.opts.hwaccel_type is not None and self._hwaccel_filter:
+            video_filters.append(self._hwaccel_filter)
 
         # set other filters
         other_filters += _of
@@ -408,10 +459,6 @@ class WrapperFFmpeg(Wrapper):
                     ),
                 )
 
-    def _get_format_opts(self) -> FlatList:
-        """Return opts for output format."""
-        return FlatList(("-pix_fmt", self._get_profile_video_format()))
-
     def _get_codec_opts(self) -> FlatList:
         """Return opts containing codecs for inputs."""
         codec_opts = FlatList(
@@ -419,6 +466,7 @@ class WrapperFFmpeg(Wrapper):
                 "-c:v",
                 self._get_profile().video_profile.codec,
                 self._get_profile().video_profile.opts,
+                self._additional_vopts,
             )
         )
 

@@ -113,6 +113,14 @@ def add_ffmpeg_opts(parent: argparse.ArgumentParser) -> None:
     )
 
     ffmpeg_opts.add_argument(
+        "--hwaccel-device",
+        type=str,
+        help="Hardware acceleration device.\n"
+        "Specify a hardware device to use when a supported video profile is selected."
+        "\n\n",
+    )
+
+    ffmpeg_opts.add_argument(
         "--thread-queue-size",
         type=int,
         default=1024,

@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 from tbc_video_export.common.enums import (
     ChromaDecoder,
     FieldOrder,
-    ProfileVideoType,
     VideoSystem,
 )
 
@@ -84,20 +83,4 @@ class TypeChromaDecoder:
             self._parser.error(
                 f"argument --chroma-decoder: invalid ChromaDecoder value: '{value}', "
                 f"check --help for available options."
-            )
-
-
-class TypeVideoProfile:
-    """Return ProfileVideoType value if it exists."""
-
-    def __init__(self, parser: argparse.ArgumentParser) -> None:
-        self._parser = parser
-
-    def __call__(self, value: str) -> ProfileVideoType:  # noqa: D102
-        try:
-            return ProfileVideoType[value.upper()]
-        except KeyError:
-            self._parser.error(
-                f"argument --video-profile: invalid ProfileVideoType value: "
-                f"'{value}', check --help for available options."
             )

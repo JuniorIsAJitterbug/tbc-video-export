@@ -158,7 +158,7 @@ class ProgramState:
         return self.config.get_profile(
             GetProfileFilter(
                 self.opts.profile,
-                self.opts.video_profile,
+                self.opts.hwaccel_type,
                 self.video_system,
             )
         )

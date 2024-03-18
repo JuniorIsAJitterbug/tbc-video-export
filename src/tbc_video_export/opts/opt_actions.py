@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts
 from tbc_video_export.common.enums import (
-    ProfileVideoType,
+    HardwareAccelType,
     VideoBitDepthType,
     VideoFormatType,
 )
@@ -114,6 +114,25 @@ class ActionListProfiles(argparse.Action):
             logging.getLogger("console").info(data)
 
 
+class ActionSetVideoHardwareAccelType(argparse.Action):
+    """Set video format type with alias opts."""
+
+    def __init__(self, nargs: int = 0, **kwargs: Any) -> None:
+        super().__init__(nargs=nargs, **kwargs)
+
+    def __call__(  # noqa: D102
+        self,
+        parser: argparse.ArgumentParser,  # noqa: ARG002
+        namespace: argparse.Namespace,
+        values: str | Sequence[Any] | None,  # noqa: ARG002
+        option_strings: str,
+        **kwargs: Any,  # noqa: ARG002
+    ) -> None:
+        # no need to check errors here, as option_strings can only be
+        # VideoBitDepthType values
+        namespace.hwaccel_type = HardwareAccelType(option_strings[2:].lower())
+
+
 class ActionSetVideoBitDepthType(argparse.Action):
     """Set video format type with alias opts."""
 
@@ -177,26 +196,6 @@ class ActionSetProfile(argparse.Action):
         # no need to check errors here, as option_strings can only be
         # valid profile names
         namespace.profile = option_strings[2:].lower()
-
-
-class ActionSetVideoType(argparse.Action):
-    """Set video profile type with alias opts."""
-
-    def __init__(self, nargs: int = 0, **kwargs: Any) -> None:
-        super().__init__(nargs=nargs, **kwargs)
-
-    def __call__(  # noqa: D102
-        self,
-        parser: argparse.ArgumentParser,  # noqa: ARG002
-        namespace: argparse.Namespace,
-        values: str | Sequence[Any] | None,  # noqa: ARG002
-        option_strings: str,
-        **kwargs: Any,  # noqa: ARG002
-    ) -> None:
-        # no need to check errors here, as option_strings can only be
-        # ProfileVideoType values
-        namespace.video_profile = ProfileVideoType(option_strings[2:].lower())
-
 
 class ActionSetAudioOverride(argparse.Action):
     """Set audio profile override type with alias opts."""

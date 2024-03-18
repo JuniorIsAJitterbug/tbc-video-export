@@ -19,7 +19,10 @@ from tbc_video_export.config.profile import (
 )
 
 if TYPE_CHECKING:
-    from tbc_video_export.common.enums import ProfileVideoType, VideoSystem
+    from tbc_video_export.common.enums import (
+        HardwareAccelType,
+        VideoSystem,
+    )
     from tbc_video_export.config.json import JsonConfig
 
 
@@ -55,16 +58,6 @@ class Config:
         except KeyError as e:
             raise exceptions.InvalidProfileError(
                 "Configuration file missing required fields.", self.get_config_file()
-            ) from e
-
-    @cached_property
-    def video_profiles(self) -> list[ProfileVideo]:
-        """Return list of available video profiles."""
-        try:
-            return [ProfileVideo(p) for p in self._data["video_profiles"]]
-        except KeyError as e:
-            raise exceptions.InvalidProfileError(
-                "Could not read video profiles.", self.get_config_file()
             ) from e
 
     @cached_property
@@ -105,9 +98,12 @@ class Config:
             )
 
             if profile is None:
-                raise exceptions.InvalidProfileError(
-                    f"Could not find profile {profile_filter.name}."
-                )
+                err_msg = f"Could not find profile {profile_filter.name}."
+
+                if profile_filter.hwaccel_type is not None:
+                    err_msg += f" ({profile_filter.hwaccel_type.value})"
+
+                raise exceptions.InvalidProfileError(err_msg)
 
             return profile
         except KeyError as e:
@@ -254,7 +250,7 @@ class Config:
             # get video profile(s) for profile
             if isinstance(profile_data["video_profile"], list):
                 video_profiles = [
-                    ProfileVideo(json_video_profile)
+                    ProfileVideo(profile_data, json_video_profile)
                     for json_video_profile in self._data["video_profiles"]
                     for video_profile_name in profile_data["video_profile"]
                     if json_video_profile["name"] == video_profile_name
@@ -262,7 +258,7 @@ class Config:
             else:
                 video_profiles = [
                     next(
-                        ProfileVideo(json_video_profile)
+                        ProfileVideo(profile_data, json_video_profile)
                         for json_video_profile in self._data["video_profiles"]
                         if json_video_profile["name"] == profile_data["video_profile"]
                     )
@@ -295,7 +291,7 @@ class Config:
                 )
 
                 # set profile overrides
-                if (override := video_profile.filter_profiles_override) is not None:
+                if override := video_profile.filter_profiles:
                     profile.filter_profiles = [
                         ProfileFilter(json_filter_profile)
                         for json_filter_profile in self._data["filter_profiles"]
@@ -317,7 +313,7 @@ class GetProfileFilter:
     """Container class for get profile filter params."""
 
     name: str
-    video_type: ProfileVideoType | None = None
+    hwaccel_type: HardwareAccelType | None = None
     video_system: VideoSystem | None = None
 
     def match(self, profile: Profile) -> bool:
@@ -328,8 +324,8 @@ class GetProfileFilter:
             return False
 
         if (
-            self.video_type is not None
-            and video_profile.profile_type is not self.video_type
+            self.hwaccel_type is not None
+            and video_profile.hardware_accel is not self.hwaccel_type
         ):
             return False
 

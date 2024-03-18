@@ -275,7 +275,7 @@ class TestWrappersFFmpeg(unittest.TestCase):
 
         cmd = ffmpeg_wrapper.command.data
 
-        self.assertTrue(any(",TEST_VIDEO_FILTER[v_output]" in cmds for cmds in cmd))
+        self.assertTrue(any(",TEST_VIDEO_FILTER,format=" in cmds for cmds in cmd))
         self.assertTrue(any("[v_output],TEST_OTHER_FILTER" in cmds for cmds in cmd))
 
     def test_ffmpeg_add_invalid_filter_profile_opt(self) -> None:  # noqa: D102

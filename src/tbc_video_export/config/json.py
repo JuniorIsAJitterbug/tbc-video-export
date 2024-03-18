@@ -51,7 +51,7 @@ class JsonSubProfileVideo(JsonSubProfile):
     video_format: str
     filter_profiles_additions: NotRequired[list[str]]
     filter_profiles_override: NotRequired[list[str]]
-    type: NotRequired[str]  # noqa: A003
+    hardware_accel: NotRequired[str]
 
 
 class JsonSubProfileAudio(JsonSubProfile):

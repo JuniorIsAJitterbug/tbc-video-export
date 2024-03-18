@@ -27,7 +27,6 @@ class FileHelper:
         self._config = config
 
         self._profile = self._config.get_profile(GetProfileFilter(self._opts.profile))
-        self._video_subtype = self._opts.video_profile
 
         # initially set both input and output files to the input file
         # file without file extension
