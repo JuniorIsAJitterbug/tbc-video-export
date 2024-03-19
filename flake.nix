@@ -26,77 +26,64 @@
       imports = [
         inputs.devenv.flakeModule
       ];
+
       systems = [ "x86_64-linux" ];
 
-      perSystem = { config, self', inputs', pkgs, system, ... }:
-        let
-          python-packages = p:
-            with p; [
-              pip
+      perSystem = { config, self', inputs', pkgs, system, ... }: {
+        devenv.shells = {
+          default = {
+            name = "tbc-video-export";
+
+            packages = with pkgs; [
+              ruff
+              mediainfo
+              inputs.jitterbug.packages.${pkgs.system}.vhs-decode
             ];
-        in
-        {
-          devenv.shells = {
-            default = {
-              name = "tbc-video-export";
 
-              imports = [ ];
+            languages.python = {
+              enable = true;
+              version = "3.10";
 
-              packages = with pkgs;
-                [
-                  stdenv.cc.cc.lib
-                  ruff
-                  inputs.jitterbug.packages.${pkgs.system}.vhs-decode
-                  (python310.withPackages python-packages)
-                ];
-
-              languages.python = {
+              poetry = {
                 enable = true;
-                version = "3.10";
-                poetry = {
-                  enable = true;
-                  activate.enable = true;
-                  install.enable = true;
-                  install.allExtras = true;
-                };
-              };
-
-              pre-commit.hooks = {
-                ruff.enable = true;
-                pyright.enable = true;
-              };
-
-              pre-commit.settings = {
-                yamllint.relaxed = true;
+                activate.enable = true;
+                install.enable = true;
+                install.allExtras = true;
               };
             };
 
-            ci = {
-              name = "tbc-video-export (CI)";
+            pre-commit.hooks = {
+              ruff.enable = true;
+              pyright.enable = true;
+            };
 
-              imports = [ ];
+            pre-commit.settings = {
+              yamllint.relaxed = true;
+            };
+          };
 
-              packages = with pkgs;
-                [
-                  stdenv.cc.cc.lib
-                  ruff
-                  fuse
-                  (python310.withPackages python-packages)
-                ];
+          ci = {
+            name = "tbc-video-export (CI)";
 
-              languages.python = {
+            packages = with pkgs;[
+              ruff
+              fuse
+              (python310.withPackages python-packages)
+            ];
+
+            languages.python = {
+              enable = true;
+              version = "3.10";
+
+              poetry = {
                 enable = true;
-                version = "3.10";
-                poetry = {
-                  enable = true;
-                  activate.enable = true;
-                  install.enable = true;
-                  install.allExtras = true;
-                };
+                activate.enable = true;
+                install.enable = true;
+                install.allExtras = true;
               };
             };
           };
         };
-      flake = { };
+      };
     };
 }
