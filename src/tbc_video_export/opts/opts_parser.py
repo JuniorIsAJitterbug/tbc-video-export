@@ -2,15 +2,22 @@ from __future__ import annotations
 
 import argparse
 import os
+from itertools import chain
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts
-from tbc_video_export.common.enums import VideoSystem
+from tbc_video_export.common.enums import (
+    ProfileVideoType,
+    VideoBitDepthType,
+    VideoFormatType,
+    VideoSystem,
+)
 from tbc_video_export.opts import (
     opt_actions,
     opt_types,
     opts_ffmpeg,
     opts_ldtools,
+    opts_profile,
 )
 from tbc_video_export.opts.opts import Opts
 
@@ -29,6 +36,7 @@ def parse_opts(
         usage=f"{consts.APPLICATION_NAME} [options] input_file [output_file]\n\n"
         f"See --help or {consts.PROJECT_URL_WIKI_COMMANDLIST}\n"
         "---",
+        epilog=f"Output/profile customization:\n{_get_opt_aliases()}",
     )
 
     if (cpu_count := os.cpu_count()) is None:
@@ -209,7 +217,29 @@ def parse_opts(
         "\n\n",
     )
 
-    opts_ffmpeg.add_ffmpeg_opts(config, parser)
+    opts_ffmpeg.add_ffmpeg_opts(parser)
+    opts_profile.add_profile_opts(config, parser)
 
     opts = parser.parse_intermixed_args(args, namespace=Opts())
     return (parser, opts)
+
+
+def _get_opt_aliases() -> str:
+    pix_fmts = ", ".join(
+        sorted(
+            set(
+                chain(
+                    *((f"--{v}" for _, v in d.value.items()) for d in VideoFormatType)
+                )
+            )
+        )
+    )
+    out_str = f"  Pixel Formats:\n    {pix_fmts}\n\n"
+
+    bitdepths = ", ".join([f"--{t.value}" for t in VideoBitDepthType])
+    out_str += f"  Bit Depths:\n    {bitdepths}\n\n"
+
+    video_types = ", ".join([f"--{t.value}" for t in ProfileVideoType])
+    out_str += f"  Video Profile Types:\n    {video_types}\n\n"
+
+    return out_str

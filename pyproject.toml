@@ -15,6 +15,7 @@ keywords = ["vhs-decode", "ld-decode", "cvbs-decode", "tbc", "rf capture"]
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
 pywin32 = [{ version = "^306", platform = "win32", source = "pypi" }]
+typing-extensions = "^4.10.0"
 
 [tool.poetry.scripts]
 tbc-video-export = "tbc_video_export.__main__:main"

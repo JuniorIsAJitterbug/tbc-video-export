@@ -5,19 +5,21 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from tbc_video_export.common import consts
+from tbc_video_export.common import consts, exceptions
 from tbc_video_export.common.enums import (
     ExportMode,
+    HardwareAccelType,
     PipeType,
     ProcessName,
     TBCType,
+    VideoFormatType,
     VideoSystem,
 )
 from tbc_video_export.common.utils import FlatList, ansi
 from tbc_video_export.process.wrapper.wrapper import Wrapper
 
 if TYPE_CHECKING:
-    from tbc_video_export.config.profile import Profile
+    from tbc_video_export.config.profile import Profile, ProfileVideo
     from tbc_video_export.process.wrapper.pipe import Pipe
     from tbc_video_export.process.wrapper.wrapper import WrapperConfig
     from tbc_video_export.program_state import ProgramState
@@ -29,8 +31,11 @@ class WrapperFFmpeg(Wrapper):
     def __init__(
         self, state: ProgramState, config: WrapperConfig[tuple[Pipe], None]
     ) -> None:
+        self._additional_vopts: FlatList = FlatList()
+        self._hwaccel_opts: FlatList = FlatList()
         super().__init__(state, config)
         self._config = config
+        self._parse_hwaccel()
 
     def post_fn(self) -> None:  # noqa: D102
         pass
@@ -44,8 +49,7 @@ class WrapperFFmpeg(Wrapper):
                 self._get_overwrite_opt(),
                 self._get_threads_opt(),
                 "-nostdin",
-                "-hwaccel",
-                "auto",
+                self._get_hwaccel_opts(),
                 self._get_color_range_opt(),
                 self._get_input_opts(),
                 self._get_filter_complex_opts(),
@@ -88,6 +92,45 @@ class WrapperFFmpeg(Wrapper):
         """Return opts for thread count."""
         # TODO add complex filter threads?
         return FlatList(("-threads", str(self._state.opts.threads)))
+
+    def _parse_hwaccel(self) -> None:
+        """Parse hardware acceleration opts."""
+        match self._get_profile().video_profile.hardware_accel:
+            case HardwareAccelType.VAAPI:
+                self._hwaccel_opts.append(
+                    ("-hwaccel", "vaapi", "-hwaccel_output_format", "vaapi")
+                )
+
+                if (hwaccel_device := self._state.opts.hwaccel_device) is not None:
+                    self._hwaccel_opts.append(("-vaapi_device", hwaccel_device))
+
+            case HardwareAccelType.NVENC:
+                if (hwaccel_device := self._state.opts.hwaccel_device) is not None:
+                    self._additional_vopts.append(("-gpu", hwaccel_device))
+
+            case HardwareAccelType.QUICKSYNC:
+                self._hwaccel_opts.append(
+                    (
+                        "-hwaccel",
+                        "qsv",
+                    )
+                )
+
+                if (hwaccel_device := self._state.opts.hwaccel_device) is not None:
+                    self._hwaccel_opts.append(("-qsv_device", hwaccel_device))
+
+            case HardwareAccelType.AMF:
+                if self._state.opts.hwaccel_device is not None:
+                    raise exceptions.InvalidProfileError(
+                        "Unable to set device for AMD AMF encoding due to FFmpeg "
+                        "limitiations."
+                    )
+
+            case _:
+                pass
+
+    def _get_hwaccel_opts(self) -> FlatList:
+        return self._hwaccel_opts
 
     @staticmethod
     def _get_color_range_opt() -> FlatList | None:
@@ -216,31 +259,30 @@ class WrapperFFmpeg(Wrapper):
             case VideoSystem.NTSC | VideoSystem.PAL_M:
                 return "crop=iw:ih-19:0:17"
 
-    def _get_filter_complex_opts(self) -> FlatList:  # noqa: C901, PLR0912
-        """Return opts for filter complex."""
-        field_filter = f"setfield={self._get_field_order()}"
-        common_filters: list[str] = [field_filter]
+    def _get_hwaccel_filter(self) -> str:
+        """Return filter for hardware accelerated hwupload."""
+        return f"format={self._get_video_profile().video_format},hwupload"
+
+    def _get_filters(self) -> tuple[list[str], list[str]]:
+        """Return tuple containing video and other filters."""
+        video_filters: list[str] = []
         other_filters: list[str] = []
 
-        # add full vertical -> vbi drop
+        # add full vertical -> vbi crop
         if self._state.opts.vbi or self._get_profile().include_vbi:
-            common_filters.append(self._get_vbi_crop_filter())
+            video_filters.append(self._get_vbi_crop_filter())
 
-        if (filter_profiles := self._get_profile().filter_profiles) is not None:
-            for vf in (profile.video_filter for profile in filter_profiles):
-                if vf is not None:
-                    common_filters.append(vf)
+        _vf, _of = self._state.config.get_profile_filters(self._get_profile())
 
-            for of in (profile.other_filter for profile in filter_profiles):
-                if of is not None:
-                    other_filters.append(of)
+        # set video filters
+        video_filters += _vf
 
         if self._state.opts.force_anamorphic or self._state.opts.letterbox:
-            common_filters.append(self._get_widescreen_aspect_ratio_filter())
+            video_filters.append(self._get_widescreen_aspect_ratio_filter())
 
         # override profile colorlevels if set with opt
         if self._state.opts.force_black_level is not None:
-            common_filters.append(
+            video_filters.append(
                 "colorlevels="
                 f"rimin={self._state.opts.force_black_level[0]}/255:"
                 f"gimin={self._state.opts.force_black_level[1]}/255:"
@@ -248,12 +290,28 @@ class WrapperFFmpeg(Wrapper):
             )
 
         if self._state.opts.append_video_filter is not None:
-            common_filters.append(self._state.opts.append_video_filter)
+            video_filters.append(self._state.opts.append_video_filter)
+
+        if self._state.opts.hwaccel_type is not None:
+            video_filters.append(self._get_hwaccel_filter())
+
+        # set other filters
+        other_filters += _of
 
         if self._state.opts.append_other_filter is not None:
             other_filters.append(self._state.opts.append_other_filter)
 
-        filters_opts = f",{','.join(common_filters)}"
+        return video_filters, other_filters
+
+    def _get_filter_complex_opts(self) -> FlatList:  # noqa: C901, PLR0912
+        """Return opts for filter complex."""
+        field_filter = f"setfield={self._get_field_order()}"
+        video_filters, other_filters = self._get_filters()
+
+        # add setfield to start of filters
+        video_filters.insert(0, field_filter)
+
+        video_filters_opts = ",".join(video_filters)
 
         other_filters_str = ",".join(other_filters)
         other_filters_opts = f",{other_filters_str}" if len(other_filters_str) else ""
@@ -276,15 +334,15 @@ class WrapperFFmpeg(Wrapper):
                 complex_filter = (
                     f"[0:v]format=gray16le[luma];[1:v]format=yuv444p16le[chroma];"
                     f"[luma]extractplanes=y[y];[chroma]extractplanes=u+v[u][v];"
-                    f"[y][u][v]mergeplanes={mergeplanes}:format=yuv444p16le"
-                    f"{filters_opts}[v_output]"
+                    f"[y][u][v]mergeplanes={mergeplanes}:format=yuv444p16le,"
+                    f"{video_filters_opts}[v_output]"
                     f"{other_filters_opts}"
                 )
 
             case ExportMode.LUMA_EXTRACTED:
                 # extract Y from a Y/C input
                 complex_filter = (
-                    f"[0:v]extractplanes=y{filters_opts}"
+                    f"[0:v]extractplanes=y,{video_filters_opts}"
                     f"[v_output]"
                     f"{other_filters_opts}"
                 )
@@ -292,18 +350,18 @@ class WrapperFFmpeg(Wrapper):
             case ExportMode.LUMA_4FSC:
                 # interleve tbc fields
                 complex_filter = (
-                    f"[0:v]il=l=i:c=i{filters_opts}"
+                    f"[0:v]il=l=i:c=i,{video_filters_opts}"
                     f"[v_output]"
                     f"{other_filters_opts}"
                 )
 
             case _ as mode if mode is ExportMode.LUMA and self._state.opts.two_step:
-                # luma step in two-step should not use any filters
+                # luma step in two-step should not use any filters (excluding setfield)
                 complex_filter = f"[0:v]{field_filter}[v_output]"
 
             case _:
                 complex_filter = (
-                    f"[0:v]null{filters_opts}[v_output]{other_filters_opts}"
+                    f"[0:v]{video_filters_opts}[v_output]{other_filters_opts}"
                 )
 
         return FlatList(("-filter_complex", complex_filter))
@@ -401,7 +459,7 @@ class WrapperFFmpeg(Wrapper):
 
     def _get_format_opts(self) -> FlatList:
         """Return opts for output format."""
-        return FlatList(("-pix_fmt", self._get_profile().video_format))
+        return FlatList(("-pix_fmt", self._get_profile_video_format()))
 
     def _get_codec_opts(self) -> FlatList:
         """Return opts containing codecs for inputs."""
@@ -410,6 +468,7 @@ class WrapperFFmpeg(Wrapper):
                 "-c:v",
                 self._get_profile().video_profile.codec,
                 self._get_profile().video_profile.opts,
+                self._additional_vopts,
             )
         )
 
@@ -503,6 +562,47 @@ class WrapperFFmpeg(Wrapper):
     def _get_profile(self) -> Profile:
         """Return the profile in state."""
         return self._state.profile
+
+    def _get_video_profile(self) -> ProfileVideo:
+        """Return the video profile in state."""
+        return self._state.profile.video_profile
+
+    def _get_profile_video_format(self) -> str:
+        """Return the video format in state."""
+        video_format = self._get_profile().video_profile.video_format
+
+        # if two step, set to gray8/16le
+        if self._is_two_step_luma_mode() or self._config.export_mode in (
+            ExportMode.LUMA,
+            ExportMode.LUMA_4FSC,
+            ExportMode.LUMA_EXTRACTED,
+        ):
+            depth = (
+                16
+                if self._state.opts.video_bitdepth is None
+                else self._state.opts.video_bitdepth
+            )
+
+            if (new_format := VideoFormatType.GRAY.value.get(depth)) is not None:
+                video_format = new_format
+
+        # check bitdepth override
+        if (depth := self._state.opts.video_bitdepth) is not None and (
+            new_format := VideoFormatType.get_new_format(video_format, depth)
+        ) is not None:
+            video_format = new_format
+
+        # if override opts, ensure format for bitdepth and set
+        # does not set the luma format when in two-step mode
+        if (
+            (vf := self._state.opts.video_format) is not None
+            and (depth := self._state.opts.video_bitdepth) is not None
+            and (new_format := vf.value.get(depth)) is not None
+            and not self._is_two_step_luma_mode()
+        ):
+            video_format = new_format
+
+        return video_format
 
     def _is_two_step_luma_mode(self) -> bool:
         """Return True if this wrapper is in luma mode while two-step is enabled."""
