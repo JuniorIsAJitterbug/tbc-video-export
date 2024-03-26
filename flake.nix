@@ -68,7 +68,6 @@
             packages = with pkgs;[
               ruff
               fuse
-              (python310.withPackages python-packages)
             ];
 
             languages.python = {
