@@ -8,7 +8,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common import exceptions
-from tbc_video_export.common.enums import ChromaDecoder, ProfileType, VideoSystem
+from tbc_video_export.common.enums import (
+    ChromaDecoder,
+    ProfileType,
+    TBCType,
+    VideoSystem,
+)
 from tbc_video_export.common.utils import ansi
 from tbc_video_export.opts.opts import AudioTrackOpt, Opts
 
@@ -198,7 +203,13 @@ def validate_black_levels_opts(value: str) -> tuple[int, int, int] | None:
 def _validate_decoder_opts(state: ProgramState, opts: Opts) -> None:
     """Validate chroma-decoder opts."""
     # this is only available on cvbs/ld or when --chroma-decoder-luma is used
-    if opts.luma_nr is not None and state.decoder_luma is ChromaDecoder.MONO:
+    decoder = (
+        state.decoder_chroma
+        if TBCType.COMBINED in state.tbc_types
+        else state.decoder_luma
+    )
+
+    if opts.luma_nr is not None and decoder is ChromaDecoder.MONO:
         raise exceptions.InvalidOptsError(
             "--luma-nr is not implemented with the mono decoder."
         )
