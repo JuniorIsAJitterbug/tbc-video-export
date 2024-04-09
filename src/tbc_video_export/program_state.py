@@ -103,7 +103,13 @@ class ProgramState:
     @cached_property
     def decoder_luma(self) -> ChromaDecoder:
         """Chroma decoder for Luma TBCs."""
-        return ChromaDecoder.MONO
+        # default
+        decoder = ChromaDecoder.MONO
+
+        if self.opts.chroma_decoder_luma is not None:
+            decoder = self.opts.chroma_decoder_luma
+
+        return decoder
 
     @cached_property
     def decoder_chroma(self) -> ChromaDecoder:

@@ -50,6 +50,7 @@ class Opts(argparse.Namespace):
     first_active_frame_line: int | None
     last_active_frame_line: int | None
     chroma_decoder: ChromaDecoder | None
+    chroma_decoder_luma: ChromaDecoder | None
     chroma_gain: float | None
     chroma_phase: float | None
     luma_nr: float | None

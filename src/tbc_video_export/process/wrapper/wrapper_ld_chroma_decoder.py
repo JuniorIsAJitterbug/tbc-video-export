@@ -79,32 +79,37 @@ class WrapperLDChromaDecoder(Wrapper):
     def _get_decoder_opts(self) -> FlatList:
         """Return decoder to use."""
         # validate decoders for video system
-        if self.tbc_type is not TBCType.LUMA:
-            decoder = self._state.decoder_chroma
+        decoder = (
+            self._state.decoder_chroma
+            if self.tbc_type is not TBCType.LUMA
+            else self._state.decoder_luma
+        )
 
-            match self._state.video_system:
-                case VideoSystem.PAL | VideoSystem.PAL_M:
-                    if decoder not in {
-                        ChromaDecoder.PAL2D,
-                        ChromaDecoder.TRANSFORM2D,
-                        ChromaDecoder.TRANSFORM3D,
-                    }:
-                        raise exceptions.InvalidChromaDecoderError(
-                            f"{decoder} is not a valid decoder for "
-                            f"{self._state.video_system}."
-                        )
+        match self._state.video_system:
+            case VideoSystem.PAL | VideoSystem.PAL_M:
+                if decoder not in {
+                    ChromaDecoder.MONO,
+                    ChromaDecoder.PAL2D,
+                    ChromaDecoder.TRANSFORM2D,
+                    ChromaDecoder.TRANSFORM3D,
+                }:
+                    raise exceptions.InvalidChromaDecoderError(
+                        f"{decoder} is not a valid decoder for "
+                        f"{self._state.video_system}."
+                    )
 
-                case VideoSystem.NTSC:
-                    if decoder not in {
-                        ChromaDecoder.NTSC1D,
-                        ChromaDecoder.NTSC2D,
-                        ChromaDecoder.NTSC3D,
-                        ChromaDecoder.NTSC3DNOADAPT,
-                    }:
-                        raise exceptions.InvalidChromaDecoderError(
-                            f"{decoder} is not a valid decoder for "
-                            f"{self._state.video_system}."
-                        )
+            case VideoSystem.NTSC:
+                if decoder not in {
+                    ChromaDecoder.MONO,
+                    ChromaDecoder.NTSC1D,
+                    ChromaDecoder.NTSC2D,
+                    ChromaDecoder.NTSC3D,
+                    ChromaDecoder.NTSC3DNOADAPT,
+                }:
+                    raise exceptions.InvalidChromaDecoderError(
+                        f"{decoder} is not a valid decoder for "
+                        f"{self._state.video_system}."
+                    )
 
         return FlatList(
             (

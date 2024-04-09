@@ -128,6 +128,25 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
     )
 
     decoder_opts.add_argument(
+        "--chroma-decoder-luma",
+        type=opt_types.TypeChromaDecoder(parent),
+        choices=list(ChromaDecoder),
+        metavar="decoder",
+        help="Set the chroma decoder to be used for luma.\n"
+        "You likely do not need to touch this.\n"
+        "Available decoders:\n\n"
+        f"  {ChromaDecoder.MONO} (default)\n\n"
+        f"  {ChromaDecoder.PAL2D}\n"
+        f"  {ChromaDecoder.TRANSFORM2D}\n"
+        f"  {ChromaDecoder.TRANSFORM3D}\n\n"
+        f"  {ChromaDecoder.NTSC1D}\n"
+        f"  {ChromaDecoder.NTSC2D}\n"
+        f"  {ChromaDecoder.NTSC3D}\n"
+        f"  {ChromaDecoder.NTSC3DNOADAPT}"
+        "\n\n",
+    )
+
+    decoder_opts.add_argument(
         "--chroma-gain",
         type=float,
         metavar="float",
