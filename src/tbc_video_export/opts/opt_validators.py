@@ -202,3 +202,11 @@ def _validate_decoder_opts(state: ProgramState, opts: Opts) -> None:
         raise exceptions.InvalidOptsError(
             "--luma-nr is not implemented with the mono decoder."
         )
+
+    if opts.simple_pal and state.decoder_chroma not in [
+        ChromaDecoder.TRANSFORM2D,
+        ChromaDecoder.TRANSFORM3D,
+    ]:
+        raise exceptions.InvalidOptsError(
+            "--simple-pal is only implemented with Transform2D/Transform3D."
+        )

@@ -228,7 +228,9 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--simple-pal",
         action="store_true",
         default=False,
-        help="Transform: Use 1D UV filter.\n\n",
+        help="Transform: Use 1D UV filter.\n"
+        "Only available with Transform decoders."
+        "\n\n",
     )
 
     # dropout-correct
