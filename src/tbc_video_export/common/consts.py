@@ -30,7 +30,7 @@ PROJECT_URL_ISSUES: Final = get_url_from_metadata("Issues")
 PROJECT_URL_WIKI: Final = get_url_from_metadata("Wiki")
 PROJECT_URL_DISCORD: Final = get_url_from_metadata("Discord")
 
-PROJECT_URL_WIKI_COMMANDLIST: Final = f"{PROJECT_URL_WIKI}/CommandList"
+PROJECT_URL_WIKI_COMMANDLIST: Final = f"{PROJECT_URL_WIKI}/Command-List"
 PROJECT_URL_WIKI_PROFILES: Final = f"{PROJECT_URL_WIKI}/FFmpeg-Profiles"
 
 
