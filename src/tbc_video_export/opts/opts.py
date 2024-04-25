@@ -11,7 +11,6 @@ if TYPE_CHECKING:
         ChromaDecoder,
         FieldOrder,
         HardwareAccelType,
-        ProfileVideoType,
         VideoFormatType,
         VideoSystem,
     )
@@ -114,7 +113,6 @@ class Opts(argparse.Namespace):
     append_other_filter: str | None
 
     hwaccel_type: HardwareAccelType | None
-    video_profile: ProfileVideoType | None
     video_format: VideoFormatType | None
     video_bitdepth: int | None
     audio_profile: str | None
