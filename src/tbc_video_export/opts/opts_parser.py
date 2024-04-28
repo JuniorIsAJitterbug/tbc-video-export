@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import os
-from itertools import chain
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts
@@ -224,15 +223,7 @@ def parse_opts(
 
 
 def _get_opt_aliases() -> str:
-    pix_fmts = ", ".join(
-        sorted(
-            set(
-                chain(
-                    *((f"--{v}" for _, v in d.value.items()) for d in VideoFormatType)
-                )
-            )
-        )
-    )
+    pix_fmts = ", ".join([f"--{t.name.lower()}" for t in VideoFormatType])
     out_str = f"  Pixel Formats:\n    {pix_fmts}\n\n"
 
     bitdepths = ", ".join([f"--{t.value}" for t in VideoBitDepthType])
