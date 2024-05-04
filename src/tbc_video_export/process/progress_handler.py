@@ -123,16 +123,15 @@ class ProgressHandler:
             # get the last N log lines, padding out the list if they do not exist
             for message in messages + [None] * (max_message_lines - len(messages)):
                 if message is not None:
-                    sender_str = "[{consts.APPLICATION_NAME}]"
-
-                    process = (
-                        f"{f'[{message.process}]':<{self._col_w['sender']}s}"
+                    sender = (
+                        f"[{message.process}]"
                         if message.process is not ProcessName.NONE
-                        else f"{sender_str}:<{self._col_w['sender']}s"
+                        else f"[{consts.APPLICATION_NAME}]"
                     )
+
                     formatted_line = (
                         f"[{strings.formatted_timestamp(message.timestamp)}] "
-                        f"{process}{message.message}"
+                        f"{sender:<{self._col_w['sender']}s}{message.message}"
                     )
 
                     fixed_log_lines.append(
