@@ -78,7 +78,6 @@ DEFAULT_CONFIG: JsonConfig = {
             "audio_profile": "aac",
             "filter_profiles": [
                 "bwdif",
-                "colorlevels32",
             ],
         },
         {
@@ -111,7 +110,6 @@ DEFAULT_CONFIG: JsonConfig = {
             "audio_profile": "aac",
             "filter_profiles": [
                 "bwdif",
-                "colorlevels32",
             ],
         },
         {
@@ -134,7 +132,6 @@ DEFAULT_CONFIG: JsonConfig = {
             "audio_profile": "aac",
             "filter_profiles": [
                 "bwdif",
-                "colorlevels32",
             ],
         },
     ],
