@@ -45,7 +45,7 @@ class TBCJsonHelper:
 
     @cached_property
     def video_system(self) -> VideoSystem:
-        """Return VidoeSystem from TBC json."""
+        """Return VideoSystem from TBC json."""
         if "system" in self._json_data["videoParameters"]:
             system = self._json_data["videoParameters"]["system"]
 
