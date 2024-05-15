@@ -9,6 +9,8 @@ from tbc_video_export.process.wrapper.pipe.pipe_dummy import PipeDummy
 from tbc_video_export.process.wrapper.pipe.pipe_os import PipeOS
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from tbc_video_export.common.enums import ProcessName, TBCType
     from tbc_video_export.process.wrapper.pipe.pipe import Pipe
 
@@ -71,7 +73,7 @@ class PipeFactory:
 
     @classmethod
     def create_dummy_pipe(
-        cls, stdin_str: str = "PIPE_IN", stdout_str: str = "PIPE_OUT"
+        cls, stdin_str: Path | str = "PIPE_IN", stdout_str: Path | str = "PIPE_OUT"
     ) -> Pipe:
         """Force create a null pipe."""
         return PipeDummy(stdin_str, stdout_str)

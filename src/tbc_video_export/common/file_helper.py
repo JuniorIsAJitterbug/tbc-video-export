@@ -123,7 +123,7 @@ class FileHelper:
         self._tbc_json = TBCJsonHelper(file_name)
 
     @cached_property
-    def tbc_luma(self) -> str:
+    def tbc_luma(self) -> Path:
         """Return the absolute path to the luma (or combined) TBC."""
         if TBCType.LUMA in self.tbcs:
             return self.tbcs[TBCType.LUMA]
@@ -209,18 +209,18 @@ class FileHelper:
                         f"{file} exists, use --overwrite or move the file."
                     )
 
-    def _set_tbc_files(self) -> dict[TBCType, str]:
+    def _set_tbc_files(self) -> dict[TBCType, Path]:
         """Create a dict containing the absolute path to the TBC files based on type."""
-        tbcs: dict[TBCType, str] = {}
+        tbcs: dict[TBCType, Path] = {}
 
         # input files
         tbc = f"{self.input_name}.tbc"
         tbc_chroma = f"{self.input_name}_chroma.tbc"
 
-        if Path(tbc_chroma).is_file():
+        if (tbc_chroma := Path(tbc_chroma)).is_file():
             tbcs[TBCType.CHROMA] = tbc_chroma
 
-        if Path(tbc).is_file():
+        if (tbc := Path(tbc)).is_file():
             if TBCType.CHROMA in tbcs:
                 tbcs[TBCType.LUMA] = tbc
             else:

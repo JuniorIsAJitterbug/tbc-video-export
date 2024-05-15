@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class PipeDummy(Pipe):
     """Dummy pipe, does nothing. Used for dry-runs."""
 
-    def __init__(self, stdin_str: str, stdout_str: str) -> None:
+    def __init__(self, stdin_str: Path | str, stdout_str: Path | str) -> None:
         self._stdin_str = stdin_str
         self._stdout_str = stdout_str
 

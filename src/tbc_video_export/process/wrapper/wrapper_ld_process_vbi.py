@@ -46,7 +46,7 @@ class WrapperLDProcessVBI(Wrapper):
             ),
         )
 
-    def _get_tbc(self) -> str:
+    def _get_tbc(self) -> Path:
         return (
             self._state.file_helper.tbcs[TBCType.LUMA]
             if TBCType.LUMA in self._state.file_helper.tbcs
