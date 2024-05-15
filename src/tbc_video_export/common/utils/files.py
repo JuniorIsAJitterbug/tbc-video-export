@@ -30,6 +30,10 @@ def find_binary(name: str) -> Path:
     This searches in the same location as the script, the current dir
     and in PATH.
     """
+    # check if binary exists at path provided
+    if (path := Path(name)).is_file():
+        return path
+
     # check if binary exists in the same dir as script
     script_path = get_runtime_directory().with_name(name).absolute()
 
