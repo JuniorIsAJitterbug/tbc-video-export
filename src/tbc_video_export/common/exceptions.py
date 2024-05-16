@@ -91,7 +91,15 @@ class InvalidProfileError(Exception):
         self.config_path = config_path if config_path is not None else "[internal]"
 
 
-class InvalidFilterProfileError(Exception):
+class InvalidVideoProfileError(InvalidProfileError):
+    """Video profile errors."""
+
+
+class InvalidAudioProfileError(InvalidProfileError):
+    """Video profile errors."""
+
+
+class InvalidFilterProfileError(InvalidProfileError):
     """Filter profile errors."""
 
 

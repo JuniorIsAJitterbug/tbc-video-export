@@ -1,391 +1,578 @@
 from __future__ import annotations
 
-import unittest
-from functools import partial
+import os
 from pathlib import Path
+from typing import TYPE_CHECKING
 
+import pytest
 from tbc_video_export.common import exceptions
-from tbc_video_export.common.enums import ProcessName, TBCType
-from tbc_video_export.common.file_helper import FileHelper
-from tbc_video_export.config import Config as ProgramConfig
-from tbc_video_export.opts import opts_parser
-from tbc_video_export.process.wrapper import WrapperConfig
-from tbc_video_export.process.wrapper.pipe import Pipe, PipeFactory
-from tbc_video_export.process.wrapper.wrapper_ld_chroma_decoder import (
-    WrapperLDChromaDecoder,
-)
-from tbc_video_export.process.wrapper.wrapper_ld_dropout_correct import (
-    WrapperLDDropoutCorrect,
-)
-from tbc_video_export.process.wrapper.wrapper_ld_process_vbi import WrapperLDProcessVBI
-from tbc_video_export.program_state import ProgramState
+from tbc_video_export.common.enums import TBCType
+
+from tests.conftest import WrapperTestCase, get_path
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from tbc_video_export.process.wrapper.wrapper_ld_chroma_decoder import (
+        WrapperLDChromaDecoder,
+    )
+    from tbc_video_export.process.wrapper.wrapper_ld_dropout_correct import (
+        WrapperLDDropoutCorrect,
+    )
+    from tbc_video_export.process.wrapper.wrapper_ld_process_vbi import (
+        WrapperLDProcessVBI,
+    )
+    from tbc_video_export.program_state import ProgramState
 
 
-class TestWrappersLDTools(unittest.TestCase):
-    """Tests for ld-tools wrappers."""
+class TestWrappersProcessVBI:
+    """Tests for ld-process-vbi wrapper."""
 
-    def setUp(self) -> None:  # noqa: D102
-        self.path = Path.joinpath(
-            Path(__file__).parent, "files", "pal_svideo"
-        ).absolute()
-
-        self.config = ProgramConfig()
-        self.parse_opts = partial(opts_parser.parse_opts, self.config)
-
-        self.pipe = PipeFactory.create_dummy_pipe()
-
-    def test_process_vbi_default_opts(self) -> None:  # noqa: D102
-        _, opts = self.parse_opts(
-            [str(self.path), "pal_svideo", "--threads", "4", "--process-vbi"]
-        )
-        self.files = FileHelper(opts, self.config)
-        state = ProgramState(opts, self.config, self.files)
-
-        vbi_process = WrapperLDProcessVBI(
-            state,
-            WrapperConfig[None, None](
-                state.current_export_mode, TBCType.NONE, None, None
-            ),
-        )
-
-        self.assertEqual(
-            str(vbi_process.command),
-            f"{self.files.get_tool(ProcessName.LD_PROCESS_VBI)} "
-            f"-t 4 "
-            f"--input-json {self.path}.tbc.json "
-            f"--output-json {self.path}.vbi.json "
-            f"{self.path}.tbc",
-        )
-
-    def test_process_vbi_custom_json(self) -> None:  # noqa: D102
-        custom_json = Path.joinpath(
-            Path(__file__).parent, "files", "ntsc_svideo.tbc.json"
-        )
-
-        _, opts = self.parse_opts(
-            [
-                str(self.path),
-                "pal_svideo",
-                "--threads",
-                "4",
+    test_cases = [
+        WrapperTestCase(
+            id="default ld-process-vbi opts",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=["--process-vbi"],
+            expected_opts=[
+                {"--input-json", f"{get_path('pal_svideo')}.tbc.json"},
+                {"--output-json", f"{get_path('pal_svideo')}.vbi.json"},
+                {f"{get_path('pal_svideo')}.tbc"},
+            ],
+        ),
+        WrapperTestCase(
+            id="set input json",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=[
                 "--process-vbi",
                 "--input-tbc-json",
-                str(custom_json),
+                str(get_path("ntsc_svideo.tbc.json")),
             ],
-        )
-        self.files = FileHelper(opts, self.config)
-        state = ProgramState(opts, self.config, self.files)
+            expected_opts=[
+                {"--input-json", f"{get_path('ntsc_svideo')}.tbc.json"},
+                {"--output-json", f"{get_path('pal_svideo')}.vbi.json"},
+                {f"{get_path('pal_svideo')}.tbc"},
+            ],
+        ),
+        WrapperTestCase(
+            id="set threads",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=["--process-vbi", "--threads", "4"],
+            expected_opts=[
+                {"-t", "4"},
+            ],
+        ),
+    ]
 
-        vbi_process = WrapperLDProcessVBI(
-            state,
-            WrapperConfig[None, None](
-                state.current_export_mode, TBCType.NONE, None, None
-            ),
-        )
+    @pytest.mark.parametrize(
+        "test_case",
+        (pytest.param(test_case, id=test_case.id) for test_case in test_cases),
+    )
+    def test_process_vbi_opts(  # noqa: D102
+        self,
+        program_state: Callable[[list[str], str], ProgramState],
+        ldtools_process_vbi_wrapper: Callable[
+            [ProgramState, TBCType], WrapperLDProcessVBI
+        ],
+        test_case: WrapperTestCase,
+    ) -> None:
+        with test_case.expected_exc:
+            state = program_state(test_case.input_opts, test_case.input_tbc)
+            process_vbi_wrapper = ldtools_process_vbi_wrapper(state, test_case.tbc_type)
+            cmds = process_vbi_wrapper.command.data
 
-        self.assertEqual(
-            str(vbi_process.command),
-            f"{self.files.get_tool(ProcessName.LD_PROCESS_VBI)} "
-            f"-t 4 "
-            f"--input-json {custom_json} "
-            f"--output-json {self.path}.vbi.json "
-            f"{self.path}.tbc",
-        )
+            for e in test_case.expected_opts:
+                assert e.issubset(cmds)
 
-    def test_dropout_correct_default_opts(self) -> None:  # noqa: D102
-        _, opts = opts_parser.parse_opts(
-            self.config, [str(self.path), "pal_svideo", "--threads", "4"]
-        )
-        self.files = FileHelper(opts, self.config)
-        state = ProgramState(opts, self.config, self.files)
+            for e in test_case.expected_str:
+                assert any(e in cmd for cmd in cmds)
 
-        dropout_correct = WrapperLDDropoutCorrect(
-            state,
-            WrapperConfig[None, Pipe](
-                state.current_export_mode,
-                TBCType.LUMA,
-                input_pipes=None,
-                output_pipes=self.pipe,
-            ),
-        )
+            for e in test_case.unexpected_opts:
+                assert not e.issubset(cmds)
 
-        self.assertEqual(
-            str(dropout_correct.command),
-            f"{self.files.get_tool(ProcessName.LD_DROPOUT_CORRECT)} "
-            f"-i {self.path}.tbc "
-            f"--input-json {self.path}.tbc.json "
-            f"--output-json /dev/null PIPE_OUT",
-        )
+            for e in test_case.unexpected_str:
+                assert not any(e in cmd for cmd in cmds)
 
-    def test_decoder_invalid_videosystem(self) -> None:  # noqa: D102
-        _, opts = self.parse_opts(
-            [str(self.path), "pal_svideo", "--chroma-decoder", "ntsc2d"]
-        )
-        self.files = FileHelper(opts, self.config)
-        state = ProgramState(opts, self.config, self.files)
+    def test_process_vbi_json(  # noqa: D102
+        self,
+        program_state: Callable[[list[str], str], ProgramState],
+        ldtools_process_vbi_wrapper: Callable[
+            [ProgramState, TBCType], WrapperLDProcessVBI
+        ],
+    ) -> None:
+        state = program_state(["--process-vbi"], f"{get_path('pal_svideo')}.tbc")
+        process_vbi_wrapper = ldtools_process_vbi_wrapper(state, TBCType.LUMA)
 
-        with self.assertRaises(exceptions.InvalidChromaDecoderError):
-            WrapperLDChromaDecoder(
-                state,
-                WrapperConfig[Pipe, Pipe](
-                    state.current_export_mode,
-                    TBCType.CHROMA,
-                    input_pipes=self.pipe,
-                    output_pipes=self.pipe,
-                ),
-            )
-
-    def test_decoder_letterbox_pal(self) -> None:  # noqa: D102
-        path = Path.joinpath(Path(__file__).parent, "files", "pal_svideo")
-        _, opts = self.parse_opts([str(path), "pal_svideo", "--letterbox"])
-        self.files = FileHelper(opts, self.config)
-        state = ProgramState(opts, self.config, self.files)
-
-        decoder = WrapperLDChromaDecoder(
-            state,
-            WrapperConfig[Pipe, Pipe](
-                state.current_export_mode,
-                TBCType.CHROMA,
-                input_pipes=self.pipe,
-                output_pipes=self.pipe,
-            ),
+        assert state.file_helper.tbc_json.file_name == Path(
+            f"{get_path('pal_svideo')}.tbc.json"
         )
 
-        self.assertTrue(
-            {"--ffll", "2", "--lfll", "308", "--ffrl", "118", "--lfrl", "548"}.issubset(
-                decoder.command.data
-            )
+        process_vbi_wrapper.post_fn()
+        assert state.file_helper.tbc_json.file_name == Path(
+            f"{get_path('pal_svideo')}.vbi.json"
         )
 
-    def test_decoder_letterbox_ntsc(self) -> None:  # noqa: D102
-        path = Path.joinpath(Path(__file__).parent, "files", "ntsc_svideo")
-        _, opts = self.parse_opts([str(path), "ntsc_svideo", "--letterbox"])
-        self.files = FileHelper(opts, self.config)
-        state = ProgramState(opts, self.config, self.files)
-
-        decoder = WrapperLDChromaDecoder(
-            state,
-            WrapperConfig[Pipe, Pipe](
-                state.current_export_mode,
-                TBCType.CHROMA,
-                input_pipes=self.pipe,
-                output_pipes=self.pipe,
-            ),
-        )
-
-        self.assertTrue(
-            {"--ffll", "2", "--lfll", "308", "--ffrl", "118", "--lfrl", "453"}.issubset(
-                decoder.command.data
-            )
-        )
-
-    def test_decoder_letterbox_palm(self) -> None:  # noqa: D102
-        path = Path.joinpath(Path(__file__).parent, "files", "palm_svideo")
-        _, opts = self.parse_opts([str(path), "palm_svideo", "--letterbox"])
-        self.files = FileHelper(opts, self.config)
-        state = ProgramState(opts, self.config, self.files)
-
-        with self.assertRaises(exceptions.SampleRequiredError):
-            WrapperLDChromaDecoder(
-                state,
-                WrapperConfig[Pipe, Pipe](
-                    state.current_export_mode,
-                    TBCType.CHROMA,
-                    input_pipes=self.pipe,
-                    output_pipes=self.pipe,
-                ),
-            )
-
-    def test_decoder_vbi_pal(self) -> None:  # noqa: D102
-        path = Path.joinpath(Path(__file__).parent, "files", "pal_svideo")
-        _, opts = self.parse_opts([str(path), "pal_svideo", "--vbi"])
-        self.files = FileHelper(opts, self.config)
-        state = ProgramState(opts, self.config, self.files)
-
-        decoder = WrapperLDChromaDecoder(
-            state,
-            WrapperConfig[Pipe, Pipe](
-                state.current_export_mode,
-                TBCType.CHROMA,
-                input_pipes=self.pipe,
-                output_pipes=self.pipe,
-            ),
-        )
-
-        self.assertTrue({"--ffll", "2", "--lfll", "308"}.issubset(decoder.command.data))
-        self.assertTrue({"--ffrl", "2", "--lfrl", "620"}.issubset(decoder.command.data))
-
-    def test_decoder_vbi_ntsc(self) -> None:  # noqa: D102
-        path = Path.joinpath(Path(__file__).parent, "files", "ntsc_svideo")
-        _, opts = self.parse_opts([str(path), "ntsc_svideo", "--vbi"])
-        self.files = FileHelper(opts, self.config)
-        state = ProgramState(opts, self.config, self.files)
-
-        decoder = WrapperLDChromaDecoder(
-            state,
-            WrapperConfig[Pipe, Pipe](
-                state.current_export_mode,
-                TBCType.CHROMA,
-                input_pipes=self.pipe,
-                output_pipes=self.pipe,
-            ),
-        )
-
-        self.assertTrue(
-            {"--ffll", "1", "--lfll", "259", "--ffrl", "2", "--lfrl", "525"}.issubset(
-                decoder.command.data
-            )
-        )
-
-    def test_decoder_vbi_palm(self) -> None:  # noqa: D102
-        path = Path.joinpath(Path(__file__).parent, "files", "palm_svideo")
-        _, opts = self.parse_opts([str(path), "palm_svideo", "--vbi"])
-        self.files = FileHelper(opts, self.config)
-        state = ProgramState(opts, self.config, self.files)
-
-        decoder = WrapperLDChromaDecoder(
-            state,
-            WrapperConfig[Pipe, Pipe](
-                state.current_export_mode,
-                TBCType.CHROMA,
-                input_pipes=self.pipe,
-                output_pipes=self.pipe,
-            ),
-        )
-        self.assertTrue(
-            {"--ffll", "1", "--lfll", "259", "--ffrl", "2", "--lfrl", "525"}.issubset(
-                decoder.command.data
-            )
-        )
-
-    def test_decoder_nr_gain_svideo(self) -> None:  # noqa: D102
-        path = Path.joinpath(Path(__file__).parent, "files", "pal_svideo")
-        tbc_json = Path.joinpath(Path(__file__).parent, "files", "pal_svideo.tbc.json")
-        _, opts = opts_parser.parse_opts(
-            self.config,
+        state = program_state(
             [
-                str(path),
-                "pal_svideo",
-                "--input-tbc-json",
-                str(tbc_json),
-                "--threads",
-                "4",
+                "--process-vbi",
+                "--dry-run",
+            ],
+            f"{get_path('pal_svideo')}.tbc",
+        )
+        process_vbi_wrapper = ldtools_process_vbi_wrapper(state, TBCType.LUMA)
+
+        assert state.file_helper.tbc_json.file_name == Path(
+            f"{get_path('pal_svideo')}.tbc.json"
+        )
+
+        process_vbi_wrapper.post_fn()
+        assert state.file_helper.tbc_json.file_name == Path(
+            f"{get_path('pal_svideo')}.vbi.json"
+        )
+
+
+class TestWrappersDropoutCorrect:
+    """Tests for ld-dropout-correct wrapper."""
+
+    test_cases = [
+        WrapperTestCase(
+            id="default ld-dropout-correct luma opts",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=[],
+            expected_opts=[
+                {"-i", f"{get_path('pal_svideo')}.tbc"},
+                {"--input-json", f"{get_path('pal_svideo')}.tbc.json"},
+                {"--output-json", os.devnull},
+                {"PIPE_OUT"},
+            ],
+            tbc_type=TBCType.LUMA,
+        ),
+        WrapperTestCase(
+            id="default ld-dropout-correct chroma opts",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=[],
+            expected_opts=[
+                {"-i", f"{get_path('pal_svideo')}_chroma.tbc"},
+                {"--input-json", f"{get_path('pal_svideo')}.tbc.json"},
+                {"--output-json", os.devnull},
+                {"PIPE_OUT"},
+            ],
+            tbc_type=TBCType.CHROMA,
+        ),
+    ]
+
+    @pytest.mark.parametrize(
+        "test_case",
+        (pytest.param(test_case, id=test_case.id) for test_case in test_cases),
+    )
+    def test_dropout_correct_opts(  # noqa: D102
+        self,
+        program_state: Callable[[list[str], str], ProgramState],
+        ldtools_dropout_correct_wrapper: Callable[
+            [ProgramState, TBCType], WrapperLDDropoutCorrect
+        ],
+        test_case: WrapperTestCase,
+    ) -> None:
+        with test_case.expected_exc:
+            state = program_state(test_case.input_opts, test_case.input_tbc)
+            dropout_correct_wrapper = ldtools_dropout_correct_wrapper(
+                state, test_case.tbc_type
+            )
+            cmds = dropout_correct_wrapper.command.data
+
+            for e in test_case.expected_opts:
+                assert e.issubset(cmds)
+
+            for e in test_case.expected_str:
+                assert any(e in cmd for cmd in cmds)
+
+            for e in test_case.unexpected_opts:
+                assert not e.issubset(cmds)
+
+            for e in test_case.unexpected_str:
+                assert not any(e in cmd for cmd in cmds)
+
+
+class TestWrappersChromaDecoder:
+    """Tests for ld-chroma-decoder wrapper."""
+
+    test_cases = [
+        # PAL
+        WrapperTestCase(
+            id="pal svideo luma opts",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=[],
+            expected_opts=[
+                {"--chroma-gain", "0"},
+                {"-f", "mono"},
+                {"--input-json", f"{get_path('pal_svideo')}.tbc.json"},
+                {"PIPE_IN", "PIPE_OUT"},
+            ],
+            tbc_type=TBCType.LUMA,
+        ),
+        WrapperTestCase(
+            id="pal svideo chroma opts",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=[],
+            expected_opts=[
+                {"--luma-nr", "0"},
+                {"-f", "transform2d"},
+                {"--input-json", f"{get_path('pal_svideo')}.tbc.json"},
+                {"PIPE_IN", "PIPE_OUT"},
+            ],
+            tbc_type=TBCType.CHROMA,
+        ),
+        WrapperTestCase(
+            id="pal composite opts",
+            input_tbc=f"{get_path('pal_composite')}.tbc",
+            input_opts=[],
+            expected_opts=[
+                {"-f", "transform3d"},
+                {"--input-json", f"{get_path('pal_composite')}.tbc.json"},
+                {"PIPE_IN", "PIPE_OUT"},
+            ],
+            tbc_type=TBCType.COMBINED,
+        ),
+        WrapperTestCase(
+            id="pal invalid decoder (exception)",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=["--chroma-decoder", "ntsc2d"],
+            expected_opts=[],
+            expected_exc=pytest.raises(exceptions.InvalidChromaDecoderError),
+        ),
+        WrapperTestCase(
+            id="pal letterbox",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=["--letterbox"],
+            expected_opts=[
+                {"--ffll", "2"},
+                {"--lfll", "308"},
+                {"--ffrl", "118"},
+                {"--lfrl", "548"},
+            ],
+        ),
+        WrapperTestCase(
+            id="pal vbi",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=["--vbi"],
+            expected_opts=[
+                {"--ffll", "2"},
+                {"--lfll", "308"},
+                {"--ffrl", "2"},
+                {"--lfrl", "620"},
+            ],
+        ),
+        # PAL-M
+        WrapperTestCase(
+            id="pal-m svideo luma opts",
+            input_tbc=f"{get_path('palm_svideo')}.tbc",
+            input_opts=[],
+            expected_opts=[
+                {"--chroma-gain", "0"},
+                {"-f", "mono"},
+                {"--input-json", f"{get_path('palm_svideo')}.tbc.json"},
+                {"PIPE_IN", "PIPE_OUT"},
+            ],
+            tbc_type=TBCType.LUMA,
+        ),
+        WrapperTestCase(
+            id="pal-m svideo chroma opts",
+            input_tbc=f"{get_path('palm_svideo')}.tbc",
+            input_opts=[],
+            expected_opts=[
+                {"--luma-nr", "0"},
+                {"-f", "transform2d"},
+                {"--input-json", f"{get_path('palm_svideo')}.tbc.json"},
+                {"PIPE_IN", "PIPE_OUT"},
+            ],
+            tbc_type=TBCType.CHROMA,
+        ),
+        WrapperTestCase(
+            id="pal-m invalid decoder (exception)",
+            input_tbc=f"{get_path('palm_svideo')}.tbc",
+            input_opts=["--chroma-decoder", "ntsc2d"],
+            expected_opts=[],
+            expected_exc=pytest.raises(exceptions.InvalidChromaDecoderError),
+        ),
+        WrapperTestCase(
+            id="pal-m letterbox (exception)",
+            input_tbc=f"{get_path('palm_svideo')}.tbc",
+            input_opts=["--letterbox"],
+            expected_opts=[],
+            expected_exc=pytest.raises(exceptions.SampleRequiredError),
+        ),
+        WrapperTestCase(
+            id="pal-m vbi",
+            input_tbc=f"{get_path('palm_svideo')}.tbc",
+            input_opts=["--vbi"],
+            expected_opts=[
+                {"--ffll", "1"},
+                {"--lfll", "259"},
+                {"--ffrl", "2"},
+                {"--lfrl", "525"},
+            ],
+        ),
+        # NTSC
+        WrapperTestCase(
+            id="ntsc svideo luma opts",
+            input_tbc=f"{get_path('ntsc_svideo')}.tbc",
+            input_opts=[],
+            expected_opts=[
+                {"--chroma-gain", "0"},
+                {"-f", "mono"},
+                {"--input-json", f"{get_path('ntsc_svideo')}.tbc.json"},
+                {"PIPE_IN", "PIPE_OUT"},
+            ],
+            tbc_type=TBCType.LUMA,
+        ),
+        WrapperTestCase(
+            id="ntsc svideo chroma opts",
+            input_tbc=f"{get_path('ntsc_svideo')}.tbc",
+            input_opts=[],
+            expected_opts=[
+                {"--luma-nr", "0"},
+                {"-f", "ntsc2d"},
+                {"--input-json", f"{get_path('ntsc_svideo')}.tbc.json"},
+                {"PIPE_IN", "PIPE_OUT"},
+            ],
+            tbc_type=TBCType.CHROMA,
+        ),
+        WrapperTestCase(
+            id="ntsc composite opts",
+            input_tbc=f"{get_path('ntsc_composite')}.tbc",
+            input_opts=[],
+            expected_opts=[
+                {"-f", "ntsc3d"},
+                {"--input-json", f"{get_path('ntsc_composite')}.tbc.json"},
+                {"PIPE_IN", "PIPE_OUT"},
+            ],
+            tbc_type=TBCType.COMBINED,
+        ),
+        WrapperTestCase(
+            id="ntsc composite (ld) opts",
+            input_tbc=f"{get_path('ntsc_composite_ld')}.tbc",
+            input_opts=[],
+            expected_opts=[
+                {"-f", "ntsc2d"},
+                {"--input-json", f"{get_path('ntsc_composite_ld')}.tbc.json"},
+                {"PIPE_IN", "PIPE_OUT"},
+            ],
+            tbc_type=TBCType.COMBINED,
+        ),
+        WrapperTestCase(
+            id="ntsc invalid decoder (exception)",
+            input_tbc=f"{get_path('ntsc_svideo')}.tbc",
+            input_opts=["--chroma-decoder", "transform2d"],
+            expected_opts=[],
+            expected_exc=pytest.raises(exceptions.InvalidChromaDecoderError),
+        ),
+        WrapperTestCase(
+            id="ntsc letterbox",
+            input_tbc=f"{get_path('ntsc_svideo')}.tbc",
+            input_opts=["--letterbox"],
+            expected_opts=[
+                {"--ffll", "2"},
+                {"--lfll", "308"},
+                {"--ffrl", "118"},
+                {"--lfrl", "453"},
+            ],
+        ),
+        WrapperTestCase(
+            id="ntsc vbi",
+            input_tbc=f"{get_path('ntsc_svideo')}.tbc",
+            input_opts=["--vbi"],
+            expected_opts=[
+                {"--ffll", "1"},
+                {"--lfll", "259"},
+                {"--ffrl", "2"},
+                {"--lfrl", "525"},
+            ],
+        ),
+        # general
+        WrapperTestCase(
+            id="luma nr with transform2d (luma)",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            tbc_type=TBCType.LUMA,
+            input_opts=[
                 "--luma-nr",
                 "5",
-                "--chroma-gain",
-                "6",
-                "--chroma-nr",
-                "7",
-                "--chroma-phase",
-                "8",
+                "--chroma-decoder-luma",
+                "transform2d",
             ],
-        )
-        self.files = FileHelper(opts, self.config)
-        state = ProgramState(opts, self.config, self.files)
-
-        # check luma decoder
-        decoder = WrapperLDChromaDecoder(
-            state,
-            WrapperConfig[Pipe, Pipe](
-                state.current_export_mode,
-                TBCType.LUMA,
-                input_pipes=self.pipe,
-                output_pipes=self.pipe,
-            ),
-        )
-
-        self.assertEqual(
-            str(decoder.command),
-            f"{self.files.get_tool(ProcessName.LD_CHROMA_DECODER)} "
-            f"--luma-nr 5.0 "
-            f"--chroma-gain 0 "
-            f"-p y4m "
-            f"-f mono "
-            f"-t 4 "
-            f"--input-json {tbc_json} "
-            f"PIPE_IN "
-            f"PIPE_OUT",
-        )
-
-        # check chroma decoder
-        decoder = WrapperLDChromaDecoder(
-            state,
-            WrapperConfig[Pipe, Pipe](
-                state.current_export_mode,
-                TBCType.CHROMA,
-                input_pipes=self.pipe,
-                output_pipes=self.pipe,
-            ),
-        )
-
-        self.assertEqual(
-            str(decoder.command),
-            f"{self.files.get_tool(ProcessName.LD_CHROMA_DECODER)} "
-            f"--chroma-gain 6.0 "
-            f"--chroma-nr 7.0 "
-            f"--chroma-phase 8.0 "
-            f"--luma-nr 0 "
-            f"-p y4m "
-            f"-f transform2d "
-            f"-t 4 "
-            f"--input-json {tbc_json} "
-            f"PIPE_IN "
-            f"PIPE_OUT",
-        )
-
-    def test_decoder_nr_gain_cvbs(self) -> None:  # noqa: D102
-        path = Path.joinpath(Path(__file__).parent, "files", "pal_composite")
-        tbc_json = Path.joinpath(
-            Path(__file__).parent, "files", "pal_composite.tbc.json"
-        )
-        _, opts = opts_parser.parse_opts(
-            self.config,
-            [
-                str(path),
-                "pal_svideo",
-                "--input-tbc-json",
-                str(tbc_json),
-                "--threads",
-                "4",
+            expected_opts=[{"--luma-nr", "5.0"}],
+        ),
+        WrapperTestCase(
+            id="luma nr with mono (chroma)",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            tbc_type=TBCType.CHROMA,
+            input_opts=[
                 "--luma-nr",
                 "5",
-                "--chroma-gain",
-                "6",
-                "--chroma-nr",
-                "7",
-                "--chroma-phase",
-                "8",
+                "--chroma-decoder-luma",
+                "transform2d",
             ],
-        )
-        self.files = FileHelper(opts, self.config)
-        state = ProgramState(opts, self.config, self.files)
+            expected_opts=[{"--luma-nr", "0"}],
+        ),
+        WrapperTestCase(
+            id="luma nr with mono (luma)",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            tbc_type=TBCType.LUMA,
+            input_opts=[
+                "--luma-nr",
+                "5",
+            ],
+            expected_exc=pytest.raises(exceptions.InvalidOptsError),
+            expected_opts=[{"--luma-nr", "5.0"}],
+        ),
+        WrapperTestCase(
+            id="luma nr with mono (chroma)",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            tbc_type=TBCType.CHROMA,
+            input_opts=[
+                "--luma-nr",
+                "5",
+            ],
+            expected_exc=pytest.raises(exceptions.InvalidOptsError),
+            expected_opts=[{"--luma-nr", "0"}],
+        ),
+        WrapperTestCase(
+            id="luma nr (composite)",
+            input_tbc=f"{get_path('pal_composite')}.tbc",
+            tbc_type=TBCType.COMBINED,
+            input_opts=[
+                "--luma-nr",
+                "5",
+            ],
+            expected_opts=[{"--luma-nr", "5.0"}],
+        ),
+        WrapperTestCase(
+            id="chroma nr (luma)",
+            input_tbc=f"{get_path('ntsc_svideo')}.tbc",
+            tbc_type=TBCType.LUMA,
+            input_opts=[
+                "--chroma-nr",
+                "5",
+            ],
+            unexpected_opts=[{"--chroma-nr"}],
+        ),
+        WrapperTestCase(
+            id="chroma nr (chroma)",
+            input_tbc=f"{get_path('ntsc_svideo')}.tbc",
+            tbc_type=TBCType.CHROMA,
+            input_opts=[
+                "--chroma-nr",
+                "5",
+            ],
+            expected_opts=[{"--chroma-nr", "5.0"}],
+        ),
+        WrapperTestCase(
+            id="chroma nr (composite)",
+            input_tbc=f"{get_path('ntsc_composite')}.tbc",
+            tbc_type=TBCType.COMBINED,
+            input_opts=[
+                "--chroma-nr",
+                "5",
+            ],
+            expected_opts=[{"--chroma-nr", "5.0"}],
+        ),
+        WrapperTestCase(
+            id="chroma nr non-pal (exception)",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            tbc_type=TBCType.COMBINED,
+            input_opts=[
+                "--chroma-nr",
+                "5",
+            ],
+            expected_exc=pytest.raises(SystemExit),
+        ),
+        WrapperTestCase(
+            id="chroma gain (luma)",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            tbc_type=TBCType.LUMA,
+            input_opts=[
+                "--chroma-gain",
+                "5",
+            ],
+            expected_opts=[{"--chroma-gain", "0"}],
+        ),
+        WrapperTestCase(
+            id="chroma gain (chroma)",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            tbc_type=TBCType.CHROMA,
+            input_opts=[
+                "--chroma-gain",
+                "5",
+            ],
+            expected_opts=[{"--chroma-gain", "5.0"}],
+        ),
+        WrapperTestCase(
+            id="chroma gain (composite)",
+            input_tbc=f"{get_path('pal_composite')}.tbc",
+            tbc_type=TBCType.COMBINED,
+            input_opts=[
+                "--chroma-gain",
+                "5",
+            ],
+            expected_opts=[{"--chroma-gain", "5.0"}],
+        ),
+        WrapperTestCase(
+            id="chroma phase (luma)",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            tbc_type=TBCType.LUMA,
+            input_opts=[
+                "--chroma-phase",
+                "5",
+            ],
+            unexpected_opts=[{"--chroma-phase"}],
+        ),
+        WrapperTestCase(
+            id="chroma phase (chroma)",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            tbc_type=TBCType.CHROMA,
+            input_opts=[
+                "--chroma-phase",
+                "5",
+            ],
+            expected_opts=[{"--chroma-phase", "5.0"}],
+        ),
+        WrapperTestCase(
+            id="chroma phase (composite)",
+            input_tbc=f"{get_path('pal_composite')}.tbc",
+            tbc_type=TBCType.COMBINED,
+            input_opts=[
+                "--chroma-phase",
+                "5",
+            ],
+            expected_opts=[{"--chroma-phase", "5.0"}],
+        ),
+    ]
 
-        # check combined decoder
-        decoder = WrapperLDChromaDecoder(
-            state,
-            WrapperConfig[Pipe, Pipe](
-                state.current_export_mode,
-                TBCType.COMBINED,
-                input_pipes=self.pipe,
-                output_pipes=self.pipe,
-            ),
-        )
+    @pytest.mark.parametrize(
+        "test_case",
+        (pytest.param(test_case, id=test_case.id) for test_case in test_cases),
+    )
+    def test_chroma_decoder_opts(  # noqa: D102
+        self,
+        program_state: Callable[[list[str], str], ProgramState],
+        ldtools_chroma_decoder_wrapper: Callable[
+            [ProgramState, TBCType], WrapperLDChromaDecoder
+        ],
+        test_case: WrapperTestCase,
+    ) -> None:
+        with test_case.expected_exc:
+            state = program_state(test_case.input_opts, test_case.input_tbc)
+            chroma_decoder_wrapper = ldtools_chroma_decoder_wrapper(
+                state, test_case.tbc_type
+            )
+            cmds = chroma_decoder_wrapper.command.data
 
-        self.assertEqual(
-            str(decoder.command),
-            f"{self.files.get_tool(ProcessName.LD_CHROMA_DECODER)} "
-            f"--luma-nr 5.0 "
-            f"--chroma-gain 6.0 "
-            f"--chroma-nr 7.0 "
-            f"--chroma-phase 8.0 "
-            f"-p y4m "
-            f"-f transform3d "
-            f"-t 4 "
-            f"--input-json {tbc_json} "
-            f"PIPE_IN "
-            f"PIPE_OUT",
-        )
+            for e in test_case.expected_opts:
+                assert e.issubset(cmds)
 
+            for e in test_case.expected_str:
+                assert any(e in cmd for cmd in cmds)
 
-if __name__ == "__main__":
-    unittest.main()
+            for e in test_case.unexpected_opts:
+                assert not e.issubset(cmds)
+
+            for e in test_case.unexpected_str:
+                assert not any(e in cmd for cmd in cmds)

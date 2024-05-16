@@ -66,7 +66,7 @@ class Config:
         try:
             return [ProfileAudio(p) for p in self._data["audio_profiles"]]
         except KeyError as e:
-            raise exceptions.InvalidProfileError(
+            raise exceptions.InvalidAudioProfileError(
                 "Could not load audio profiles.", self.get_config_file()
             ) from e
 
@@ -76,7 +76,7 @@ class Config:
         try:
             return [ProfileFilter(p) for p in self._data["filter_profiles"]]
         except KeyError as e:
-            raise exceptions.InvalidProfileError(
+            raise exceptions.InvalidFilterProfileError(
                 "Could not load filter profiles.", self.get_config_file()
             ) from e
 

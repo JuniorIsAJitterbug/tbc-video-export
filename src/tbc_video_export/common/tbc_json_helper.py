@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from functools import cached_property
 from pathlib import Path
+from typing import Any
 
 from tbc_video_export.common import exceptions
 from tbc_video_export.common.enums import VideoSystem
@@ -11,20 +12,25 @@ from tbc_video_export.common.enums import VideoSystem
 class TBCJsonHelper:
     """Handles parsing the TBC json."""
 
-    def __init__(self, file_name: Path) -> None:
-        self.file_name = file_name
+    def __init__(self, file_name: Path | None, json_data: Any = None) -> None:
+        if file_name is not None:
+            self.file_name = file_name
 
-        try:
-            with Path.open(file_name, mode="r", encoding="utf-8") as json_file:
-                self._json_data = json.load(json_file)
-        except FileNotFoundError as e:
-            raise exceptions.TBCError(f"TBC json not found ({file_name}).") from e
-        except PermissionError as e:
-            raise exceptions.TBCError(
-                f"Permission denied opening TBC json ({file_name})."
-            ) from e
-        except json.JSONDecodeError as e:
-            raise exceptions.TBCError(f"Unable to parse TBC json ({file_name}).") from e
+            try:
+                with Path.open(file_name, mode="r", encoding="utf-8") as json_file:
+                    self._json_data = json.load(json_file)
+            except FileNotFoundError as e:
+                raise exceptions.TBCError(f"TBC json not found ({file_name}).") from e
+            except PermissionError as e:
+                raise exceptions.TBCError(
+                    f"Permission denied opening TBC json ({file_name})."
+                ) from e
+            except json.JSONDecodeError as e:
+                raise exceptions.TBCError(
+                    f"Unable to parse TBC json ({file_name})."
+                ) from e
+        else:
+            self._json_data = json.loads(json_data)
 
     @property
     def file_name(self) -> Path:

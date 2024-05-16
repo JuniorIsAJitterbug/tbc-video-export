@@ -27,7 +27,9 @@ tbc-video-export = "tbc_video_export.__main__:main"
 
 [tool.poetry.group.dev.dependencies]
 poetry-dynamic-versioning = { extras = ["plugin"], version = "^1.2.0" }
-coverage = { extras = ["toml"], version = "^7.4.0" }
+pytest = "^8.1.1"
+pytest-mock = "^3.14.0"
+pymediainfo = "^6.1.0"
 
 [tool.poetry.group.appimage]
 optional = true
@@ -49,6 +51,8 @@ build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.pyright]
 include = ["src/**/*.py"]
+exclude = ["tests/**/*.py"]
+venvPath = ".venv"
 typeCheckingMode = "strict"
 
 [tool.ruff]
@@ -110,9 +114,3 @@ metadata = false
 [tool.poetry-dynamic-versioning.substitution]
 files = ["tbc_video_export/common/consts.py"]
 folders = [{ path = "src" }]
-
-[tool.coverage.run]
-omit = [".*", "*/site-packages/*"]
-
-[tool.coverage.report]
-fail_under = 100

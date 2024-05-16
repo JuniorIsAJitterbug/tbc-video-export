@@ -23,9 +23,7 @@ if TYPE_CHECKING:
     from tbc_video_export.config import Config
 
 
-def parse_opts(
-    config: Config, args: list[str] | None = None
-) -> tuple[argparse.ArgumentParser, Opts]:
+def parse_opts(config: Config, argv: list[str]) -> tuple[argparse.ArgumentParser, Opts]:
     """Parse program opts."""
     parser = argparse.ArgumentParser(
         prog=consts.APPLICATION_NAME,
@@ -218,7 +216,7 @@ def parse_opts(
     opts_ffmpeg.add_ffmpeg_opts(parser)
     opts_profile.add_profile_opts(config, parser)
 
-    opts = parser.parse_intermixed_args(args, namespace=Opts())
+    opts = parser.parse_intermixed_args(argv, namespace=Opts())
     return (parser, opts)
 
 

@@ -146,7 +146,8 @@ class ProfileVideo(SubProfile):
         return (
             self._profile["filter_profiles_override"]
             if "filter_profiles_override" in self._profile
-            else self._parent["filter_profiles"] if "filter_profiles" in self._parent
+            else self._parent["filter_profiles"]
+            if "filter_profiles" in self._parent
             else []
         )
 

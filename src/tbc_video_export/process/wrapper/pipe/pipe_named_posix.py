@@ -63,6 +63,7 @@ class PipeNamedPosix(Pipe):
         traceback: TracebackType | None,
     ) -> None | bool:
         """Exit posix pipe context."""
+        PipeNamedPosix.tmp_dir = ""
         self.close()
 
     @cached_property

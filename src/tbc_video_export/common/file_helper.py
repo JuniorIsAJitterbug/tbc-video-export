@@ -157,10 +157,15 @@ class FileHelper:
             f"{consts.TWO_STEP_OUT_FILE_LUMA_SUFFIX}.{self.output_container}"
         )
 
-    def get_log_file(self, process_name: ProcessName, tbc_type: TBCType):
+    def get_log_file(
+        self,
+        process_name: ProcessName,
+        tbc_type: TBCType,
+        timestamp: str = consts.CURRENT_TIMESTAMP,
+    ):
         """Return absolute path to log file for process/tbc type."""
         return Path(self._output_path).joinpath(
-            f"{consts.CURRENT_TIMESTAMP}_{self._input_file_name}_{process_name}"
+            f"{timestamp}_{self._input_file_name}_{process_name}"
             f"_{FlagHelper.get_flags_str(tbc_type, '_')}.log"
         )
 
