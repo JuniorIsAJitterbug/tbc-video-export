@@ -29,62 +29,71 @@
 
       systems = [ "x86_64-linux" ];
 
-      perSystem = { config, self', inputs', pkgs, system, ... }: {
-        devenv.shells = {
-          default = {
-            name = "tbc-video-export";
+      perSystem = { config, self', inputs', pkgs, lib, system, ... }:
+        let
+          libraries = with pkgs; [
+            libmediainfo
+          ];
+        in
+        {
+          devenv.shells = {
+            default = {
+              name = "tbc-video-export";
 
-            packages = with pkgs; [
-              ruff
-              mediainfo
-              inputs.jitterbug.packages.${pkgs.system}.vhs-decode
-              inputs.jitterbug.packages.${pkgs.system}.ab-av1
-            ];
+              enterShell = ''
+                LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${pkgs.lib.makeLibraryPath libraries}
+              '';
 
-            languages.python = {
-              enable = true;
-              version = "3.10";
+              packages = with pkgs; [
+                ruff
+                mediainfo
+                inputs.jitterbug.packages.${pkgs.system}.vhs-decode
+              ];
 
-              poetry = {
+              languages.python = {
                 enable = true;
-                activate.enable = true;
-                install.enable = true;
-                install.allExtras = true;
+                version = "3.10";
+
+                poetry = {
+                  enable = true;
+                  activate.enable = true;
+                  install.enable = true;
+                  install.allExtras = true;
+                };
+              };
+
+              pre-commit.hooks = {
+                ruff.enable = true;
+                pyright.enable = true;
               };
             };
 
-            pre-commit.hooks = {
-              ruff.enable = true;
-              pyright.enable = true;
+            ci = {
+              name = "tbc-video-export (CI)";
 
-              yamllint = {
+              enterShell = ''
+                echo LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath libraries} >> $GITHUB_ENV
+              '';
+
+              packages = with pkgs;[
+                ffmpeg
+                mediainfo
+                inputs.jitterbug.packages.${pkgs.system}.vhs-decode
+              ];
+
+              languages.python = {
                 enable = true;
-                settings.preset = "relaxed";
-              };
-            };
-          };
+                version = "3.10";
 
-          ci = {
-            name = "tbc-video-export (CI)";
-
-            packages = with pkgs;[
-              ruff
-              mediainfo
-            ];
-
-            languages.python = {
-              enable = true;
-              version = "3.10";
-
-              poetry = {
-                enable = true;
-                activate.enable = true;
-                install.enable = true;
-                install.allExtras = true;
+                poetry = {
+                  enable = true;
+                  activate.enable = true;
+                  install.enable = true;
+                  install.allExtras = true;
+                };
               };
             };
           };
         };
-      };
     };
 }

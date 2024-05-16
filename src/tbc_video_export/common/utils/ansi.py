@@ -167,37 +167,31 @@ def hide_cursor() -> str:
 
 
 # Color codes
-@cache
 def _default_color() -> str:
     """Return default color escape code."""
     return "\x1B[38;5;255m" if has_ansi_support() else ""  # white (255)
 
 
-@cache
 def _dim_color() -> str:
     """Return dim color escape code."""
     return "\x1B[38;5;245m" if has_ansi_support() else ""  # grey (240)
 
 
-@cache
 def _error_color() -> str:
     """Return error color escape code."""
     return "\x1B[0;31m" if has_ansi_support() else ""  # red
 
 
-@cache
 def _success_color() -> str:
     """Return success color escape code."""
     return "\x1B[0;32m" if has_ansi_support() else ""  # green
 
 
-@cache
 def _progress_color() -> str:
     """Return progress color escape code."""
     return "\x1B[0;36m" if has_ansi_support() else ""  # cyan
 
 
-@cache
 def _reset_color() -> str:
     """Return color reset escape code."""
     return "\x1B[0;39m" if has_ansi_support() else ""
@@ -206,49 +200,41 @@ def _reset_color() -> str:
 # Colors / Graphics Mode
 
 
-@cache
 def _bold() -> str:
     """Return bold escape code."""
     return "\x1B[1m" if has_ansi_support() else ""
 
 
-@cache
 def _reset_bold() -> str:
     """Return end bold escape code."""
     return "\x1B[22m" if has_ansi_support() else ""
 
 
-@cache
 def _italic() -> str:
     """Return italic escape code."""
     return "\x1B[23m" if has_ansi_support() else ""
 
 
-@cache
 def _reset_italic() -> str:
     """Return end italic escape code."""
     return "\x1B[23m" if has_ansi_support() else ""
 
 
-@cache
 def _dim() -> str:
     """Return dim escape code."""
     return "\x1B[2m" if has_ansi_support() else ""
 
 
-@cache
 def _reset_dim() -> str:
     """Return end dim escape code."""
     return "\x1B[22m" if has_ansi_support() else ""
 
 
-@cache
 def _underlined() -> str:
     """Return underlined escape code."""
     return "\x1B[4m" if has_ansi_support() else ""
 
 
-@cache
 def _reset_underlined() -> str:
     """Return end underlined escape code."""
     return "\x1B[24m" if has_ansi_support() else ""

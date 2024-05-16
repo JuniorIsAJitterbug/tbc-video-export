@@ -13,7 +13,7 @@ jobs:
   # tests
   build:
     name: Run unit tests and build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
@@ -32,16 +32,6 @@ jobs:
           --command
           poetry install
 
-      - name: Create fake binaries to satisfy tests (fixme)
-        run: >-
-          touch
-          ffmpeg
-          ld-dropout-correct
-          ld-chroma-decoder
-          ld-process-vbi
-          ld-process-efm
-          ld-export-metadata
-
       - name: Run unit tests
         run: >-
           nix develop
@@ -49,7 +39,7 @@ jobs:
           --accept-flake-config
           .#ci
           --command
-          poetry run python -m unittest
+          poetry run python -m pytest
 
       - name: Build
         run: >-
