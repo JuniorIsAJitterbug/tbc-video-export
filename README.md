@@ -1,4 +1,8 @@
-# TBC-Video-Export
+----------
+
+**Q:** Are all users considered beta testers?
+
+**A:** Yes, welcome to open-source world.# TBC-Video-Export
 
 <img alt="tbc-video-export icon" src="assets/icon.ico" width=100>
 
@@ -89,10 +93,6 @@ tbc-video-export input.tbc
 
 `input.tbc` + `[input_chroma.tbc]` + `input.json` ⟶ `ld-process-*` ⟶ `ld-chroma-decoder` ⟶ `YUV stream` ⟶ `FFmpeg` ⟶ `Output Video [w/audio and metadata]`
 
-
-# Changelog & Development Notes
-
-[This has a dedicated Wiki Page](https://github.com/JuniorIsAJitterbug/tbc-video-export/wiki/Changelog-&-Devlog)
 
 # Credits 
 
