@@ -1,8 +1,4 @@
-----------
-
-**Q:** Are all users considered beta testers?
-
-**A:** Yes, welcome to open-source world.# TBC-Video-Export
+# TBC-Video-Export
 
 <img alt="tbc-video-export icon" src="assets/icon.ico" width=100>
 
