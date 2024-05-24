@@ -509,6 +509,32 @@ class TestWrappersFFmpeg:
             input_opts=["--vbi"],
             expected_str=["crop=iw:ih-19:0:17"],
         ),
+        WrapperTestCase(
+            id="embed tbc json",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=[],
+            expected_opts=[
+                {
+                    "-attach",
+                    f"{get_path('pal_svideo')}.tbc.json",
+                    "-metadata:s:t:0",
+                    "mimetype=application/json",
+                }
+            ],
+        ),
+        WrapperTestCase(
+            id="disable embed tbc json",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=["--no-attach-json"],
+            unexpected_opts=[
+                {
+                    "-attach",
+                    f"{get_path('pal_svideo')}.tbc.json",
+                    "-metadata:s:t:0",
+                    "mimetype=application/json",
+                }
+            ],
+        ),
     ]
 
     test_cases = general_cases + hwaccel_cases + bitdepth_cases + filter_cases

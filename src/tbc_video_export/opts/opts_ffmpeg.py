@@ -121,6 +121,13 @@ def add_ffmpeg_opts(parent: argparse.ArgumentParser) -> None:
     )
 
     ffmpeg_opts.add_argument(
+        "--no-attach-json",
+        action="store_true",
+        default=False,
+        help="Disable embedding the TBC json in the video file. (default: no).\n\n",
+    )
+
+    ffmpeg_opts.add_argument(
         "--thread-queue-size",
         type=int,
         default=1024,
