@@ -99,6 +99,7 @@ class Opts(argparse.Namespace):
     force_anamorphic: bool
     force_black_level: tuple[int, int, int] | None
     hwaccel_device: str | None
+    no_attach_json: bool
     thread_queue_size: int
     checksum: bool
 

@@ -509,7 +509,7 @@ class WrapperFFmpeg(Wrapper):
                 metadata_opts.append((f"-channel_layout:a:{idx}", f"{layout}"))
 
         # attachment
-        if self._get_supports_attachments():
+        if self._get_supports_attachments() and not self._state.opts.no_attach_json:
             metadata_opts.append(
                 (
                     "-attach",
