@@ -3,6 +3,7 @@ name: "Publish to PyPI and release packages"
 on:
   pull_request:
   workflow_call:
+  workflow_dispatch:
   push:
 
 concurrency:
@@ -62,7 +63,7 @@ jobs:
     name: Build Linux AppImage package
     runs-on: ubuntu-22.04
 
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     needs:
       - build
 
@@ -116,7 +117,7 @@ jobs:
     name: Build Windows binary with PyInstaller
     runs-on: windows-latest
 
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     needs:
       - build
 
@@ -159,7 +160,7 @@ jobs:
     name: Build macOS binary with PyInstaller
     runs-on: macos-11
 
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     needs:
       - build
     steps:
@@ -280,31 +281,31 @@ jobs:
           --repo '${{ github.repository }}'
 
   # pypi
-  publish-to-testpypi:
-    name: Publish to TestPyPI
-    runs-on: ubuntu-latest
-
-    if: github.ref == 'refs/heads/master'
-    needs:
-      - build
-
-    environment:
-      name: testpypi
-      url: https://test.pypi.org/p/tbc-video-export
-
-    permissions:
-      id-token: write # IMPORTANT: mandatory for trusted publishing
-
-    steps:
-      - name: Download all the dists
-        uses: actions/download-artifact@v4
-        with:
-          name: python-package-distributions
-          path: dist/
-      - name: Publish distribution TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
+  #  publish-to-testpypi:
+  #    name: Publish to TestPyPI
+  #    runs-on: ubuntu-latest
+  #
+  #    if: github.ref == 'refs/heads/master'
+  #    needs:
+  #      - build
+  #
+  #    environment:
+  #      name: testpypi
+  #      url: https://test.pypi.org/p/tbc-video-export
+  #
+  #    permissions:
+  #      id-token: write # IMPORTANT: mandatory for trusted publishing
+  #
+  #    steps:
+  #      - name: Download all the dists
+  #        uses: actions/download-artifact@v4
+  #        with:
+  #          name: python-package-distributions
+  #          path: dist/
+  #      - name: Publish distribution TestPyPI
+  #        uses: pypa/gh-action-pypi-publish@release/v1
+  #        with:
+  #          repository-url: https://test.pypi.org/legacy/
 
   publish-to-pypi:
     name: Publish to PyPI
