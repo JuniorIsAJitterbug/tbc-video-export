@@ -31,9 +31,12 @@
 
       perSystem = { config, self', inputs', pkgs, lib, system, ... }:
         let
-          libraries = with pkgs; [
-            libmediainfo
+          commonPackages = with pkgs; [
+            mediainfo
+            inputs.jitterbug.packages.${pkgs.system}.vhs-decode
           ];
+
+          commonLibraryPath = pkgs.lib.makeLibraryPath [ pkgs.libmediainfo ];
         in
         {
           devenv.shells = {
@@ -41,14 +44,9 @@
               name = "tbc-video-export";
 
               enterShell = ''
-                LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${pkgs.lib.makeLibraryPath libraries}
+                LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${commonLibraryPath}
               '';
-
-              packages = with pkgs; [
-                ruff
-                mediainfo
-                inputs.jitterbug.packages.${pkgs.system}.vhs-decode
-              ];
+              packages = commonPackages ++ [ pkgs.ruff ];
 
               languages.python = {
                 enable = true;
@@ -72,14 +70,9 @@
               name = "tbc-video-export (CI)";
 
               enterShell = ''
-                echo LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath libraries} >> $GITHUB_ENV
+                echo LD_LIBRARY_PATH=${commonLibraryPath} >> $GITHUB_ENV
               '';
-
-              packages = with pkgs;[
-                ffmpeg
-                mediainfo
-                inputs.jitterbug.packages.${pkgs.system}.vhs-decode
-              ];
+              packages = commonPackages ++ [ pkgs.ffmpeg ];
 
               languages.python = {
                 enable = true;
