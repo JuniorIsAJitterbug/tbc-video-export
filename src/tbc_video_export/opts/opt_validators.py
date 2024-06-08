@@ -44,17 +44,13 @@ def _validate_line_opts(parser: argparse.ArgumentParser, opts: Opts) -> None:
         "last_active_frame_line",
     ]
 
-    if any(getattr(opts, x) is not None for x in field_frame_opts):
-        if opts.vbi or opts.full_vertical or opts.letterbox:
-            parser.error(
-                "arguments [--vbi | --letterbox]: not allowed with arguments "
-                "[--ffll | --lfll | --ffrl | --lfrl]"
-            )
-        elif not all(getattr(opts, x) is not None for x in field_frame_opts):
-            parser.error(
-                "the following arguments are required: "
-                "[--ffll & --lfll & --ffrl & --lfrl]"
-            )
+    if any(getattr(opts, x) is not None for x in field_frame_opts) and (
+        opts.vbi or opts.full_vertical or opts.letterbox
+    ):
+        parser.error(
+            "arguments [--vbi | --letterbox]: not allowed with arguments "
+            "[--ffll | --lfll | --ffrl | --lfrl]"
+        )
 
 
 def _validate_video_system(
