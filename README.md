@@ -4,20 +4,15 @@
 
 ---
 
-Cross-platform tool for exporting S-Video and CVBS-type TBC files to standard video files created by the decode projects:
+Tool for exporting S-Video and CVBS-type TBCs to video files. ([VHS-Decode & CVBS-Decode](https://github.com/oyvindln/vhs-decode) / [LaserDisc-Decode](https://github.com/happycube/ld-decode))  
 
-[VHS-Decode (Tape Decoding)](https://github.com/oyvindln/vhs-decode/wiki/) / [LaserDisc-Decode](https://github.com/happycube/ld-decode) / [CVBS-Decode (Composite Decoding)](CVBS-Composite-Decode) / [HiFi-Decode (FM Audio Decoding)](https://github.com/oyvindln/vhs-decode/wiki/hifi-decode)
-
-To playback a 4FSC TBC file on physical playout systems, check:
-
-[FL2K TBC Player](https://github.com/oyvindln/vhs-decode/wiki/TBC-To-Analogue)
-
+This is just a fancy wrapper for `tbc-tools` and `FFmpeg`.
 
 # Installation
 
 ### Windows, Linux and macOS
 
-You can find the latest self-contained binaries on the [releases](https://github.com/JuniorIsAJitterbug/tbc-video-export/releases) page.
+You can find the latest binaries on the [releases](https://github.com/JuniorIsAJitterbug/tbc-video-export/releases) page.
 
 ### PyPI
 ```
@@ -59,7 +54,7 @@ tbc-video-export input.tbc
 
 - `--help` - List all available arguments.  
 - `--list-profiles` - List all FFmpeg profiles.  
-- `--profile` - Define FFmpeg profile.
+- `--profile` - Select FFmpeg profile.
 - `--dump-default-config` - Dump the FFmpeg profiles config to `tbc-video-export.json`, allowing the creation and editing of profiles.
 
 ## Readout Terminal
@@ -72,29 +67,11 @@ tbc-video-export input.tbc
 
 ![tbc-video-export-readout-s-video](https://github.com/JuniorIsAJitterbug/tbc-video-export/wiki/assets/gifs/Windows_Terminal_tbc-video-export_v0.1.0b2_S-Video.gif)
 
-
-# Features
-
-- FFmpeg Encoding Profiles
-- Automatic CVBS/S-Video input detection
-- Clear processing readout screen and logging
-- Automated `ld-tool` interactions
-- Checksums for Audio and Video streams
-- Advanced audio input options
-- ...
-
-
-## Internal function
-
-
-`input.tbc` + `[input_chroma.tbc]` + `input.json` ⟶ `ld-process-*` ⟶ `ld-chroma-decoder` ⟶ `YUV stream` ⟶ `FFmpeg` ⟶ `Output Video [w/audio and metadata]`
-
-
 # Credits 
 
 - [JuniorIsAJitterbug](https://github.com/JuniorIsAJitterbug/) - Development
-- [Harry Munday](https://github.com/harrypm/) - Project Management (documentation, testing, direction, icon)
+- [Harry Munday](https://github.com/harrypm/) - Documentation, testing, ideas and images
 
 # Disclaimer
 
-This is my first major Python project. If you have any comments, suggestions, or improvements, feel free to create an issue, do a pull request, or contact **Jitterbug** or **Harry** on the [Domesday86](https://discord.gg/pVVrrxd) discord.
+This is my first major Python project. If you have any comments, suggestions, or improvements, feel free to create an issue, do a pull request, or ask on the [Domesday86](https://discord.gg/pVVrrxd) discord.

@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "tbc-video-export"
 version = "0.0.0"
-description = "Cross-platform tool for exporting S-Video and CVBS-type TBC files to standard video files."
+description = "Tool for exporting S-Video and CVBS-type TBCs to video files."
 authors = ["Jitterbug <3130448+JuniorIsAJitterbug@users.noreply.github.com>"]
 maintainers = [
     "Jitterbug <3130448+JuniorIsAJitterbug@users.noreply.github.com>",
