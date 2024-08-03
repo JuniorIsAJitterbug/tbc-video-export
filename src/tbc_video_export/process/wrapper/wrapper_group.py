@@ -141,7 +141,7 @@ class WrapperGroup:
                             tbc_type,
                             ProcessName.LD_CHROMA_DECODER,
                             PipeFactory.create_dummy_pipe(
-                                self._state.file_helper.tbc_luma
+                                self._state.file_helper.tbcs[tbc_type]
                             ),
                         )
                     )
