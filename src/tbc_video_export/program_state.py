@@ -123,7 +123,7 @@ class ProgramState:
                 case VideoSystem.PAL | VideoSystem.PAL_M:
                     # pal chroma
                     if TBCType.CHROMA in self.tbc_types:
-                        decoder = ChromaDecoder.TRANSFORM2D
+                        decoder = ChromaDecoder.PAL2D
 
                     # pal combined
                     if self.tbc_types == TBCType.COMBINED:
