@@ -215,7 +215,7 @@ class TestWrappersChromaDecoder:
             input_opts=[],
             expected_opts=[
                 {"--luma-nr", "0"},
-                {"-f", "transform2d"},
+                {"-f", "pal2d"},
                 {"--input-json", f"{get_path('pal_svideo')}.tbc.json"},
                 {"PIPE_IN", "PIPE_OUT"},
             ],
@@ -280,7 +280,7 @@ class TestWrappersChromaDecoder:
             input_opts=[],
             expected_opts=[
                 {"--luma-nr", "0"},
-                {"-f", "transform2d"},
+                {"-f", "pal2d"},
                 {"--input-json", f"{get_path('palm_svideo')}.tbc.json"},
                 {"PIPE_IN", "PIPE_OUT"},
             ],
