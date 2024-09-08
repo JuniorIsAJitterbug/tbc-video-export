@@ -76,7 +76,7 @@ class VideoBase:  # noqa: D101
     framerate_num: str
     framerate_den: str
     scan_type: str
-    scan_order: str
+    scan_order: str | None
 
 
 @dataclass
@@ -88,7 +88,7 @@ class VideoBasePAL(VideoBase):  # noqa D101
     framerate_num: str = field(default="25")
     framerate_den: str = field(default="1")
     scan_type: str = field(default="Interlaced")
-    scan_order: str = field(default="TFF")
+    scan_order: str | None = field(default="TFF")
 
 
 @dataclass
@@ -100,7 +100,7 @@ class VideoBasePALM(VideoBase):  # noqa D101
     framerate_num: str = field(default="30000")
     framerate_den: str = field(default="1001")
     scan_type: str = field(default="Interlaced")
-    scan_order: str = field(default="TFF")
+    scan_order: str | None = field(default="TFF")
 
 
 @dataclass
@@ -112,51 +112,55 @@ class VideoBaseNTSC(VideoBase):  # noqa D101
     framerate_num: str = field(default="30000")
     framerate_den: str = field(default="1001")
     scan_type: str = field(default="Interlaced")
-    scan_order: str = field(default="TFF")
+    scan_order: str | None = field(default="TFF")
 
 
 @dataclass
 class VideoColor:  # noqa: D101
     color_space: str
-    bit_depth: int
+    bit_depth: int | None
     chroma_subsampling: str | None
-    color_range: str
+    color_range: str | None
     color_primaries: str
     transfer_characteristics: str
     matrix_coefficients: str
+    matrix_coefficients_original: str | None
 
 
 @dataclass
 class VideoColorPAL(VideoColor):  # noqa: D101
-    color_space: str
-    bit_depth: int
-    chroma_subsampling: str | None
-    color_range: str = field(default="Limited")
+    color_space: str = field(default="YUV")
+    bit_depth: int | None = field(default=None)
+    chroma_subsampling: str | None = field(default=None)
+    color_range: str | None = field(default="Limited")
     color_primaries: str = field(default="BT.601 PAL")
     transfer_characteristics: str = field(default="BT.709")
     matrix_coefficients: str = field(default="BT.470 System B/G")
+    matrix_coefficients_original: str | None = field(default=None)
 
 
 @dataclass
 class VideoColorPALM(VideoColor):  # noqa: D101
-    color_space: str
-    bit_depth: int
-    chroma_subsampling: str | None
-    color_range: str = field(default="Limited")
+    color_space: str = field(default="YUV")
+    bit_depth: int | None = field(default=None)
+    chroma_subsampling: str | None = field(default=None)
+    color_range: str | None = field(default="Limited")
     color_primaries: str = field(default="BT.601 PAL")
     transfer_characteristics: str = field(default="BT.709")
     matrix_coefficients: str = field(default="BT.470 System B/G")
+    matrix_coefficients_original: str | None = field(default=None)
 
 
 @dataclass
 class VideoColorNTSC(VideoColor):  # noqa: D101
-    color_space: str
-    bit_depth: int
-    chroma_subsampling: str | None
-    color_range: str = field(default="Limited")
+    color_space: str = field(default="YUV")
+    bit_depth: int | None = field(default=None)
+    chroma_subsampling: str | None = field(default=None)
+    color_range: str | None = field(default="Limited")
     color_primaries: str = field(default="BT.601 NTSC")
     transfer_characteristics: str = field(default="BT.709")
     matrix_coefficients: str = field(default="BT.601")
+    matrix_coefficients_original: str | None = field(default=None)
 
 
 @dataclass
@@ -176,7 +180,7 @@ class OutputTestCase:  # noqa: D101
     input_opts: list[str]
     input_tbc: str
     output_file: str
-    output_video_codec: dict[str, Any]
+    output_video_codec: dict[str, str | list[str]]
     output_video_base: VideoBase
     output_video_color: VideoColor
     output_audio_base: list[AudioBase] = field(default_factory=list)

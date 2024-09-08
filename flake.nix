@@ -46,7 +46,7 @@
               enterShell = ''
                 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${commonLibraryPath}
               '';
-              packages = commonPackages ++ [ pkgs.ruff ];
+              packages = commonPackages ++ [ pkgs.ruff pkgs.ffmpeg_4 ];
 
               languages.python = {
                 enable = true;

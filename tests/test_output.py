@@ -28,6 +28,96 @@ class TestOutput:
     and validate the output using mediainfo.
     """
 
+    codec_values: dict[str, dict[str, Any]] = {
+        "ffv1": {
+            "format": "FFV1",
+            "format_settings__gop": "N=1",
+            "coder_type": "Range Coder",
+            "maxslicescount": "24",
+            "errordetectiontype": "Per slice",
+        },
+        "prores_hq": {
+            "format": "ProRes",
+            "format_profile": "422 HQ",
+            "codec_id": "apch",
+        },
+        "prores_4444xq": {
+            "format": "ProRes",
+            "format_profile": "4444 XQ",
+            "codec_id": "ap4x",
+        },
+        "v210": {
+            "codec_id": "v210",
+        },
+        "v410": {
+            "codec_id": "v410",
+        },
+        "D10": {
+            "commercial_name": "IMX 50",
+            "format_version": "Version 2",
+            "format_profile": "4:2:2@Main",
+            "format_settings__gop": "N=1",
+            "format_settings__wrapping_mode": "Frame (D-10)",
+        },
+        "x264": {
+            "format" : "AVC",
+            "format_profile": "High@L3.1",
+            "encoding_settings": [
+                "crf=18.0",
+                "interlaced=tff",
+            ],
+        },
+        "x264_lossless": {
+            "format" : "AVC",
+            "format_profile": "High 4:4:4 Predictive@L6.2",
+            "encoding_settings": [
+                "qp=0",
+                "interlaced=tff",
+            ],
+        },
+        "x264_web": {
+            "format" : "AVC",
+            "format_profile": "High@L3.1",
+            "encoding_settings": [
+                "crf=18.0",
+            ],
+        },
+        "x265": {
+            "format" : "HEVC",
+            "format_profile": "Main@L3@Main",
+            "encoding_settings": [
+                "crf=23.0",
+                "interlace=1",
+            ],
+        },
+        "x265_lossless": {
+            "format" : "HEVC",
+            "format_profile": "Format Range@L8.5@Main",
+            "encoding_settings": [
+                "interlace=1",
+                " lossless "
+            ],
+        },
+        "x265_web": {
+            "format" : "HEVC",
+            "format_profile": "Main@L3.1@Main",
+            "encoding_settings": [
+                "crf=23.0",
+                "interlace=0",
+            ],
+        },
+        "av1": {
+            "format" : "AV1",
+            "format_profile": "Main@L3.0",
+            "encoding_settings": [],
+        },
+        "av1_web": {
+            "format" : "AV1",
+            "format_profile": "Main@L3.1",
+            "encoding_settings": [],
+        }
+    }
+
     codec_ffv1: dict[str, Any] = {
         "format": "FFV1",
         "format_settings__gop": "N=1",
@@ -45,7 +135,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -94,7 +183,6 @@ class TestOutput:
                 display_aspect_ratio="1.263",
             ),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -112,7 +200,6 @@ class TestOutput:
                 display_aspect_ratio="2.385",
             ),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -130,7 +217,6 @@ class TestOutput:
                 display_aspect_ratio="1.239",
             ),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -146,7 +232,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -194,7 +279,6 @@ class TestOutput:
                 display_aspect_ratio="1.263",
             ),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -212,7 +296,6 @@ class TestOutput:
                 display_aspect_ratio="2.385",
             ),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -229,7 +312,6 @@ class TestOutput:
                 display_aspect_ratio="1.239",
             ),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -245,7 +327,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -293,7 +374,6 @@ class TestOutput:
                 display_aspect_ratio="1.263",
             ),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -311,7 +391,6 @@ class TestOutput:
                 display_aspect_ratio="2.385",
             ),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -328,7 +407,6 @@ class TestOutput:
                 display_aspect_ratio="1.239",
             ),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -344,7 +422,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBaseNTSC(),
             output_video_color=VideoColorNTSC(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -392,7 +469,6 @@ class TestOutput:
                 display_aspect_ratio="1.273",
             ),
             output_video_color=VideoColorNTSC(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -410,7 +486,6 @@ class TestOutput:
                 display_aspect_ratio="2.570",
             ),
             output_video_color=VideoColorNTSC(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -427,7 +502,6 @@ class TestOutput:
                 display_aspect_ratio="1.227",
             ),
             output_video_color=VideoColorNTSC(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -443,7 +517,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBaseNTSC(),
             output_video_color=VideoColorNTSC(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -491,7 +564,6 @@ class TestOutput:
                 display_aspect_ratio="1.273",
             ),
             output_video_color=VideoColorNTSC(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -509,7 +581,6 @@ class TestOutput:
                 display_aspect_ratio="2.570",
             ),
             output_video_color=VideoColorNTSC(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -526,7 +597,6 @@ class TestOutput:
                 display_aspect_ratio="1.227",
             ),
             output_video_color=VideoColorNTSC(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -542,7 +612,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBaseNTSC(),
             output_video_color=VideoColorNTSC(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -590,7 +659,6 @@ class TestOutput:
                 display_aspect_ratio="1.273",
             ),
             output_video_color=VideoColorNTSC(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -608,7 +676,6 @@ class TestOutput:
                 display_aspect_ratio="2.570",
             ),
             output_video_color=VideoColorNTSC(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -625,7 +692,6 @@ class TestOutput:
                 display_aspect_ratio="1.227",
             ),
             output_video_color=VideoColorNTSC(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -641,7 +707,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePALM(),
             output_video_color=VideoColorPALM(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -690,7 +755,6 @@ class TestOutput:
                 display_aspect_ratio="1.728",
             ),
             output_video_color=VideoColorPALM(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -704,7 +768,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePALM(),
             output_video_color=VideoColorPALM(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -723,7 +786,6 @@ class TestOutput:
                 display_aspect_ratio="1.227",
             ),
             output_video_color=VideoColorPALM(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling=None,
             ),
@@ -739,7 +801,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=8,
                 chroma_subsampling="4:2:0",
             ),
@@ -752,7 +813,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:0",
             ),
@@ -765,7 +825,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=16,
                 chroma_subsampling="4:2:0",
             ),
@@ -778,7 +837,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=8,
                 chroma_subsampling="4:2:2",
             ),
@@ -791,7 +849,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -804,7 +861,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=16,
                 chroma_subsampling="4:2:2",
             ),
@@ -817,7 +873,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=8,
                 chroma_subsampling="4:4:4",
             ),
@@ -830,7 +885,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:4:4",
             ),
@@ -843,7 +897,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=16,
                 chroma_subsampling="4:4:4",
             ),
@@ -889,6 +942,189 @@ class TestOutput:
         ),
     ]
 
+    profile_test_cases = [
+        OutputTestCase(
+            id="prores_hq",
+            input_opts=["--quiet", "--overwrite", "--prores_hq"],
+            input_tbc="pal_svideo",
+            output_file="pal_svideo.mov",
+            output_video_codec=codec_values["prores_hq"],
+            output_video_base=VideoBasePAL(),
+            output_video_color=VideoColorPAL(
+                chroma_subsampling="4:2:2",
+                color_range=None,
+            ),
+        ),
+        OutputTestCase(
+            id="prores_4444xq",
+            input_opts=["--quiet", "--overwrite", "--prores_4444xq"],
+            input_tbc="pal_svideo",
+            output_file="pal_svideo.mov",
+            output_video_codec=codec_values["prores_4444xq"],
+            output_video_base=VideoBasePAL(),
+            output_video_color=VideoColorPAL(
+                chroma_subsampling="4:4:4",
+                color_range=None,
+            ),
+        ),
+        OutputTestCase(
+            id="v210",
+            input_opts=["--quiet", "--overwrite", "--v210"],
+            input_tbc="pal_svideo",
+            output_file="pal_svideo.mov",
+            output_video_codec=codec_values["v210"],
+            output_video_base=VideoBasePAL(),
+            output_video_color=VideoColorPAL(
+                bit_depth=10,
+                chroma_subsampling="4:2:2",
+                color_range=None,
+            ),
+        ),
+        OutputTestCase(
+            id="v410",
+            input_opts=["--quiet", "--overwrite", "--v410"],
+            input_tbc="pal_svideo",
+            output_file="pal_svideo.mov",
+            output_video_codec=codec_values["v410"],
+            output_video_base=VideoBasePAL(),
+            output_video_color=VideoColorPAL(
+                bit_depth=None,
+                chroma_subsampling=None,
+                color_range=None,
+            ),
+        ),
+        OutputTestCase(
+            id="D10",
+            input_opts=["--quiet", "--overwrite", "--d10"],
+            input_tbc="pal_svideo_5",
+            output_file="pal_svideo_5.mxf",
+            output_video_codec=codec_values["D10"],
+            output_video_base=VideoBasePAL(
+                width=720,
+                pixel_aspect_ratio = "1.000",
+                display_aspect_ratio = "1.333",
+            ),
+            output_video_color=VideoColorPAL(
+                bit_depth=8,
+                chroma_subsampling="4:2:2",
+                matrix_coefficients="BT.601",
+                matrix_coefficients_original="BT.470 System B/G",
+            ),
+        ),
+        OutputTestCase(
+            id="x264",
+            input_opts=["--quiet", "--overwrite", "--x264"],
+            input_tbc="pal_svideo",
+            output_file="pal_svideo.mov",
+            output_video_codec=codec_values["x264"],
+            output_video_base=VideoBasePAL(
+                scan_type = "MBAFF",
+            ),
+            output_video_color=VideoColorPAL(
+                bit_depth=8,
+                chroma_subsampling="4:2:0",
+            ),
+        ),
+        OutputTestCase(
+            id="x264_lossless",
+            input_opts=["--quiet", "--overwrite", "--x264_lossless"],
+            input_tbc="pal_svideo",
+            output_file="pal_svideo.mov",
+            output_video_codec=codec_values["x264_lossless"],
+            output_video_base=VideoBasePAL(
+                scan_type = "MBAFF",
+            ),
+            output_video_color=VideoColorPAL(
+                bit_depth=10,
+                chroma_subsampling="4:2:2",
+            ),
+        ),
+        OutputTestCase(
+            id="x264_web",
+            input_opts=["--quiet", "--overwrite", "--x264_web"],
+            input_tbc="pal_svideo",
+            output_file="pal_svideo.mov",
+            output_video_codec=codec_values["x264_web"],
+            output_video_base=VideoBasePAL(
+                scan_type = "Progressive",
+                framerate_num = "50",
+                scan_order=None,
+            ),
+            output_video_color=VideoColorPAL(
+                bit_depth=8,
+                chroma_subsampling="4:2:0",
+            ),
+        ),
+        OutputTestCase(
+            id="x265",
+            input_opts=["--quiet", "--overwrite", "--x265"],
+            input_tbc="pal_svideo",
+            output_file="pal_svideo.mov",
+            output_video_codec=codec_values["x265"],
+            output_video_base=VideoBasePAL(),
+            output_video_color=VideoColorPAL(
+                bit_depth=8,
+                chroma_subsampling="4:2:0",
+            ),
+        ),
+        OutputTestCase(
+            id="x265_lossless",
+            input_opts=["--quiet", "--overwrite", "--x265_lossless"],
+            input_tbc="pal_svideo",
+            output_file="pal_svideo.mov",
+            output_video_codec=codec_values["x265_lossless"],
+            output_video_base=VideoBasePAL(),
+            output_video_color=VideoColorPAL(
+                bit_depth=10,
+                chroma_subsampling="4:2:2",
+            ),
+        ),
+        OutputTestCase(
+            id="x265_web",
+            input_opts=["--quiet", "--overwrite", "--x265_web"],
+            input_tbc="pal_svideo",
+            output_file="pal_svideo.mov",
+            output_video_codec=codec_values["x265_web"],
+            output_video_base=VideoBasePAL(
+                scan_type = "Progressive",
+                framerate_num = "50",
+                scan_order=None,
+            ),
+            output_video_color=VideoColorPAL(
+                bit_depth=8,
+                chroma_subsampling="4:2:0",
+            ),
+        ),
+        OutputTestCase(
+            id="av1",
+            input_opts=["--quiet", "--overwrite", "--av1"],
+            input_tbc="pal_svideo",
+            output_file="pal_svideo.mp4",
+            output_video_codec=codec_values["av1"],
+            output_video_base=VideoBasePAL(),
+            output_video_color=VideoColorPAL(
+                bit_depth=8,
+                chroma_subsampling="4:2:0",
+            ),
+        ),
+        OutputTestCase(
+            id="av1_web",
+            input_opts=["--quiet", "--overwrite", "--av1_web"],
+            input_tbc="pal_svideo",
+            output_file="pal_svideo.mp4",
+            output_video_codec=codec_values["av1_web"],
+            output_video_base=VideoBasePAL(
+                scan_type = "Progressive",
+                framerate_num = "50",
+                scan_order=None,
+            ),
+            output_video_color=VideoColorPAL(
+                bit_depth=8,
+                chroma_subsampling="4:2:0",
+            ),
+        ),
+    ]
+
     audio_test_cases = [
         OutputTestCase(
             id="mux 1 audio track",
@@ -903,7 +1139,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -930,7 +1165,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -964,7 +1198,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -1003,7 +1236,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -1026,7 +1258,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -1048,7 +1279,6 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
-                color_space="YUV",
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
@@ -1067,10 +1297,15 @@ class TestOutput:
 
         # check video codec
         for k, v in test_case.output_video_codec.items():
-            if v is not None:
+            if isinstance(v, list):
+                for v_item in v:
+                    target_field = getattr(video_track, k, None)
+                    assert target_field is not None
+                    assert v_item in target_field
+            else:
                 target_field = getattr(video_track, k, None)
                 assert target_field is not None
-                assert target_field == v
+                assert v in target_field
 
         # check video info
         for field in fields(test_case.output_video_base):
@@ -1217,6 +1452,13 @@ class TestOutput:
         ),
     )
     def test_video_formats(self, test_case: OutputTestCase):  # noqa: D102
+        self.run_output_validation(test_case)
+
+    @pytest.mark.parametrize(
+        "test_case",
+        (pytest.param(test_case, id=test_case.id) for test_case in profile_test_cases),
+    )
+    def test_profiles(self, test_case: OutputTestCase):  # noqa: D102
         self.run_output_validation(test_case)
 
     @pytest.mark.parametrize(
