@@ -68,7 +68,7 @@ DEFAULT_CONFIG: JsonConfig = {
         {
             "name": "x264_web",
             "video_profile": [
-                "x264",
+                "x264_web",
                 "x264_vaapi",
                 "x264_nvenc",
                 "x264_quicksync",
@@ -100,7 +100,7 @@ DEFAULT_CONFIG: JsonConfig = {
         {
             "name": "x265_web",
             "video_profile": [
-                "x265",
+                "x265_web",
                 "x265_vaapi",
                 "x265_nvenc",
                 "x265_quicksync",
@@ -119,11 +119,13 @@ DEFAULT_CONFIG: JsonConfig = {
             ],
             "audio_profile": "aac",
         },
-        {
-            "name": "av1_lossless",
-            "video_profile": "av1_lossless",
-            "audio_profile": "aac",
-        },
+        # Disabled due to libaom-av1 not being available in
+        # oldest supported FFmpeg (4.4)
+        # {
+        #     "name": "av1_lossless",
+        #     "video_profile": "av1_lossless",
+        #     "audio_profile": "aac",
+        # },
         {
             "name": "av1_web",
             "video_profile": [
@@ -160,14 +162,16 @@ DEFAULT_CONFIG: JsonConfig = {
         {
             "name": "prores_422_hq",
             "description": "ProRes 422 HQ",
-            "codec": "prores",
+            "codec": "prores_ks",
             "video_format": "yuv422p10le",
             "container": "mov",
             "opts": [
                 "-profile:v",
-                "hq",
+                "3",
                 "-vendor",
                 "apl0",
+                "-flags",
+                "+ildct+ilme",
             ],
         },
         {
@@ -178,21 +182,25 @@ DEFAULT_CONFIG: JsonConfig = {
             "container": "mov",
             "opts": [
                 "-profile:v",
-                "hq",
+                "3",
+                "-flags",
+                "+ildct+ilme",
             ],
             "hardware_accel": "videotoolbox",
         },
         {
             "name": "prores_4444_xq",
             "description": "ProRes 4444 XQ",
-            "codec": "prores",
+            "codec": "prores_ks",
             "video_format": "yuv444p10le",
             "container": "mov",
             "opts": [
                 "-profile:v",
-                "xq",
+                "5",
                 "-vendor",
                 "apl0",
+                "-flags",
+                "+ildct+ilme",
             ],
         },
         {
@@ -203,7 +211,9 @@ DEFAULT_CONFIG: JsonConfig = {
             "container": "mov",
             "opts": [
                 "-profile:v",
-                "xq",
+                "5",
+                "-flags",
+                "+ildct+ilme",
             ],
             "hardware_accel": "videotoolbox",
         },
@@ -323,13 +333,31 @@ DEFAULT_CONFIG: JsonConfig = {
             "name": "x264_lossless",
             "description": "H.264 AVC - Lossless",
             "codec": "libx264",
-            "video_format": "yuv420p",
+            "video_format": "yuv422p10",
             "container": "mov",
             "opts": [
                 "-qp",
                 0,
+                "-x264opts",
+                "interlaced=1",
                 "-preset",
                 "veryslow",
+            ],
+            "filter_profiles_override": [],
+        },
+        {
+            "name": "x264_web",
+            "description": "H.264 AVC - Web",
+            "codec": "libx264",
+            "video_format": "yuv420p",
+            "container": "mov",
+            "opts": [
+                "-crf",
+                18,
+                "-preset",
+                "slow",
+                "-movflags",
+                "+faststart",
             ],
             "filter_profiles_override": [],
         },
@@ -429,24 +457,37 @@ DEFAULT_CONFIG: JsonConfig = {
                 "-movflags",
                 "+faststart",
                 "-x265-params",
-                "interlace=true",
+                "interlace=1",
             ],
         },
         {
             "name": "x265_lossless",
             "description": "H.265 HEVC - Lossless",
             "codec": "libx265",
-            "video_format": "yuv420p",
+            "video_format": "yuv422p10",
             "container": "mov",
             "opts": [
-                "-crf",
-                20,
                 "-preset",
                 "slow",
                 "-movflags",
                 "+faststart",
                 "-x265-params",
-                "lossless=1",
+                "lossless=1:interlace=1",
+            ],
+        },
+        {
+            "name": "x265_web",
+            "description": "H.265 HEVC - Web",
+            "codec": "libx265",
+            "video_format": "yuv420p",
+            "container": "mov",
+            "opts": [
+                "-crf",
+                23,
+                "-preset",
+                "slow",
+                "-movflags",
+                "+faststart",
             ],
         },
         {
@@ -540,7 +581,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "AV1",
             "codec": "libsvtav1",
             "video_format": "yuv420p",
-            "container": "mov",
+            "container": "mp4",
             "opts": [
                 "-crf",
                 24,
@@ -556,8 +597,8 @@ DEFAULT_CONFIG: JsonConfig = {
             "name": "av1_lossless",
             "description": "AV1 - Lossless",
             "codec": "libaom-av1",
-            "video_format": "yuv420p",
-            "container": "mov",
+            "video_format": "yuv422p10",
+            "container": "mp4",
             "opts": [
                 "-crf",
                 0,
