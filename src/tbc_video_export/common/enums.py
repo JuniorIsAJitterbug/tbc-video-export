@@ -52,15 +52,12 @@ class TBCType(Flag):
 class ExportMode(Enum):
     """Export flags for the application."""
 
-    LUMA = "Luma"
-    LUMA_EXTRACTED = "Luma (extracted)"
-    LUMA_4FSC = "Luma (4FSC)"
-    CHROMA_MERGE = "Luma + Chroma (merged)"
-    CHROMA_COMBINED = "Luma + Chroma (combined)"
-
-    def __str__(self) -> str:
-        """Return enum value as string."""
-        return self.value
+    LUMA = auto()
+    LUMA_EXTRACTED = auto()
+    LUMA_4FSC = auto()
+    CHROMA_MERGE = auto()
+    CHROMA_COMBINED = auto()
+    CHROMA_COMBINED_LD = auto()
 
 
 class VideoSystem(Enum):
@@ -82,24 +79,6 @@ class VideoSystem(Enum):
                 if str(member.value) == str(value):
                     return member
         return None
-
-
-class VideoSystemLines(Enum):
-    """Video system line values.
-
-    FFLL / LFLL / FFRL / LFRL
-    """
-
-    PAL_DEFAULT = (22, 308, 44, 620)
-    PAL_FULL_VERTICAL = (2, 308, 2, 620)
-    PAL_LETTERBOX = (2, 308, 118, 548)
-
-    NTSC_DEFAULT = (20, 259, 40, 525)
-    NTSC_FULL_VERTICAL = (1, 259, 2, 525)
-    NTSC_LETTERBOX = (61, 224, 122, 448)
-
-    PAL_M_DEFAULT = NTSC_DEFAULT
-    PAL_M_FULL_VERTICAL = NTSC_FULL_VERTICAL
 
 
 class ChromaDecoder(Enum):

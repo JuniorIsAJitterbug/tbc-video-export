@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 from tbc_video_export.common import exceptions
 from tbc_video_export.common.enums import (
     ChromaDecoder,
+    ExportMode,
     TBCType,
     VideoSystem,
 )
@@ -36,19 +37,12 @@ def validate_opts(
 
 
 def _validate_line_opts(parser: argparse.ArgumentParser, opts: Opts) -> None:
-    # check custom field/frame line opts
-    field_frame_opts = [
-        "first_active_field_line",
-        "last_active_field_line",
-        "first_active_frame_line",
-        "last_active_frame_line",
-    ]
-
-    if any(getattr(opts, x) is not None for x in field_frame_opts) and (
+    if opts.contains_active_line_opts() and (
         opts.vbi or opts.full_vertical or opts.letterbox
     ):
         parser.error(
-            "arguments [--vbi | --letterbox]: not allowed with arguments "
+            "arguments [--vbi | --full-vertical | --letterbox]: "
+            "not allowed with arguments "
             "[--ffll | --lfll | --ffrl | --lfrl]"
         )
 
@@ -193,7 +187,11 @@ def validate_black_levels_opts(value: str) -> tuple[int, int, int] | None:
 
 def _validate_decoder_opts(state: ProgramState, opts: Opts) -> None:
     """Validate chroma-decoder opts."""
-    # this is only available on cvbs/ld or when --chroma-decoder-luma is used
+    if state.export_mode is ExportMode.LUMA_4FSC:
+        return
+
+    # check if luma-nr is valid with luma decoder for split and chroma for combined
+    # this requires luma decoder to be manually set for split
     decoder = (
         state.decoder_chroma
         if TBCType.COMBINED in state.tbc_types

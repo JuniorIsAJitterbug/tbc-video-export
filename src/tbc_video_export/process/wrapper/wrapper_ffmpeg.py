@@ -51,13 +51,11 @@ class WrapperFFmpeg(Wrapper):
                 self._get_threads_opt(),
                 "-nostdin",
                 self._get_hwaccel_opts(),
-                self._get_color_range_opt(),
                 self._get_input_opts(),
                 self._get_filter_complex_opts(),
                 self._get_map_opts(),
                 self._get_timecode_opt(),
                 self._get_framerate_opt(),
-                self._get_color_range_opt(),
                 self._get_color_opts(),
                 self._get_codec_opts(),
                 self._get_metadata_opts(),
@@ -136,11 +134,6 @@ class WrapperFFmpeg(Wrapper):
     def _get_hwaccel_opts(self) -> FlatList:
         return self._hwaccel_opts
 
-    @staticmethod
-    def _get_color_range_opt() -> FlatList | None:
-        """Return opts for color range."""
-        return FlatList(("-color_range", "tv"))
-
     def _get_thread_queue_size_opt(self) -> FlatList:
         """Return opts for thread queue size."""
         return FlatList(("-thread_queue_size", str(self._state.opts.thread_queue_size)))
@@ -158,44 +151,43 @@ class WrapperFFmpeg(Wrapper):
     def _get_video_input_opts(self) -> FlatList:
         """Return opts for video input."""
         input_opts = FlatList()
+        video_system_data = self._state.video_system_data
 
         if self._config.export_mode == ExportMode.LUMA_4FSC:
+            size = video_system_data.size["4fsc"]
+
             input_opts.append(
                 (
                     "-f",
                     "rawvideo",
                     "-pix_fmt",
-                    "gray16le",
+                    VideoFormatType.GRAY.value.get(16),
                     "-framerate",
                     self._get_framerate(),
                     "-video_size",
+                    f"{size.width}x{size.height}",
                 )
             )
 
-            match self._state.video_system:
-                case VideoSystem.PAL:
-                    input_opts.append("1135x626")
-
-                case VideoSystem.NTSC:
-                    input_opts.append("910x526")
-
-                case VideoSystem.PAL_M:
-                    input_opts.append("909x526")
+        inputs: list[str] = []
 
         if self._is_two_step_merge_mode():
             # add the luma file as an input
-            input_opts.append(
-                (
-                    self._get_thread_queue_size_opt(),
-                    "-i",
-                    self._state.file_helper.output_video_file_luma,
-                )
-            )
+            inputs.append(str(self._state.file_helper.output_video_file_luma))
 
         # pipes
+        for i in self._config.input_pipes:
+            inputs.append(str(i.in_path))
+
         input_opts.append(
-            (self._get_thread_queue_size_opt(), "-i", str(i.in_path))
-            for i in self._config.input_pipes
+            (
+                self._get_thread_queue_size_opt(),
+                "-color_range",
+                video_system_data.ffmpeg_config.color_range,
+                "-i",
+                i,
+            )
+            for i in inputs
         )
 
         return input_opts
@@ -277,11 +269,8 @@ class WrapperFFmpeg(Wrapper):
         # set video filters
         video_filters += _vf
 
-        if self._state.is_widescreen:
-            video_filters.append(self._get_widescreen_aspect_ratio_filter())
-
-        if self._state.opts.letterbox:
-            video_filters.append(self._get_letterbox_aspect_ratio_filter())
+        if (arf := self._get_aspect_ratio_filter()) is not None:
+            video_filters.append(arf)
 
         # override profile colorlevels if set with opt
         if self._state.opts.force_black_level is not None:
@@ -407,12 +396,7 @@ class WrapperFFmpeg(Wrapper):
 
     def _get_framerate(self) -> str:
         """Return rate based on video system."""
-        match self._state.video_system:
-            case VideoSystem.PAL:
-                return "pal"
-
-            case VideoSystem.NTSC | VideoSystem.PAL_M:
-                return "ntsc"
+        return self._state.video_system_data.ffmpeg_config.fps
 
     def _get_framerate_opt(self) -> FlatList:
         """Return opts for rate."""
@@ -423,44 +407,34 @@ class WrapperFFmpeg(Wrapper):
             )
         )
 
-    def _get_widescreen_aspect_ratio_filter(self) -> str:
-        """Return filter for widescreen aspect ratio."""
-        match self._state.video_system:
-            case VideoSystem.PAL:
-                return "setsar=865/779:max=1000"
+    def _get_aspect_ratio_filter(self) -> str | None:
+        """Return filter for aspect ratios."""
+        if self._state.is_widescreen:
+            ar = self._state.video_system_data.aspect_ratio["widescreen"]
+            return f"setsar={ar.horizontal}/{ar.vertical}:max=1000"
 
-            case VideoSystem.NTSC | VideoSystem.PAL_M:
-                return "setsar=25/22:max=1000"
+        if self._state.opts.letterbox:
+            ar = self._state.video_system_data.aspect_ratio["letterbox"]
+            return f"setdar={ar.horizontal}/{ar.vertical}"
 
-    def _get_letterbox_aspect_ratio_filter(self) -> str:
-        """Return filter for letterboxed aspect ratio."""
-        return "setdar=16/9"
+        return None  # do not return default ar
 
     def _get_color_opts(self) -> FlatList | None:
         """Return opts for color settings."""
-        match self._state.video_system:
-            case VideoSystem.PAL | VideoSystem.PAL_M:
-                return FlatList(
-                    (
-                        "-colorspace",
-                        "bt470bg",
-                        "-color_primaries",
-                        "bt470bg",
-                        "-color_trc",
-                        "bt709",
-                    ),
-                )
-            case VideoSystem.NTSC:
-                return FlatList(
-                    (
-                        "-colorspace",
-                        "smpte170m",
-                        "-color_primaries",
-                        "smpte170m",
-                        "-color_trc",
-                        "bt709",
-                    ),
-                )
+        ffmpeg_config = self._state.video_system_data.ffmpeg_config
+
+        return FlatList(
+            (
+                "-color_range",
+                ffmpeg_config.color_range,
+                "-colorspace",
+                ffmpeg_config.color_space,
+                "-color_primaries",
+                ffmpeg_config.color_primaries,
+                "-color_trc",
+                ffmpeg_config.color_trc,
+            )
+        )
 
     def _get_codec_opts(self) -> FlatList:
         """Return opts containing codecs for inputs."""
