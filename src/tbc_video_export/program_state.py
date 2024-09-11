@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING
 
-from tbc_video_export.common import consts, exceptions
+from tbc_video_export.common import VideoSystemData, consts, exceptions
 from tbc_video_export.common.enums import (
     ChromaDecoder,
     ExportMode,
@@ -65,33 +65,35 @@ class ProgramState:
 
         This determines the processes that will run and their configuration.
         """
-        export_mode: ExportMode
         tbc_types = self.tbc_types
+
+        # overwrite export mode if opts set
+        if self.opts.luma_4fsc:
+            return ExportMode.LUMA_4FSC
 
         # set export mode
         match tbc_types:
             case TBCType.LUMA:
-                export_mode = ExportMode.LUMA
+                return ExportMode.LUMA
+
             case _ as tbc_types if TBCType.CHROMA in tbc_types:
-                export_mode = (
+                return (
                     ExportMode.LUMA if self.opts.luma_only else ExportMode.CHROMA_MERGE
                 )
+
             case TBCType.COMBINED:
-                export_mode = (
+                return (
                     ExportMode.LUMA_EXTRACTED
                     if self.opts.luma_only
+                    else ExportMode.CHROMA_COMBINED_LD
+                    if self.file_helper.is_combined_ld
                     else ExportMode.CHROMA_COMBINED
                 )
+
             case _:
                 raise exceptions.TBCTypeError(
                     f"No export mode found for tbc type {tbc_types}."
                 )
-
-        # overwrite export mode if opts set
-        if self.opts.luma_4fsc:
-            export_mode = ExportMode.LUMA_4FSC
-
-        return export_mode
 
     @cached_property
     def tbc_types(self) -> TBCType:
@@ -108,50 +110,25 @@ class ProgramState:
         )
 
     @cached_property
+    def video_system_data(self) -> VideoSystemData:
+        """Video system data."""
+        return VideoSystemData.get(self.video_system)
+
+    @cached_property
     def decoder_luma(self) -> ChromaDecoder:
         """Chroma decoder for Luma TBCs."""
-        # default
-        decoder = ChromaDecoder.MONO
-
         if self.opts.chroma_decoder_luma is not None:
-            decoder = self.opts.chroma_decoder_luma
+            return self.opts.chroma_decoder_luma
 
-        return decoder
+        return ChromaDecoder.MONO
 
     @cached_property
     def decoder_chroma(self) -> ChromaDecoder:
         """Chroma decoder for Chroma/Combined TBCs."""
-        # default
-        decoder = ChromaDecoder.TRANSFORM2D
-
         if self.opts.chroma_decoder is None:
-            match self.video_system:
-                case VideoSystem.PAL | VideoSystem.PAL_M:
-                    # pal chroma
-                    if TBCType.CHROMA in self.tbc_types:
-                        decoder = ChromaDecoder.PAL2D
+            return self.video_system_data.chroma_decoder[self.export_mode]
 
-                    # pal combined
-                    if self.tbc_types == TBCType.COMBINED:
-                        decoder = ChromaDecoder.TRANSFORM3D
-
-                case VideoSystem.NTSC:
-                    # ntsc chroma
-                    if TBCType.CHROMA in self.tbc_types:
-                        decoder = ChromaDecoder.NTSC2D
-
-                    # ntsc combined
-                    if self.tbc_types == TBCType.COMBINED:
-                        # check if ld or cvbs
-                        decoder = (
-                            ChromaDecoder.NTSC2D
-                            if self.file_helper.is_combined_ld
-                            else ChromaDecoder.NTSC3D
-                        )
-        else:
-            decoder = self.opts.chroma_decoder
-
-        return decoder
+        return self.opts.chroma_decoder
 
     @cached_property
     def is_widescreen(self) -> bool:
@@ -162,6 +139,24 @@ class ProgramState:
             )
 
         return self.opts.force_anamorphic or self.tbc_json.is_widescreen
+
+    @cached_property
+    def decoder_line_preset(self) -> VideoSystemData.ActiveLines:
+        """Return decoder line preset from opts/config."""
+        video_system = self.video_system_data
+
+        if self.opts.full_vertical or self.opts.vbi or self.profile.include_vbi:
+            return video_system.active_lines["full_vertical"]
+
+        if self.opts.letterbox:
+            if self.video_system is VideoSystem.PAL_M:
+                raise exceptions.SampleRequiredError(
+                    f"{str(self.video_system).upper()} letterbox"
+                )
+
+            return video_system.active_lines["letterbox"]
+
+        return video_system.active_lines["default"]
 
     @cached_property
     def dry_run(self) -> bool:
@@ -207,15 +202,23 @@ class ProgramState:
         match self.current_export_mode:
             case ExportMode.CHROMA_MERGE:
                 decoders = f"{self.decoder_luma} + {self.decoder_chroma}"
+                export_mode = "Luma + Chroma (merged)"
 
-            case ExportMode.CHROMA_COMBINED:
+            case ExportMode.CHROMA_COMBINED | ExportMode.CHROMA_COMBINED_LD:
                 decoders = f"{self.decoder_chroma}"
+                export_mode = "Luma + Chroma (combined)"
 
             case ExportMode.LUMA_4FSC:
                 decoders = f"{TBCType.NONE}"
+                export_mode = "Luma (4FSC)"
 
-            case ExportMode.LUMA | ExportMode.LUMA_EXTRACTED:
+            case ExportMode.LUMA_EXTRACTED:
                 decoders = f"{self.decoder_luma}"
+                export_mode = "Luma (extracted)"
+
+            case ExportMode.LUMA:
+                decoders = f"{self.decoder_luma}"
+                export_mode = "Luma"
 
         if all(
             t in FlagHelper.get_flags(self.tbc_types)
@@ -269,7 +272,7 @@ class ProgramState:
             f"{ansi.dim('Total Frames:'):<{col_w['k2']}s} "
             f"{self.total_frames:<{col_w['v2']}d}"
             f"{ansi.dim('Export Mode:'):<{col_w['k3']}s} "
-            f"{self.export_mode} {two_step_mode_str:<{col_w['v3']}s}\n\n"
+            f"{export_mode} {two_step_mode_str:<{col_w['v3']}s}\n\n"
             f"{ansi.dim('Profile:'):<{col_w['k1']}s} "
             f"{profiles}\n"
             f"{ansi.dim('Frame Type:'):<{col_w['k1']}s} "

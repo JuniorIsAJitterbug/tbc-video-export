@@ -11,7 +11,6 @@ from tbc_video_export.common.enums import (
     ProcessName,
     TBCType,
     VideoSystem,
-    VideoSystemLines,
 )
 from tbc_video_export.common.utils import FlatList
 from tbc_video_export.process.wrapper.wrapper import Wrapper
@@ -42,6 +41,7 @@ class WrapperLDChromaDecoder(Wrapper):
                 "y4m",
                 self._get_decoder_opts(),
                 self._get_active_line_opts(),
+                self._get_padding_opt(),
                 self._get_misc_opts(),
                 "--input-json",
                 self._state.file_helper.tbc_json.file_name,
@@ -120,58 +120,52 @@ class WrapperLDChromaDecoder(Wrapper):
             )
         )
 
-    def _get_active_line_opts(self) -> FlatList:
+    def _get_active_line_opts(self) -> FlatList | None:
         """Return active line opts."""
-        values: tuple[int, ...] | None = None
+        video_system_data = self._state.video_system_data
+        opts = self._state.opts
 
-        if (
-            self._state.opts.full_vertical
-            or self._state.opts.vbi
-            or self._state.profile.include_vbi
-        ):
-            match self._state.video_system:
-                case VideoSystem.PAL:
-                    values = VideoSystemLines.PAL_FULL_VERTICAL.value
+        # return user values if set
+        if self._state.opts.contains_active_line_opts():
+            return FlatList(
+                (
+                    opts.convert_opt("first_active_field_line", "--ffll"),
+                    opts.convert_opt("last_active_field_line", "--lfll"),
+                    opts.convert_opt("first_active_frame_line", "--ffrl"),
+                    opts.convert_opt("last_active_frame_line", "--lfrl"),
+                ),
+            )
 
-                case VideoSystem.NTSC | VideoSystem.PAL_M:
-                    values = VideoSystemLines.NTSC_FULL_VERTICAL.value
+        # return static active line values if non default export mode
+        if self._state.decoder_line_preset != video_system_data.active_lines["default"]:
+            active_lines = self._state.decoder_line_preset
 
-        if self._state.opts.letterbox:
-            match self._state.video_system:
-                case VideoSystem.PAL:
-                    values = VideoSystemLines.PAL_LETTERBOX.value
-
-                case VideoSystem.NTSC:
-                    values = VideoSystemLines.NTSC_LETTERBOX.value
-
-                case VideoSystem.PAL_M:
-                    raise exceptions.SampleRequiredError(
-                        f"{str(self._state.video_system).upper()} letterbox"
-                    )
-
-        if values is not None:
             return FlatList(
                 (
                     "--ffll",
-                    values[0],
+                    active_lines.first_field,
                     "--lfll",
-                    values[1],
+                    active_lines.last_field,
                     "--ffrl",
-                    values[2],
+                    active_lines.first_frame,
                     "--lfrl",
-                    values[3],
+                    active_lines.last_frame,
                 )
             )
 
-        # use default/user values
-        return FlatList(
-            (
-                self._state.opts.convert_opt("first_active_field_line", "--ffll"),
-                self._state.opts.convert_opt("last_active_field_line", "--lfll"),
-                self._state.opts.convert_opt("first_active_frame_line", "--ffrl"),
-                self._state.opts.convert_opt("last_active_frame_line", "--lfrl"),
-            ),
-        )
+        return None
+
+    def _get_padding_opt(self) -> FlatList | None:
+        """Return padding opt."""
+        opts = self._state.opts
+
+        if opts.output_padding is not None:
+            return FlatList(self._state.opts.convert_opt("output_padding", "--pad"))
+
+        if (padding := self._state.decoder_line_preset.padding) is not None:
+            return FlatList(("--pad", padding))
+
+        return None
 
     def _get_misc_opts(self) -> FlatList:
         """Return ld-chroma-decoder opts."""
@@ -183,7 +177,6 @@ class WrapperLDChromaDecoder(Wrapper):
                 self._state.opts.convert_opt("length", "-l"),
                 self._state.opts.convert_opt("reverse", "-r"),
                 self._state.opts.convert_opt("threads", "-t"),
-                self._state.opts.convert_opt("output_padding", "--pad"),
                 self._state.opts.convert_opt("oftest", "-o"),
                 self._state.opts.convert_opt("simple_pal", "--simple-pal"),
                 self._state.opts.convert_opt(

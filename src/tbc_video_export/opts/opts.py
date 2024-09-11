@@ -47,7 +47,7 @@ class Opts(argparse.Namespace):
     start: int | None
     length: int | None
     reverse: bool
-    output_padding: int
+    output_padding: int | None
     vbi: bool
     full_vertical: bool
     letterbox: bool
@@ -129,6 +129,18 @@ class Opts(argparse.Namespace):
             else:
                 return (target_opt_name, str(value))
         return None
+
+    def contains_active_line_opts(self) -> bool:
+        """Returns true if any active line opts are set."""
+        return any(
+            getattr(self, x) is not None
+            for x in [
+                "first_active_field_line",
+                "last_active_field_line",
+                "first_active_frame_line",
+                "last_active_frame_line",
+            ]
+        )
 
 
 @dataclass
