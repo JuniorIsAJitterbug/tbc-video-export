@@ -269,7 +269,8 @@ class Config:
                 (
                     ProfileAudio(json_audio_profile)
                     for json_audio_profile in self._data["audio_profiles"]
-                    if json_audio_profile["name"] == profile_data["audio_profile"]
+                    if "audio_profile" in profile_data
+                    and json_audio_profile["name"] == profile_data["audio_profile"]
                 ),
                 None,
             )

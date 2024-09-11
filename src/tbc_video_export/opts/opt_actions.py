@@ -32,7 +32,7 @@ class ActionDumpConfig(argparse.Action):
         parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,  # noqa: ARG002
         values: str | Sequence[Any] | None,  # noqa: ARG002
-        option_strings: str,  # noqa: ARG002
+        option_strings: str | None = None,  # noqa: ARG002
         *_: Any,
     ) -> None:
         self._config.dump_default_config(consts.EXPORT_CONFIG_FILE_NAME)
@@ -50,19 +50,19 @@ class ActionSetVerbosity(argparse.Action):
         parser: argparse.ArgumentParser,  # noqa: ARG002
         namespace: argparse.Namespace,
         values: str | Sequence[Any] | None,  # noqa: ARG002
-        option_strings: str,
+        option_strings: str | None = None,
         **kwargs: Any,  # noqa: ARG002
     ) -> None:
-        if option_strings in {"--quiet", "-q"}:
+        if option_strings in ["--quiet", "-q"]:
             namespace.quiet = True
             namespace.no_progress = True
             namespace.show_process_output = False
 
-        if option_strings in ("--debug"):
+        if option_strings in ["--debug", "-d"]:
             namespace.debug = True
             namespace.no_progress = True
 
-        if option_strings in ("--show-process-output"):
+        if option_strings in ["--show-process-output"]:
             namespace.show_process_output = True
             namespace.no_progress = True
 
@@ -84,7 +84,7 @@ class ActionListProfiles(argparse.Action):
         parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,  # noqa: ARG002
         values: str | Sequence[Any] | None,  # noqa: ARG002
-        option_strings: str,  # noqa: ARG002
+        option_strings: str | None = None,  # noqa: ARG002
         **kwargs: Any,  # noqa: ARG002
     ) -> None:
         self._print_profiles()
@@ -125,12 +125,12 @@ class ActionSetVideoHardwareAccelType(argparse.Action):
         parser: argparse.ArgumentParser,  # noqa: ARG002
         namespace: argparse.Namespace,
         values: str | Sequence[Any] | None,  # noqa: ARG002
-        option_strings: str,
+        option_strings: str | None = None,
         **kwargs: Any,  # noqa: ARG002
     ) -> None:
         # no need to check errors here, as option_strings can only be
         # VideoBitDepthType values
-        namespace.hwaccel_type = HardwareAccelType(option_strings[2:].lower())
+        namespace.hwaccel_type = HardwareAccelType(str(option_strings)[2:].lower())
 
 
 class ActionSetVideoBitDepthType(argparse.Action):
@@ -144,12 +144,12 @@ class ActionSetVideoBitDepthType(argparse.Action):
         parser: argparse.ArgumentParser,  # noqa: ARG002
         namespace: argparse.Namespace,
         values: str | Sequence[Any] | None,  # noqa: ARG002
-        option_strings: str,
+        option_strings: str | None = None,
         **kwargs: Any,  # noqa: ARG002
     ) -> None:
         # no need to check errors here, as option_strings can only be
         # VideoBitDepthType values
-        match VideoBitDepthType(option_strings[2:].lower()):
+        match VideoBitDepthType(str(option_strings)[2:].lower()):
             case VideoBitDepthType.BIT8:
                 namespace.video_bitdepth = 8
 
@@ -171,11 +171,11 @@ class ActionSetVideoFormatType(argparse.Action):
         parser: argparse.ArgumentParser,  # noqa: ARG002
         namespace: argparse.Namespace,
         values: str | Sequence[Any] | None,  # noqa: ARG002
-        option_strings: str,
+        option_strings: str | None = None,
         **kwargs: Any,  # noqa: ARG002
     ) -> None:
         for format_type in VideoFormatType:
-            if format_type.name.lower() == option_strings[2:].lower():
+            if format_type.name.lower() == str(option_strings)[2:].lower():
                 namespace.video_format = format_type
 
 
@@ -190,12 +190,13 @@ class ActionSetProfile(argparse.Action):
         parser: argparse.ArgumentParser,  # noqa: ARG002
         namespace: argparse.Namespace,
         values: str | Sequence[Any] | None,  # noqa: ARG002
-        option_strings: str,
+        option_strings: str | None = None,
         **kwargs: Any,  # noqa: ARG002
     ) -> None:
         # no need to check errors here, as option_strings can only be
         # valid profile names
-        namespace.profile = option_strings[2:].lower()
+        namespace.profile = str(option_strings)[2:].lower()
+
 
 class ActionSetAudioOverride(argparse.Action):
     """Set audio profile override type with alias opts."""
@@ -208,7 +209,7 @@ class ActionSetAudioOverride(argparse.Action):
         parser: argparse.ArgumentParser,  # noqa: ARG002
         namespace: argparse.Namespace,
         values: str | Sequence[Any] | None,  # noqa: ARG002
-        option_strings: str,
+        option_strings: str | None = None,
         **kwargs: Any,  # noqa: ARG002
     ) -> None:
-        namespace.audio_profile = option_strings[2:].replace("-", "_").lower()
+        namespace.audio_profile = str(option_strings)[2:].replace("-", "_").lower()

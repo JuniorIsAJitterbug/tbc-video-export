@@ -45,7 +45,7 @@ class ParserFactory:
             case ProcessName.LD_PROCESS_EFM:
                 return ParserLDProcessEFM(process_name)
 
-            case ProcessName.NONE:
+            case _:
                 raise NotImplementedError(
                     f"Parser for process {process_name} not implemented."
                 )
