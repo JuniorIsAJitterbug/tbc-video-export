@@ -19,6 +19,7 @@ from tbc_video_export.process.parser.export_state import ExportState
 
 if TYPE_CHECKING:
     from tbc_video_export.common.file_helper import FileHelper
+    from tbc_video_export.common.tbc_json_helper import TBCJsonHelper
     from tbc_video_export.config.config import Config
     from tbc_video_export.config.profile import Profile
     from tbc_video_export.opts import Opts
@@ -52,6 +53,11 @@ class ProgramState:
             f"to {export_mode.name}."
         )
         self._current_export_mode = export_mode
+
+    @property
+    def tbc_json(self) -> TBCJsonHelper:
+        """Return TBC JSON helper."""
+        return self.file_helper.tbc_json
 
     @cached_property
     def export_mode(self) -> ExportMode:
@@ -96,7 +102,7 @@ class ProgramState:
     def video_system(self) -> VideoSystem:
         """Video system detected."""
         return (
-            self.file_helper.tbc_json.video_system
+            self.tbc_json.video_system
             if self.opts.video_system is None
             else self.opts.video_system
         )
@@ -148,6 +154,16 @@ class ProgramState:
         return decoder
 
     @cached_property
+    def is_widescreen(self) -> bool:
+        """Return true if widescreen is set in json or manually."""
+        if self.tbc_json.is_widescreen and self.opts.letterbox:
+            raise exceptions.InvalidOptsError(
+                "--letterbox should not be used when isWidescreen is set."
+            )
+
+        return self.opts.force_anamorphic or self.tbc_json.is_widescreen
+
+    @cached_property
     def dry_run(self) -> bool:
         """Whether the program will execute the procs or just print them."""
         return self.opts.dry_run
@@ -166,7 +182,7 @@ class ProgramState:
     @cached_property
     def total_frames(self) -> int:
         """Total frames detected from the TBC json."""
-        tbc_frame_count = self.file_helper.tbc_json.frame_count
+        tbc_frame_count = self.tbc_json.frame_count
         start = self.opts.start if self.opts.start is not None else 0
         length = (
             self.opts.length
@@ -249,7 +265,7 @@ class ProgramState:
             f"{ansi.dim('Chroma Decoder:'):<{col_w['k3']}s} "
             f"{decoders:<{col_w['v3']}s}\n"
             f"{ansi.dim('Total Fields:'):<{col_w['k1']}s} "
-            f"{self.file_helper.tbc_json.field_count:<{col_w['v1']}d}"
+            f"{self.tbc_json.field_count:<{col_w['v1']}d}"
             f"{ansi.dim('Total Frames:'):<{col_w['k2']}s} "
             f"{self.total_frames:<{col_w['v2']}d}"
             f"{ansi.dim('Export Mode:'):<{col_w['k3']}s} "

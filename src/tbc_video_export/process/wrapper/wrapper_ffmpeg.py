@@ -277,8 +277,11 @@ class WrapperFFmpeg(Wrapper):
         # set video filters
         video_filters += _vf
 
-        if self._state.opts.force_anamorphic or self._state.opts.letterbox:
+        if self._state.is_widescreen:
             video_filters.append(self._get_widescreen_aspect_ratio_filter())
+
+        if self._state.opts.letterbox:
+            video_filters.append(self._get_letterbox_aspect_ratio_filter())
 
         # override profile colorlevels if set with opt
         if self._state.opts.force_black_level is not None:
@@ -428,6 +431,10 @@ class WrapperFFmpeg(Wrapper):
 
             case VideoSystem.NTSC | VideoSystem.PAL_M:
                 return "setsar=25/22:max=1000"
+
+    def _get_letterbox_aspect_ratio_filter(self) -> str:
+        """Return filter for letterboxed aspect ratio."""
+        return "setdar=16/9"
 
     def _get_color_opts(self) -> FlatList | None:
         """Return opts for color settings."""

@@ -193,8 +193,25 @@ class TestOutput:
             output_video_base=VideoBasePAL(
                 width=928,
                 height=432,
+                pixel_aspect_ratio="0.828",
+                display_aspect_ratio="1.778",
+            ),
+            output_video_color=VideoColorPAL(
+                bit_depth=10,
+                chroma_subsampling="4:2:2",
+            ),
+        ),
+        OutputTestCase(
+            id="anamorphic",
+            input_opts=["--quiet", "--overwrite", "--force-anamorphic"],
+            input_tbc="pal_svideo",
+            output_file="pal_svideo.mkv",
+            output_video_codec=codec_ffv1,
+            output_video_base=VideoBasePAL(
+                width=928,
+                height=576,
                 pixel_aspect_ratio="1.110",
-                display_aspect_ratio="2.385",
+                display_aspect_ratio="1.789",
             ),
             output_video_color=VideoColorPAL(
                 bit_depth=10,
@@ -289,8 +306,25 @@ class TestOutput:
             output_video_base=VideoBasePAL(
                 width=928,
                 height=432,
+                pixel_aspect_ratio="0.828",
+                display_aspect_ratio="1.778",
+            ),
+            output_video_color=VideoColorPAL(
+                bit_depth=10,
+                chroma_subsampling="4:2:2",
+            ),
+        ),
+        OutputTestCase(
+            id="widescreen",
+            input_opts=["--quiet", "--overwrite", "--force-anamorphic"],
+            input_tbc="pal_composite",
+            output_file="pal_composite.mkv",
+            output_video_codec=codec_ffv1,
+            output_video_base=VideoBasePAL(
+                width=928,
+                height=576,
                 pixel_aspect_ratio="1.110",
-                display_aspect_ratio="2.385",
+                display_aspect_ratio="1.789",
             ),
             output_video_color=VideoColorPAL(
                 bit_depth=10,
@@ -384,8 +418,25 @@ class TestOutput:
             output_video_base=VideoBasePAL(
                 width=928,
                 height=432,
+                pixel_aspect_ratio="0.828",
+                display_aspect_ratio="1.778",
+            ),
+            output_video_color=VideoColorPAL(
+                bit_depth=10,
+                chroma_subsampling="4:2:2",
+            ),
+        ),
+        OutputTestCase(
+            id="widescreen",
+            input_opts=["--quiet", "--overwrite", "--force-anamorphic"],
+            input_tbc="pal_composite_ld",
+            output_file="pal_composite_ld.mkv",
+            output_video_codec=codec_ffv1,
+            output_video_base=VideoBasePAL(
+                width=928,
+                height=576,
                 pixel_aspect_ratio="1.110",
-                display_aspect_ratio="2.385",
+                display_aspect_ratio="1.789",
             ),
             output_video_color=VideoColorPAL(
                 bit_depth=10,
@@ -478,9 +529,26 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBaseNTSC(
                 width=760,
-                height=336,
+                height=326,
+                pixel_aspect_ratio="0.763",
+                display_aspect_ratio="1.778",
+            ),
+            output_video_color=VideoColorNTSC(
+                bit_depth=10,
+                chroma_subsampling="4:2:2",
+            ),
+        ),
+        OutputTestCase(
+            id="widescreen",
+            input_opts=["--quiet", "--overwrite", "--force-anamorphic"],
+            input_tbc="ntsc_svideo",
+            output_file="ntsc_svideo.mkv",
+            output_video_codec=codec_ffv1,
+            output_video_base=VideoBaseNTSC(
+                width=760,
+                height=488,
                 pixel_aspect_ratio="1.136",
-                display_aspect_ratio="2.570",
+                display_aspect_ratio="1.770",
             ),
             output_video_color=VideoColorNTSC(
                 bit_depth=10,
@@ -573,9 +641,26 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBaseNTSC(
                 width=760,
-                height=336,
+                height=326,
+                pixel_aspect_ratio="0.763",
+                display_aspect_ratio="1.778",
+            ),
+            output_video_color=VideoColorNTSC(
+                bit_depth=10,
+                chroma_subsampling="4:2:2",
+            ),
+        ),
+        OutputTestCase(
+            id="widescreen",
+            input_opts=["--quiet", "--overwrite", "--force-anamorphic"],
+            input_tbc="ntsc_composite",
+            output_file="ntsc_composite.mkv",
+            output_video_codec=codec_ffv1,
+            output_video_base=VideoBaseNTSC(
+                width=760,
+                height=488,
                 pixel_aspect_ratio="1.136",
-                display_aspect_ratio="2.570",
+                display_aspect_ratio="1.770",
             ),
             output_video_color=VideoColorNTSC(
                 bit_depth=10,
@@ -668,9 +753,26 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBaseNTSC(
                 width=760,
-                height=336,
+                height=326,
+                pixel_aspect_ratio="0.763",
+                display_aspect_ratio="1.778",
+            ),
+            output_video_color=VideoColorNTSC(
+                bit_depth=10,
+                chroma_subsampling="4:2:2",
+            ),
+        ),
+        OutputTestCase(
+            id="widescreen",
+            input_opts=["--quiet", "--overwrite", "--force-anamorphic"],
+            input_tbc="ntsc_composite_ld",
+            output_file="ntsc_composite_ld.mkv",
+            output_video_codec=codec_ffv1,
+            output_video_base=VideoBaseNTSC(
+                width=760,
+                height=488,
                 pixel_aspect_ratio="1.136",
-                display_aspect_ratio="2.570",
+                display_aspect_ratio="1.770",
             ),
             output_video_color=VideoColorNTSC(
                 bit_depth=10,
@@ -769,6 +871,23 @@ class TestOutput:
                 chroma_subsampling="4:2:2",
             ),
             expected_exc=pytest.raises(AssertionError),
+        ),
+        OutputTestCase(
+            id="widescreen",
+            input_opts=["--quiet", "--overwrite", "--force-anamorphic"],
+            input_tbc="palm_svideo",
+            output_file="palm_svideo.mkv",
+            output_video_codec=codec_ffv1,
+            output_video_base=VideoBasePALM(
+                width=760,
+                height=488,
+                pixel_aspect_ratio="1.136",
+                display_aspect_ratio="1.770",
+            ),
+            output_video_color=VideoColorPALM(
+                bit_depth=10,
+                chroma_subsampling="4:2:2",
+            ),
         ),
         OutputTestCase(
             id="full vertical",

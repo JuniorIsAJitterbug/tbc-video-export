@@ -98,7 +98,8 @@ def add_ffmpeg_opts(parent: argparse.ArgumentParser) -> None:
         "--force-anamorphic",
         action="store_true",
         default=False,
-        help="Force widescreen aspect ratio.\n\n",
+        help="Force widescreen aspect ratio.\n"
+        "This is not allowed when letterbox is used.\n\n",
     )
 
     ffmpeg_opts.add_argument(
