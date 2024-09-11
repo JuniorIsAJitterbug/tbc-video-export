@@ -52,6 +52,9 @@ def _validate_line_opts(parser: argparse.ArgumentParser, opts: Opts) -> None:
             "[--ffll | --lfll | --ffrl | --lfrl]"
         )
 
+    if opts.letterbox and opts.force_anamorphic:
+        parser.error("arguments --force-anamorphic: not allowed when letterbox is set")
+
 
 def _validate_video_system(
     state: ProgramState, parser: argparse.ArgumentParser, opts: Opts

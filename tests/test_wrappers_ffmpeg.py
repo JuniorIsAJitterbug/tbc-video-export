@@ -128,19 +128,19 @@ class TestWrappersFFmpeg:
         WrapperTestCase(
             id="set widescreen (pal)",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
-            input_opts=["--letterbox"],
+            input_opts=["--force-anamorphic"],
             expected_str=["setsar=865/779:max=1000"],
         ),
         WrapperTestCase(
             id="set widescreen (ntsc)",
             input_tbc=f"{get_path('ntsc_svideo')}.tbc",
-            input_opts=["--letterbox"],
+            input_opts=["--force-anamorphic"],
             expected_str=["setsar=25/22:max=1000"],
         ),
         WrapperTestCase(
             id="set widescreen (palm)",
             input_tbc=f"{get_path('palm_svideo')}.tbc",
-            input_opts=["--letterbox"],
+            input_opts=["--force-anamorphic"],
             expected_str=["setsar=25/22:max=1000"],
         ),
         WrapperTestCase(
