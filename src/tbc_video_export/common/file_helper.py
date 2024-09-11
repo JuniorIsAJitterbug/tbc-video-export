@@ -279,7 +279,7 @@ class FileHelper:
             binary = (
                 self._opts.appimage
                 if self._opts.appimage
-                else tool_name.name.lower().replace("_", "-")
+                else str(tool_name).lower().replace("_", "-")
             )
         else:
             # append .exe on NT

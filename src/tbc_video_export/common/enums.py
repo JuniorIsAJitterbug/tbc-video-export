@@ -46,7 +46,7 @@ class TBCType(Flag):
 
     def __str__(self) -> str:
         """Return enum name as string."""
-        return self.name
+        return str(self.name)
 
 
 class ExportMode(Enum):
@@ -146,7 +146,7 @@ class ProcessName(Flag):
 
     def __str__(self) -> str:
         """Return formatted enum name as string."""
-        return self.name.replace("_", "-").lower()
+        return str(self.name).replace("_", "-").lower()
 
 
 class ProcessStatus(Flag):
@@ -172,7 +172,7 @@ class PipeType(Flag):
 
     def __str__(self) -> str:
         """Return formatted enum name as string."""
-        return self.name.upper()
+        return str(self.name).upper()
 
 
 class VideoBitDepthType(Enum):

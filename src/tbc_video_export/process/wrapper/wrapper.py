@@ -45,21 +45,21 @@ class Wrapper(ABC):
         return self._config.tbc_type
 
     @cached_property
-    def pipes(self) -> tuple[Pipe, ...]:
+    def pipes(self) -> list[Pipe]:
         """Return pipes for wrapper."""
-        pipes: tuple[Pipe, ...] = ()
+        pipes: list[Pipe] = []
         in_pipe = self._config.input_pipes
         out_pipe = self._config.output_pipes
 
         if isinstance(in_pipe, tuple):
             pipes += in_pipe
         elif isinstance(in_pipe, Pipe):
-            pipes = (*pipes, in_pipe)
+            pipes = [*pipes, in_pipe]
 
         if isinstance(out_pipe, tuple):
             pipes += out_pipe
         elif isinstance(out_pipe, Pipe):
-            pipes = (*pipes, out_pipe)
+            pipes = [*pipes, out_pipe]
 
         return pipes
 
