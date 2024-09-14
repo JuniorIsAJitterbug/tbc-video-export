@@ -82,6 +82,7 @@ video_system_pal = VideoSystemData(
         "default": VideoSystemData.ActiveLines(22, 308, 44, 620, None),  # unused
         "full_vertical": VideoSystemData.ActiveLines(2, 308, 2, 620, None),
         "letterbox": VideoSystemData.ActiveLines(2, 308, 118, 548, None),
+        "vbi": VideoSystemData.ActiveLines(12, 308, 12, 620, None),
     },
     aspect_ratio={
         "default": VideoSystemData.AspectRatio(259, 311),  # unused
@@ -112,6 +113,7 @@ video_system_ntsc = VideoSystemData(
         "default": VideoSystemData.ActiveLines(20, 259, 40, 525, None),  # unused
         "full_vertical": VideoSystemData.ActiveLines(1, 259, 2, 525, None),
         "letterbox": VideoSystemData.ActiveLines(61, 224, 122, 448, 1),  # unsure!
+        "vbi": VideoSystemData.ActiveLines(15, 259, 16, 525, 1),
     },
     aspect_ratio={
         "default": VideoSystemData.AspectRatio(352, 413),  # unused
@@ -142,6 +144,7 @@ video_system_palm = VideoSystemData(
         "default": VideoSystemData.ActiveLines(20, 259, 40, 525, None),  # unused
         "full_vertical": VideoSystemData.ActiveLines(1, 259, 2, 525, None),
         "letterbox": VideoSystemData.ActiveLines(0, 0, 0, 0, 0),  # Sample required!
+        "vbi": VideoSystemData.ActiveLines(16, 259, 17, 525, 1),
     },
     aspect_ratio={
         "default": VideoSystemData.AspectRatio(352, 413),  # unused
@@ -164,5 +167,7 @@ video_system_palm = VideoSystemData(
 )
 
 VideoSizeType: TypeAlias = Literal["default", "4fsc"]
-VideoActiveLinesType: TypeAlias = Literal["default", "full_vertical", "letterbox"]
+VideoActiveLinesType: TypeAlias = Literal[
+    "default", "full_vertical", "letterbox", "vbi"
+]
 VideoAspectRatioType: TypeAlias = Literal["default", "widescreen", "letterbox"]

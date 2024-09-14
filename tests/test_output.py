@@ -175,9 +175,9 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(
                 width=928,
-                height=612,
+                height=608,
                 pixel_aspect_ratio="0.833",
-                display_aspect_ratio="1.263",
+                display_aspect_ratio="1.271",
             ),
             output_video_color=VideoColorPAL(
                 bit_depth=10,
@@ -289,8 +289,8 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(
                 width=928,
-                height=612,
-                display_aspect_ratio="1.263",
+                height=608,
+                display_aspect_ratio="1.271",
             ),
             output_video_color=VideoColorPAL(
                 bit_depth=10,
@@ -401,8 +401,8 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePAL(
                 width=928,
-                height=612,
-                display_aspect_ratio="1.263",
+                height=608,
+                display_aspect_ratio="1.271",
             ),
             output_video_color=VideoColorPAL(
                 bit_depth=10,
@@ -848,16 +848,15 @@ class TestOutput:
             output_file="palm_svideo.mkv",
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePALM(
-                width=909,
-                height=509,
-                pixel_aspect_ratio="1.000",
-                display_aspect_ratio="1.728",
+                width=759,
+                height=508,
+                pixel_aspect_ratio="0.852",
+                display_aspect_ratio="1.273",
             ),
             output_video_color=VideoColorPALM(
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
-            expected_exc=pytest.raises(AssertionError),
         ),
         OutputTestCase(
             id="letterbox",

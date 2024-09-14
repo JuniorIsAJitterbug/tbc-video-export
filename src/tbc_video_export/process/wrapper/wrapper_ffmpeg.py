@@ -13,7 +13,6 @@ from tbc_video_export.common.enums import (
     ProcessName,
     TBCType,
     VideoFormatType,
-    VideoSystem,
 )
 from tbc_video_export.common.utils import FlatList, ansi
 from tbc_video_export.process.wrapper.wrapper import Wrapper
@@ -246,23 +245,10 @@ class WrapperFFmpeg(Wrapper):
 
         return input_opts
 
-    def _get_vbi_crop_filter(self) -> str:
-        """Return crop filter for full vertical to VBI crop."""
-        match self._state.video_system:
-            case VideoSystem.PAL:
-                return "crop=iw:ih-12:0:9"
-
-            case VideoSystem.NTSC | VideoSystem.PAL_M:
-                return "crop=iw:ih-19:0:17"
-
     def _get_filters(self) -> tuple[list[str], list[str]]:
         """Return tuple containing video and other filters."""
         video_filters: list[str] = []
         other_filters: list[str] = []
-
-        # add full vertical -> vbi crop
-        if self._state.opts.vbi or self._get_profile().include_vbi:
-            video_filters.append(self._get_vbi_crop_filter())
 
         _vf, _of = self._state.config.get_profile_filters(self._get_profile())
 

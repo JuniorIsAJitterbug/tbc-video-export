@@ -498,18 +498,6 @@ class TestWrappersFFmpeg:
             expected_str=["[0:v]setfield=tff[v_output]"],
         ),
         WrapperTestCase(
-            id="vbi crop filters (pal)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
-            input_opts=["--vbi"],
-            expected_str=["crop=iw:ih-12:0:9"],
-        ),
-        WrapperTestCase(
-            id="vbi crop filters (ntsc)",
-            input_tbc=f"{get_path('ntsc_svideo')}.tbc",
-            input_opts=["--vbi"],
-            expected_str=["crop=iw:ih-19:0:17"],
-        ),
-        WrapperTestCase(
             id="embed tbc json",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=[],
