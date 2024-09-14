@@ -38,7 +38,10 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--output-padding",
         type=int,
         metavar="int",
-        help="Pad the output frame to a multiple of these many pixels.\n\n",
+        help="Pad the output frame to a multiple of these many pixels.\n\n"
+        "Note:\n"
+        "  Compatibility with all video codecs is not guaranteed.\n"
+        "\n\n",
     )
 
     decoder_lines_opts = decoder_opts.add_mutually_exclusive_group()
@@ -48,7 +51,11 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         action="store_true",
         default=False,
         help="Show the VBI segment in the output video.\n"
-        "This uses full-vertical and applies a crop filter.\n\n",
+        "This uses full-vertical and applies a crop filter.\n\n"
+        "Note:\n"
+        "  Compatibility with all video codecs is not guaranteed due to padding.\n"
+        "  Set --output-padding to 8 if export fails.\n"
+        "\n\n",
     )
 
     decoder_lines_opts.add_argument(
@@ -62,7 +69,11 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--letterbox",
         action="store_true",
         default=False,
-        help="Adjust FFLL/LFLL/FFRL/LFRL for letterbox crop.\n\n",
+        help="Adjust FFLL/LFLL/FFRL/LFRL for letterbox crop.\n\n"
+        "Note:\n"
+        "  Compatibility with all video codecs is not guaranteed due to padding.\n"
+        "  Set --output-padding to 8 if export fails.\n"
+        "\n\n",
     )
 
     decoder_opts.add_argument(
