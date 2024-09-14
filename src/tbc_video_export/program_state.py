@@ -145,6 +145,10 @@ class ProgramState:
         """Return decoder line preset from opts/config."""
         video_system = self.video_system_data
 
+        # add full vertical -> vbi crop
+        if self.opts.vbi or self.profile.include_vbi:
+            return video_system.active_lines["vbi"]
+
         if self.opts.full_vertical or self.opts.vbi or self.profile.include_vbi:
             return video_system.active_lines["full_vertical"]
 
