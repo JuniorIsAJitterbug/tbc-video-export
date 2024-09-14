@@ -334,10 +334,11 @@ class WrapperFFmpeg(Wrapper):
                 )
 
                 complex_filter = (
-                    f"[0:v]format=gray16le[luma];[1:v]format=yuv444p16le[chroma];"
+                    f"[0:v]format={consts.FFMPEG_DEFAULT_LUMA_FORMAT}[luma];"
+                    f"[1:v]format={consts.FFMPEG_DEFAULT_CHROMA_FORMAT}[chroma];"
                     f"[luma]extractplanes=y[y];[chroma]extractplanes=u+v[u][v];"
-                    f"[y][u][v]mergeplanes={mergeplanes}:format=yuv444p16le,"
-                    f"{video_filters_opts}[v_output]"
+                    f"[y][u][v]mergeplanes={mergeplanes}:format={consts.FFMPEG_DEFAULT_CHROMA_FORMAT},"
+                    f"{video_filters_opts}{consts.FFMPEG_VIDEO_MAP}"
                     f"{other_filters_opts}"
                 )
 
@@ -345,7 +346,7 @@ class WrapperFFmpeg(Wrapper):
                 # extract Y from a Y/C input
                 complex_filter = (
                     f"[0:v]extractplanes=y,{video_filters_opts}"
-                    f"[v_output]"
+                    f"{consts.FFMPEG_VIDEO_MAP}"
                     f"{other_filters_opts}"
                 )
 
@@ -353,17 +354,18 @@ class WrapperFFmpeg(Wrapper):
                 # interleve tbc fields
                 complex_filter = (
                     f"[0:v]il=l=i:c=i,{video_filters_opts}"
-                    f"[v_output]"
+                    f"{consts.FFMPEG_VIDEO_MAP}"
                     f"{other_filters_opts}"
                 )
 
             case _ as mode if mode is ExportMode.LUMA and self._state.opts.two_step:
                 # luma step in two-step should not use any filters (excluding setfield)
-                complex_filter = f"[0:v]{field_filter}[v_output]"
+                complex_filter = f"[0:v]{field_filter}{consts.FFMPEG_VIDEO_MAP}"
 
             case _:
                 complex_filter = (
-                    f"[0:v]{video_filters_opts}[v_output]{other_filters_opts}"
+                    f"[0:v]{video_filters_opts}{consts.FFMPEG_VIDEO_MAP}"
+                    f"{other_filters_opts}"
                 )
 
         return FlatList(("-filter_complex", complex_filter))
@@ -371,7 +373,7 @@ class WrapperFFmpeg(Wrapper):
     def _get_map_opts(self) -> FlatList:
         """Return FFmpeg video map opts."""
         # video
-        input_opts = FlatList(("-map", "[v_output]"))
+        input_opts = FlatList(("-map", f"{consts.FFMPEG_VIDEO_MAP}"))
         input_count = len(self._config.input_pipes)
 
         # audio
