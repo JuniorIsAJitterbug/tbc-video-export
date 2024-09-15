@@ -42,12 +42,12 @@ class Profile:
     @property
     def include_vbi(self) -> bool:
         """Returns True if the profile contains include_vbi as True."""
-        return self._profile["include_vbi"] if "include_vbi" in self._profile else False
+        return self._profile.get("include_vbi", False)
 
     @property
     def is_default(self) -> bool:
         """Returns True if the profile is flagged as default."""
-        return self._profile["default"] if "default" in self._profile else False
+        return self._profile.get("default", False)
 
     @property
     def filter_profiles(self) -> list[ProfileFilter]:
@@ -107,9 +107,7 @@ class ProfileVideo(SubProfile):
     @property
     def output_format(self) -> str | None:
         """Return the output format."""
-        return (
-            self._profile["output_format"] if "output_format" in self._profile else None
-        )
+        return self._profile.get("output_format", None)
 
     @property
     def codec(self) -> str:
@@ -134,30 +132,22 @@ class ProfileVideo(SubProfile):
     @property
     def filter_profiles_additions(self) -> list[str]:
         """Return the additional filters if they exists."""
-        return (
-            self._profile["filter_profiles_additions"]
-            if "filter_profiles_additions" in self._profile
-            else []
-        )
+        return self._profile.get("filter_profiles_additions", [])
 
     @property
     def filter_profiles(self) -> list[str]:
         """Return the filters to override parent filters if they exists."""
-        return (
-            self._profile["filter_profiles_override"]
-            if "filter_profiles_override" in self._profile
-            else self._parent["filter_profiles"]
-            if "filter_profiles" in self._parent
-            else []
+        return self._profile.get(
+            "filter_profiles_override", self._parent.get("filter_profiles", [])
         )
 
     @property
     def hardware_accel(self) -> HardwareAccelType | None:
         """Return the hardware accel opt."""
-        try:
-            return HardwareAccelType(self._profile["hardware_accel"])
-        except (KeyError, ValueError):
-            return None
+        if t := self._profile.get("hardware_accel", False):
+            return HardwareAccelType(t)
+
+        return None
 
     @property
     def video_system(self) -> VideoSystem | None:

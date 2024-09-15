@@ -583,6 +583,8 @@ DEFAULT_CONFIG: JsonConfig = {
             "video_format": "yuv420p",
             "container": "mp4",
             "opts": [
+                "-rc",
+                1,
                 "-crf",
                 24,
                 "-cpu-used",
