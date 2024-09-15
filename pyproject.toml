@@ -96,6 +96,8 @@ ignore = [
     "D100",    # undocumented-public-module
     "D104",    # undocumented-public-package
     "D107",    # undocumented-public-init
+    "G003",    # logging +
+    "G004",    # logging f-string
 ]
 
 [tool.ruff.lint.pydocstyle]

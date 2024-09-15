@@ -2,7 +2,7 @@
   description = "tbc-video-export dev flake";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
     devenv.url = "github:cachix/devenv";
     nixpkgs-python.url = "github:cachix/nixpkgs-python";
     jitterbug.url = "github:JuniorIsAJitterbug/nur-packages";
@@ -72,7 +72,7 @@
               enterShell = ''
                 echo LD_LIBRARY_PATH=${commonLibraryPath} >> $GITHUB_ENV
               '';
-              packages = commonPackages ++ [ pkgs.ffmpeg ];
+              packages = commonPackages ++ [ pkgs.ffmpeg_4 ];
 
               languages.python = {
                 enable = true;
