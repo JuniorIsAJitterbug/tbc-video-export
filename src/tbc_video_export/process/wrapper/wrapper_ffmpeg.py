@@ -313,10 +313,8 @@ class WrapperFFmpeg(Wrapper):
         # add setfield to start of filters
         video_filters.insert(0, field_filter)
 
-        video_filters_opts = ",".join(video_filters)
-
-        other_filters_str = ",".join(other_filters)
-        other_filters_opts = f",{other_filters_str}" if len(other_filters_str) else ""
+        video_filters_str = ",".join(video_filters)
+        other_filters_str = f",{of}" if (of := ",".join(other_filters)) else ""
 
         match self._config.export_mode:
             case ExportMode.CHROMA_MERGE:
@@ -338,37 +336,33 @@ class WrapperFFmpeg(Wrapper):
                     f"[1:v]format={consts.FFMPEG_DEFAULT_CHROMA_FORMAT}[chroma];"
                     f"[luma]extractplanes=y[y];[chroma]extractplanes=u+v[u][v];"
                     f"[y][u][v]mergeplanes={mergeplanes}:format={consts.FFMPEG_DEFAULT_CHROMA_FORMAT},"
-                    f"{video_filters_opts}{consts.FFMPEG_VIDEO_MAP}"
-                    f"{other_filters_opts}"
                 )
 
             case ExportMode.LUMA_EXTRACTED:
                 # extract Y from a Y/C input
-                complex_filter = (
-                    f"[0:v]extractplanes=y,{video_filters_opts}"
-                    f"{consts.FFMPEG_VIDEO_MAP}"
-                    f"{other_filters_opts}"
-                )
+                complex_filter = "[0:v]extractplanes=y,"
 
             case ExportMode.LUMA_4FSC:
                 # interleve tbc fields
-                complex_filter = (
-                    f"[0:v]il=l=i:c=i,{video_filters_opts}"
-                    f"{consts.FFMPEG_VIDEO_MAP}"
-                    f"{other_filters_opts}"
-                )
-
-            case _ as mode if mode is ExportMode.LUMA and self._state.opts.two_step:
-                # luma step in two-step should not use any filters (excluding setfield)
-                complex_filter = f"[0:v]{field_filter}{consts.FFMPEG_VIDEO_MAP}"
+                complex_filter = "[0:v]il=l=i:c=i,"
 
             case _:
-                complex_filter = (
-                    f"[0:v]{video_filters_opts}{consts.FFMPEG_VIDEO_MAP}"
-                    f"{other_filters_opts}"
-                )
+                complex_filter = "[0:v]"
 
-        return FlatList(("-filter_complex", complex_filter))
+                # luma step in two-step should not use any filters (excluding setfield)
+                if self._is_two_step_luma_mode():
+                    video_filters_str = field_filter
+                    other_filters_str = ""
+
+        return FlatList(
+            (
+                "-filter_complex",
+                complex_filter
+                + video_filters_str
+                + consts.FFMPEG_VIDEO_MAP
+                + other_filters_str,
+            )
+        )
 
     def _get_map_opts(self) -> FlatList:
         """Return FFmpeg video map opts."""
