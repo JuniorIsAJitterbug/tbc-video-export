@@ -5,7 +5,6 @@ import logging
 from contextlib import AsyncExitStack
 from datetime import datetime
 from functools import partial
-from itertools import chain
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common.enums import ExportMode, FlagHelper, ProcessName, TBCType
@@ -141,7 +140,7 @@ class ProcessHandler:
         # create progress handler task if enabled
         if not self._state.opts.no_progress:
             self._progress_handler = ProgressHandler(
-                self._state, list(chain.from_iterable(self._procs.values()))
+                self._state, [proc for procs in self._procs.values() for proc in procs]
             )
 
             self._tasks.add(
@@ -271,7 +270,7 @@ class ProcessHandler:
         self._proc_error_event.set()
 
         # exit running procs
-        for proc in chain.from_iterable(self._procs.values()):
+        for proc in [proc for procs in self._procs.values() for proc in procs]:
             if proc.state.is_running:
                 logging.getLogger("console").debug(
                     f"Stopping {proc.wrapper.process_name}"
