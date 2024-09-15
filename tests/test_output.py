@@ -60,7 +60,7 @@ class TestOutput:
             "format_settings__wrapping_mode": "Frame (D-10)",
         },
         "x264": {
-            "format" : "AVC",
+            "format": "AVC",
             "format_profile": "High@L3.1",
             "encoding_settings": [
                 "crf=18.0",
@@ -68,7 +68,7 @@ class TestOutput:
             ],
         },
         "x264_lossless": {
-            "format" : "AVC",
+            "format": "AVC",
             "format_profile": "High 4:4:4 Predictive@L6.2",
             "encoding_settings": [
                 "qp=0",
@@ -76,14 +76,14 @@ class TestOutput:
             ],
         },
         "x264_web": {
-            "format" : "AVC",
+            "format": "AVC",
             "format_profile": "High@L3.1",
             "encoding_settings": [
                 "crf=18.0",
             ],
         },
         "x265": {
-            "format" : "HEVC",
+            "format": "HEVC",
             "format_profile": "Main@L3@Main",
             "encoding_settings": [
                 "crf=23.0",
@@ -91,15 +91,12 @@ class TestOutput:
             ],
         },
         "x265_lossless": {
-            "format" : "HEVC",
+            "format": "HEVC",
             "format_profile": "Format Range@L8.5@Main",
-            "encoding_settings": [
-                "interlace=1",
-                " lossless "
-            ],
+            "encoding_settings": ["interlace=1", " lossless "],
         },
         "x265_web": {
-            "format" : "HEVC",
+            "format": "HEVC",
             "format_profile": "Main@L3.1@Main",
             "encoding_settings": [
                 "crf=23.0",
@@ -107,15 +104,15 @@ class TestOutput:
             ],
         },
         "av1": {
-            "format" : "AV1",
+            "format": "AV1",
             "format_profile": "Main@L3.0",
             "encoding_settings": [],
         },
         "av1_web": {
-            "format" : "AV1",
+            "format": "AV1",
             "format_profile": "Main@L3.1",
             "encoding_settings": [],
-        }
+        },
     }
 
     codec_ffv1: dict[str, Any] = {
@@ -1001,8 +998,8 @@ class TestOutput:
             output_video_codec=codec_values["D10"],
             output_video_base=VideoBasePAL(
                 width=720,
-                pixel_aspect_ratio = "1.000",
-                display_aspect_ratio = "1.333",
+                pixel_aspect_ratio="1.000",
+                display_aspect_ratio="1.333",
             ),
             output_video_color=VideoColorPAL(
                 bit_depth=8,
@@ -1018,7 +1015,7 @@ class TestOutput:
             output_file="pal_svideo.mov",
             output_video_codec=codec_values["x264"],
             output_video_base=VideoBasePAL(
-                scan_type = "MBAFF",
+                scan_type="MBAFF",
             ),
             output_video_color=VideoColorPAL(
                 bit_depth=8,
@@ -1032,7 +1029,7 @@ class TestOutput:
             output_file="pal_svideo.mov",
             output_video_codec=codec_values["x264_lossless"],
             output_video_base=VideoBasePAL(
-                scan_type = "MBAFF",
+                scan_type="MBAFF",
             ),
             output_video_color=VideoColorPAL(
                 bit_depth=10,
@@ -1046,8 +1043,8 @@ class TestOutput:
             output_file="pal_svideo.mov",
             output_video_codec=codec_values["x264_web"],
             output_video_base=VideoBasePAL(
-                scan_type = "Progressive",
-                framerate_num = "50",
+                scan_type="Progressive",
+                framerate_num="50",
                 scan_order=None,
             ),
             output_video_color=VideoColorPAL(
@@ -1086,8 +1083,8 @@ class TestOutput:
             output_file="pal_svideo.mov",
             output_video_codec=codec_values["x265_web"],
             output_video_base=VideoBasePAL(
-                scan_type = "Progressive",
-                framerate_num = "50",
+                scan_type="Progressive",
+                framerate_num="50",
                 scan_order=None,
             ),
             output_video_color=VideoColorPAL(
@@ -1114,8 +1111,8 @@ class TestOutput:
             output_file="pal_svideo.mp4",
             output_video_codec=codec_values["av1_web"],
             output_video_base=VideoBasePAL(
-                scan_type = "Progressive",
-                framerate_num = "50",
+                scan_type="Progressive",
+                framerate_num="50",
                 scan_order=None,
             ),
             output_video_color=VideoColorPAL(
@@ -1327,8 +1324,7 @@ class TestOutput:
         """Check audio tracks of output file."""
         assert len(media_info.audio_tracks) == len(test_case.output_audio_base)
 
-        track_idx = 0
-        for test_track in test_case.output_audio_base:
+        for track_idx, test_track in enumerate(test_case.output_audio_base):
             audio_track = media_info.audio_tracks[track_idx]
 
             for field in fields(test_track):
@@ -1336,8 +1332,6 @@ class TestOutput:
                     target_field = getattr(audio_track, field.name, None)
                     assert target_field is not None
                     assert target_field == value
-
-            track_idx += 1
 
     def check_metadata(self, test_case: OutputTestCase, media_info: MediaInfo) -> None:
         """Check metadata of output file."""
