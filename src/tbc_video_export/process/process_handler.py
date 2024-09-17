@@ -173,7 +173,7 @@ class ProcessHandler:
                 # check the return values of procs as they finish and ensure they
                 # are valid
                 for proc_state in asyncio.as_completed(self._proc_tasks):
-                    if not (await proc_state).is_successful:
+                    if not (await proc_state).success:
                         logging.getLogger("console").debug(
                             "Process not successful, exiting"
                         )
@@ -196,7 +196,7 @@ class ProcessHandler:
         while not self._proc_error_event.is_set() and not self._stop_event.is_set():
             await asyncio.sleep(0.1)
 
-            running = [proc for proc in procs if proc.state.is_running]
+            running = [proc for proc in procs if proc.state.running]
             has_run_count = sum(1 for proc in procs if proc.state.has_run)
 
             if not len(running):
@@ -271,7 +271,7 @@ class ProcessHandler:
 
         # exit running procs
         for proc in [proc for procs in self._procs.values() for proc in procs]:
-            if proc.state.is_running:
+            if proc.state.running:
                 logging.getLogger("console").debug(
                     f"Stopping {proc.wrapper.process_name}"
                 )

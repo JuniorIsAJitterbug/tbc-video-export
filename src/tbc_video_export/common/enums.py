@@ -134,7 +134,7 @@ class ProcessStatus(Flag):
     NONE = auto()
     HAS_RUN = auto()
     RUNNING = auto()
-    STOPPED = auto()
+    ENDED = auto()
     SUCCESS = auto()
     ERROR = auto()
 

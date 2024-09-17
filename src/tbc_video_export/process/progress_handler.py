@@ -53,7 +53,7 @@ class ProgressHandler:
         This loops through the process handles at the set interval.
         """
         with ansi.create_terminal_buffer():
-            while not all(proc.state.is_stopped for proc in self._procs):
+            while not all(proc.state.ended for proc in self._procs):
                 self._print_progress()
                 await asyncio.sleep(interval)
 
@@ -153,8 +153,8 @@ class ProgressHandler:
                 + self._formatted_errors(process.output_parser)
                 + self._formatted_fps(process.output_parser)
             )
-            if process.state.is_running
-            or any((process.state.is_errored, process.state.is_successful))
+            if process.state.running
+            or any((process.state.success, process.state.errored))
             else self._status_icon(process.state)
             + ansi.dim(self._formatted_process(process))
         )
@@ -172,17 +172,17 @@ class ProgressHandler:
         )
 
         match process_state:
-            case _ as state if state.is_successful:
+            case _ as state if state.success:
                 return ansi.success_color(
                     f"{consts.SUCCESS_SYMBOL:<{self._col_w['status']}s}"
                 )
 
-            case _ as state if state.is_errored:
+            case _ as state if state.errored:
                 return ansi.error_color(
                     f"{consts.ERROR_SYMBOL:<{self._col_w['status']}s}"
                 )
 
-            case _ as state if state.is_running:
+            case _ as state if state.running:
                 return ansi.progress_color(
                     f"{consts.RUNNING_SYMBOLS[process_state.status_index]:<{self._col_w['status']}s}"
                 )

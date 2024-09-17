@@ -43,8 +43,6 @@ class Process:
 
     async def run(self) -> ProcessState:
         """Run the process."""
-        self.state.set_has_run()
-
         if self._state.opts.show_process_output or self._state.opts.log_process_output:
             # setup file logger
             log.setup_logger(
@@ -75,7 +73,7 @@ class Process:
         )
 
         # set the process output start event
-        self._process_state.set_running()
+        self._process_state.running = True
 
         # create parse task
         self._tasks.add(asyncio.create_task(self._parse_process_output()))
@@ -94,7 +92,7 @@ class Process:
             if isinstance(pipe, PipeOS):
                 pipe.close()
 
-        self._process_state.set_stopped()
+        self._process_state.ended = True
         self._set_proc_status()
 
         return self._process_state
@@ -106,7 +104,7 @@ class Process:
             f"({FlagHelper.get_flags_str(self.wrapper.tbc_type)}) Killing process"
         )
 
-        if self._process is not None and not self._process_state.is_stopped:
+        if self._process is not None and not self._process_state.ended:
             with suppress(ProcessLookupError):
                 self._process.kill()
                 await self._process.wait()
@@ -122,9 +120,9 @@ class Process:
         """Parse the returncode from a process and set the state."""
         if self._process is not None:
             if self._process.returncode == 0 or self.wrapper.ignore_error:
-                self._process_state.set_success()
+                self._process_state.success = True
             else:
-                self._process_state.set_error()
+                self._process_state.errored = True
 
         logging.getLogger("console").debug(
             f"{self.wrapper.process_name} "
