@@ -36,8 +36,7 @@ class WrapperLDProcessVBI(Wrapper):
         return FlatList(
             (
                 self.binary,
-                "-t",
-                str(self._state.opts.threads),
+                self._get_thread_opts(),
                 "--input-json",
                 self._state.file_helper.tbc_json.file_name,
                 "--output-json",
@@ -52,6 +51,17 @@ class WrapperLDProcessVBI(Wrapper):
             if TBCType.LUMA in self._state.file_helper.tbcs
             else self._state.file_helper.tbcs[TBCType.COMBINED]
         )
+
+    def _get_thread_opts(self) -> FlatList | None:
+        thread_count = self._state.opts.threads
+
+        if (t := self._state.opts.process_vbi_threads) is not None:
+            thread_count = t
+
+        if thread_count != 0:
+            return FlatList(("-t", thread_count))
+
+        return None
 
     @cached_property
     def process_name(self) -> ProcessName:  # noqa: D102

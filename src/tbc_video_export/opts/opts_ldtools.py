@@ -12,6 +12,14 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
     decoder_opts = parent.add_argument_group("decoder")
 
     decoder_opts.add_argument(
+        "--decoder-threads",
+        type=int,
+        metavar="int",
+        help="Specify the number of ld-chroma-decoder threads.\n"
+        "Note: This overrides --threads, and setting to 0 uses process defaults.\n\n",
+    )
+
+    decoder_opts.add_argument(
         "-s",
         "--start",
         type=int,
@@ -256,6 +264,14 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "\n\n",
     )
 
+    dropout_correct_opts.add_argument(
+        "--dropout-correct-threads",
+        type=int,
+        metavar="int",
+        help="Specify the number of ld-dropout-correct threads.\n"
+        "Note: This overrides --threads, and setting to 0 uses process defaults.\n\n",
+    )
+
     # process-vbi
     process_vbi = parent.add_argument_group("process vbi")
     process_vbi.add_argument(
@@ -272,6 +288,14 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         action="store_true",
         default=False,
         help="Keep going on errors. (default: no)\n\n",
+    )
+
+    process_vbi.add_argument(
+        "--process-vbi-threads",
+        type=int,
+        metavar="int",
+        help="Specify the number of ld-process-vbi threads.\n"
+        "Note: This overrides --threads, and setting to 0 uses process defaults.\n\n",
     )
 
     # process-efm (EXPTERIMENTAL)

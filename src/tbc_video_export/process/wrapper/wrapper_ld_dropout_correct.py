@@ -30,6 +30,7 @@ class WrapperLDDropoutCorrect(Wrapper):
         return FlatList(
             (
                 self.binary,
+                self._get_thread_opts(),
                 "-i",
                 self._state.file_helper.tbcs[self._config.tbc_type],
                 "--input-json",
@@ -39,6 +40,17 @@ class WrapperLDDropoutCorrect(Wrapper):
                 self._config.output_pipes.out_path,
             )
         )
+
+    def _get_thread_opts(self) -> FlatList | None:
+        thread_count = self._state.opts.threads
+
+        if (t := self._state.opts.dropout_correct_threads) is not None:
+            thread_count = t
+
+        if thread_count != 0:
+            return FlatList(("-t", thread_count))
+
+        return None
 
     @cached_property
     def process_name(self) -> ProcessName:  # noqa: D102

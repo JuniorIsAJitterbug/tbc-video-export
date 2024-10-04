@@ -46,9 +46,7 @@ class WrapperFFmpeg(Wrapper):
             (
                 self.binary,
                 self._get_verbosity_opts(),
-                self._get_overwrite_opt(),
-                self._get_threads_opt(),
-                "-nostdin",
+                self._get_misc_opts(),
                 self._get_hwaccel_opts(),
                 self._get_input_opts(),
                 self._get_filter_complex_opts(),
@@ -81,14 +79,18 @@ class WrapperFFmpeg(Wrapper):
 
         return verbosity_opts
 
-    def _get_overwrite_opt(self) -> FlatList | None:
-        """Return opts for overwrite enabled."""
-        return FlatList(self._state.opts.convert_opt("overwrite", "-y"))
+    def _get_misc_opts(self) -> FlatList:
+        opts = FlatList((self._state.opts.convert_opt("overwrite", "-y"),))
 
-    def _get_threads_opt(self) -> FlatList:
-        """Return opts for thread count."""
-        # TODO add complex filter threads?
-        return FlatList(("-threads", str(self._state.opts.threads)))
+        thread_count = self._state.opts.threads
+
+        if (t := self._state.opts.ffmpeg_threads) is not None:
+            thread_count = t
+
+        if thread_count != 0:
+            opts.append(("-threads", thread_count))
+
+        return opts
 
     def _parse_hwaccel(self) -> None:
         """Parse hardware acceleration opts."""
@@ -141,6 +143,7 @@ class WrapperFFmpeg(Wrapper):
         """Return opts for all inputs."""
         return FlatList(
             (
+                "-nostdin",
                 self._get_video_input_opts(),
                 self._get_audio_input_opts(),
                 self._get_metadata_input_opts(),
