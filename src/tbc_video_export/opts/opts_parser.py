@@ -65,7 +65,8 @@ def parse_opts(config: Config, argv: list[str]) -> tuple[argparse.ArgumentParser
         type=int,
         default=int(cpu_count / 2),
         metavar="int",
-        help="Specify the number of concurrent threads.\n\n",
+        help="Specify the number of threads each process can use.\n"
+        "Note: Setting this to 0 uses process defaults.\n\n",
     )
 
     general_opts.add_argument(

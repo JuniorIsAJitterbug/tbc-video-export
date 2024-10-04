@@ -171,12 +171,19 @@ class WrapperLDChromaDecoder(Wrapper):
         """Return ld-chroma-decoder opts."""
         decoder_opts = FlatList()
 
+        thread_count = self._state.opts.threads
+
+        if (t := self._state.opts.decoder_threads) is not None:
+            thread_count = t
+
+        if thread_count != 0:
+            decoder_opts.append(("-t", thread_count))
+
         decoder_opts.append(
             (
                 self._state.opts.convert_opt("start", "-s"),
                 self._state.opts.convert_opt("length", "-l"),
                 self._state.opts.convert_opt("reverse", "-r"),
-                self._state.opts.convert_opt("threads", "-t"),
                 self._state.opts.convert_opt("oftest", "-o"),
                 self._state.opts.convert_opt("simple_pal", "--simple-pal"),
                 self._state.opts.convert_opt(

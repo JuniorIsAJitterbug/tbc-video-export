@@ -15,6 +15,14 @@ def add_ffmpeg_opts(parent: argparse.ArgumentParser) -> None:
     ffmpeg_opts = parent.add_argument_group("ffmpeg")
 
     ffmpeg_opts.add_argument(
+        "--ffmpeg-threads",
+        type=int,
+        metavar="int",
+        help="Specify the number of FFmpeg threads.\n"
+        "Note: This overrides --threads, and setting to 0 uses process defaults.\n\n",
+    )
+
+    ffmpeg_opts.add_argument(
         "--audio-track",
         dest="audio_track",
         action="append",

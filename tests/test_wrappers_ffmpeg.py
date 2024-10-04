@@ -24,6 +24,48 @@ class TestWrappersFFmpeg:
 
     general_cases = [
         WrapperTestCase(
+            id="set threads (global)",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=["--threads", "100"],
+            expected_opts=[{"-threads", "100"}],
+        ),
+        WrapperTestCase(
+            id="set threads (specific)",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=["--ffmpeg-threads", "100"],
+            expected_opts=[{"-threads", "100"}],
+        ),
+        WrapperTestCase(
+            id="set threads (override)",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=["--threads", "200", "--ffmpeg-threads", "100"],
+            expected_opts=[{"-threads", "100"}],
+        ),
+        WrapperTestCase(
+            id="set threads (global disable)",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=["--threads", "0"],
+            unexpected_opts=[{"-threads"}],
+        ),
+        WrapperTestCase(
+            id="set threads (local disable)",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=["--ffmpeg-threads", "0"],
+            unexpected_opts=[{"-threads"}],
+        ),
+        WrapperTestCase(
+            id="set threads (global set, local disable)",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=["--threads", "100", "--ffmpeg-threads", "0"],
+            unexpected_opts=[{"-threads"}],
+        ),
+        WrapperTestCase(
+            id="set threads (global disable, local set)",
+            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_opts=["--threads", "0", "--ffmpeg-threads", "100"],
+            expected_opts=[{"-threads", "100"}],
+        ),
+        WrapperTestCase(
             id="simple audio track",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--audio-track", audio_file],

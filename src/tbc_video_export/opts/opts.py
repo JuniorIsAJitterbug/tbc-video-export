@@ -44,6 +44,7 @@ class Opts(argparse.Namespace):
     log_process_output: bool
 
     # decoder
+    decoder_threads: int | None
     start: int | None
     length: int | None
     reverse: bool
@@ -73,6 +74,7 @@ class Opts(argparse.Namespace):
 
     # dropout-correct
     no_dropout_correct: bool
+    dropout_correct_threads: int | None
 
     # luma
     luma_only: bool
@@ -81,6 +83,7 @@ class Opts(argparse.Namespace):
     # process-vbi
     process_vbi: bool
     process_vbi_keep_going: bool
+    process_vbi_threads: int | None
 
     # process-efm
     process_efm: bool
@@ -92,6 +95,7 @@ class Opts(argparse.Namespace):
     export_metadata_keep_going: bool
 
     # ffmpeg
+    ffmpeg_threads: int | None
     audio_track: list[AudioTrackOpt]
     metadata: list[list[str]]
     metadata_file: list[Path]
