@@ -6,6 +6,7 @@
 *.mkv
 *.mov
 *.mp4
+*.mxf
 *.cast
 *.log
 *.sha256

@@ -87,7 +87,7 @@ def _validate_video_format(parser: argparse.ArgumentParser, opts: Opts) -> None:
 
 def _validate_ansi_support(opts: Opts) -> None:
     # check if ansi is supported on Windows and disable progress if not
-    if not ansi.has_ansi_support():
+    if not ansi.has_ansi_support() and (not opts.quiet or not opts.no_progress):
         if os.name == "nt":
             logging.getLogger("console").critical(
                 "Windows Version < 10.0.14393 (Windows 10 Anniversary Update 1607) "

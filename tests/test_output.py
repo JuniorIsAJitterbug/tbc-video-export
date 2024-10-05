@@ -1116,7 +1116,7 @@ class TestOutput:
             output_video_codec=codec_values["D10"],
             output_video_base=VideoBasePAL(
                 width=720,
-                pixel_aspect_ratio="1.000",
+                pixel_aspect_ratio="1.067",
                 display_aspect_ratio="1.333",
             ),
             output_video_color=VideoColorPAL(
@@ -1468,23 +1468,24 @@ class TestOutput:
         with test_case.expected_exc:
             main([f"tests/files/{test_case.input_tbc}", *test_case.input_opts])
 
-            with Path(f"tests/files/{test_case.output_file}") as output_file:
-                try:
-                    assert output_file.is_file()
+            output_file = Path(f"tests/files/{test_case.output_file}")
 
-                    media_info = MediaInfo.parse(output_file)
+            try:
+                assert output_file.is_file()
 
-                    assert isinstance(media_info, MediaInfo)
-                    assert len(media_info.video_tracks) == 1
+                media_info = MediaInfo.parse(output_file)
 
-                    self.check_video_track(test_case, media_info)
-                    self.check_audio_tracks(test_case, media_info)
-                    self.check_metadata(test_case, media_info)
+                assert isinstance(media_info, MediaInfo)
+                assert len(media_info.video_tracks) == 1
 
-                finally:
-                    # delete file
-                    with suppress(FileNotFoundError):
-                        output_file.unlink()
+                self.check_video_track(test_case, media_info)
+                self.check_audio_tracks(test_case, media_info)
+                self.check_metadata(test_case, media_info)
+
+            finally:
+                # delete file
+                with suppress(FileNotFoundError):
+                    output_file.unlink()
 
     @pytest.mark.parametrize(
         "test_case",
