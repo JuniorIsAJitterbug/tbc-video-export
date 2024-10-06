@@ -39,7 +39,8 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--reverse",
         action="store_true",
         default=False,
-        help="Reverse the field order to second/first.\n\n",
+        help="Reverse the field order to second/first.\n"
+        "Note: This requires --no-dropout-correct to be set.\n\n",
     )
 
     decoder_opts.add_argument(
