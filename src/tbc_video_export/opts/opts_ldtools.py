@@ -58,8 +58,7 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--vbi",
         action="store_true",
         default=False,
-        help="Show the VBI segment in the output video.\n"
-        "This uses full-vertical and applies a crop filter.\n\n"
+        help="Show the VBI segment in the output video.\n\n"
         "Note:\n"
         "  Compatibility with all video codecs is not guaranteed due to padding.\n"
         "  Set --output-padding to 8 if export fails.\n"
