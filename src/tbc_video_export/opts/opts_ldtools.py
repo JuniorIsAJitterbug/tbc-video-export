@@ -15,8 +15,11 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--decoder-threads",
         type=int,
         metavar="int",
-        help="Specify the number of ld-chroma-decoder threads.\n"
-        "Note: This overrides --threads, and setting to 0 uses process defaults.\n\n",
+        help=(
+            "Specify the number of ld-chroma-decoder threads.\n"
+            "  - This overrides --threads, and setting to 0 uses process defaults."
+            "\n\n"
+        ),
     )
 
     decoder_opts.add_argument(
@@ -39,18 +42,22 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--reverse",
         action="store_true",
         default=False,
-        help="Reverse the field order to second/first.\n"
-        "Note: This requires --no-dropout-correct to be set.\n\n",
+        help=(
+            "Reverse the field order to second/first.\n"
+            "  - This requires --no-dropout-correct to be set."
+            "\n\n"
+        ),
     )
 
     decoder_opts.add_argument(
         "--output-padding",
         type=int,
         metavar="int",
-        help="Pad the output frame to a multiple of these many pixels.\n\n"
-        "Note:\n"
-        "  Compatibility with all video codecs is not guaranteed.\n"
-        "\n\n",
+        help=(
+            "Pad the output frame to a multiple of these many pixels.\n"
+            "  - Compatibility with all video codecs is not guaranteed."
+            "\n\n"
+        ),
     )
 
     decoder_lines_opts = decoder_opts.add_mutually_exclusive_group()
@@ -59,11 +66,12 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--vbi",
         action="store_true",
         default=False,
-        help="Show the VBI segment in the output video.\n\n"
-        "Note:\n"
-        "  Compatibility with all video codecs is not guaranteed due to padding.\n"
-        "  Set --output-padding to 8 if export fails.\n"
-        "\n\n",
+        help=(
+            "Show the VBI segment in the output video.\n"
+            "  - Compatibility with all codecs is not guaranteed due to padding.\n"
+            "  - Set --output-padding to 8 if export fails."
+            "\n\n"
+        ),
     )
 
     decoder_lines_opts.add_argument(
@@ -77,11 +85,12 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--letterbox",
         action="store_true",
         default=False,
-        help="Adjust FFLL/LFLL/FFRL/LFRL for letterbox crop.\n\n"
-        "Note:\n"
-        "  Compatibility with all video codecs is not guaranteed due to padding.\n"
-        "  Set --output-padding to 8 if export fails.\n"
-        "\n\n",
+        help=(
+            "Adjust FFLL/LFLL/FFRL/LFRL for letterbox crop.\n"
+            "  - Compatibility with all codecs is not guaranteed due to padding.\n"
+            "  - Set --output-padding to 8 if export fails."
+            "\n\n"
+        ),
     )
 
     decoder_opts.add_argument(
@@ -89,10 +98,12 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--ffll",
         type=int,
         metavar="int",
-        help="The first visible line of a field.\n\n"
-        "  Range 1-259 for NTSC (default: 20)\n"
-        "        2-308 for PAL  (default: 22)"
-        "\n\n",
+        help=(
+            "The first visible line of a field.\n"
+            "  Range 1-259 for NTSC (default: 20)\n"
+            "        2-308 for PAL  (default: 22)"
+            "\n\n"
+        ),
     )
 
     decoder_opts.add_argument(
@@ -100,10 +111,12 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--lfll",
         type=int,
         metavar="int",
-        help="The last visible line of a field.\n\n"
-        "  Range 1-259 for NTSC (default: 259)\n"
-        "        2-308 for PAL  (default: 308)"
-        "\n\n",
+        help=(
+            "The last visible line of a field.\n"
+            "  Range 1-259 for NTSC (default: 259)\n"
+            "        2-308 for PAL  (default: 308)"
+            "\n\n"
+        ),
     )
 
     decoder_opts.add_argument(
@@ -111,10 +124,12 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--ffrl",
         type=int,
         metavar="int",
-        help="The first visible line of a field.\n\n"
-        "  Range 1-525 for NTSC (default: 40)\n"
-        "        1-620 for PAL  (default: 44)"
-        "\n\n",
+        help=(
+            "The first visible line of a field.\n"
+            "  Range 1-525 for NTSC (default: 40)\n"
+            "        1-620 for PAL  (default: 44)"
+            "\n\n"
+        ),
     )
 
     decoder_opts.add_argument(
@@ -122,10 +137,12 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--lfrl",
         type=int,
         metavar="int",
-        help="The last visible line of a field.\n\n"
-        "  Range 1-525 for NTSC (default: 525)\n"
-        "        1-620 for PAL  (default: 620)"
-        "\n\n",
+        help=(
+            "The last visible line of a field.\n"
+            "  Range 1-525 for NTSC (default: 525)\n"
+            "        1-620 for PAL  (default: 620)"
+            "\n\n"
+        ),
     )
 
     decoder_opts.add_argument(
@@ -133,17 +150,20 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         type=opt_types.TypeChromaDecoder(parent),
         choices=list(ChromaDecoder),
         metavar="decoder",
-        help="Set the chroma decoder to be used.\n"
-        "Available decoders:\n\n"
-        f"  {ChromaDecoder.MONO} (default for LUMA)\n\n"
-        f"  {ChromaDecoder.PAL2D} (default for PAL/PAL-M S-Video)\n"
-        f"  {ChromaDecoder.TRANSFORM2D}\n"
-        f"  {ChromaDecoder.TRANSFORM3D} (default for PAL/PAL-M CVBS)\n\n"
-        f"  {ChromaDecoder.NTSC1D}\n"
-        f"  {ChromaDecoder.NTSC2D} (default for NTSC S-Video and CVBS)\n"
-        f"  {ChromaDecoder.NTSC3D} (default for NTSC CVBS LD)\n"
-        f"  {ChromaDecoder.NTSC3DNOADAPT}"
-        "\n\n",
+        help=(
+            "Set the chroma decoder to be used."
+            "\n\n"
+            "Available decoders:\n"
+            f"  {ChromaDecoder.MONO} (default for LUMA)\n\n"
+            f"  {ChromaDecoder.PAL2D} (default for PAL/PAL-M S-Video)\n"
+            f"  {ChromaDecoder.TRANSFORM2D}\n"
+            f"  {ChromaDecoder.TRANSFORM3D} (default for PAL/PAL-M CVBS)\n\n"
+            f"  {ChromaDecoder.NTSC1D}\n"
+            f"  {ChromaDecoder.NTSC2D} (default for NTSC S-Video and CVBS)\n"
+            f"  {ChromaDecoder.NTSC3D} (default for NTSC CVBS LD)\n"
+            f"  {ChromaDecoder.NTSC3DNOADAPT}"
+            "\n\n"
+        ),
     )
 
     decoder_opts.add_argument(
@@ -151,49 +171,58 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         type=opt_types.TypeChromaDecoder(parent),
         choices=list(ChromaDecoder),
         metavar="decoder",
-        help="Set the chroma decoder to be used for luma.\n"
-        "You likely do not need to touch this.\n"
-        "Available decoders:\n\n"
-        f"  {ChromaDecoder.MONO} (default)\n\n"
-        f"  {ChromaDecoder.PAL2D}\n"
-        f"  {ChromaDecoder.TRANSFORM2D}\n"
-        f"  {ChromaDecoder.TRANSFORM3D}\n\n"
-        f"  {ChromaDecoder.NTSC1D}\n"
-        f"  {ChromaDecoder.NTSC2D}\n"
-        f"  {ChromaDecoder.NTSC3D}\n"
-        f"  {ChromaDecoder.NTSC3DNOADAPT}"
-        "\n\n",
+        help=(
+            "Set the chroma decoder to be used for luma.\n"
+            "  - You likely do not need to change this."
+            "\n\n"
+            "Available decoders:\n"
+            f"  {ChromaDecoder.MONO} (default)\n\n"
+            f"  {ChromaDecoder.PAL2D}\n"
+            f"  {ChromaDecoder.TRANSFORM2D}\n"
+            f"  {ChromaDecoder.TRANSFORM3D}\n\n"
+            f"  {ChromaDecoder.NTSC1D}\n"
+            f"  {ChromaDecoder.NTSC2D}\n"
+            f"  {ChromaDecoder.NTSC3D}\n"
+            f"  {ChromaDecoder.NTSC3DNOADAPT}"
+            "\n\n"
+        ),
     )
 
     decoder_opts.add_argument(
         "--chroma-gain",
         type=float,
         metavar="float",
-        help="Gain factor applied to chroma components.\n"
-        "This does not apply to the luma decoder for Y/C-separated TBCs.\n"
-        "\n\n",
+        help=(
+            "Gain factor applied to chroma components.\n"
+            "  - This does not apply to the luma decoder for Y/C-separated TBCs."
+            "\n\n"
+        ),
     )
 
     decoder_opts.add_argument(
         "--chroma-phase",
         type=float,
         metavar="float",
-        help="Phase rotation applied to chroma components in degrees.\n"
-        "This does not apply to the luma decoder for Y/C-separated TBCs.\n"
-        "\n\n",
+        help=(
+            "Phase rotation applied to chroma components in degrees.\n"
+            "  - This does not apply to the luma decoder for Y/C-separated TBCs."
+            "\n\n"
+        ),
     )
 
     decoder_opts.add_argument(
         "--luma-nr",
         type=float,
         metavar="float",
-        help="Luma noise reduction level in dB.\n"
-        "You likely do not need to use this and should instead apply any\n"
-        "noise reduction in post.\n\n"
-        "Note for Y/C-separated TBCs:\n"
-        "  This will only apply to the luma instance.\n"
-        "  Requires the luma decoder to be set to something other than mono.\n"
-        "\n\n",
+        help=(
+            "Luma noise reduction level in dB.\n"
+            "  - You likely do not need to change this and should instead apply any\n"
+            "    noise reduction in post.\n"
+            "For Y/C-separated TBCs:\n"
+            "  - This will only apply to the luma instance.\n"
+            "  - Requires the luma decoder to be set to something other than mono."
+            "\n\n"
+        ),
     )
 
     decoder_opts.add_argument(
@@ -218,20 +247,24 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--chroma-nr",
         type=float,
         metavar="float",
-        help="Chroma noise reduction level in dB.\n"
-        "This does not apply to the luma decoder for Y/C-separated TBCs.\n"
-        "You likely do not need to use this and should instead apply any\n"
-        "noise reduction in post.\n"
-        "\n\n",
+        help=(
+            "Chroma noise reduction level in dB.\n"
+            "  - This does not apply to the luma decoder for Y/C-separated TBCs.\n"
+            "  - You likely do not need to change this and should instead apply any\n"
+            "    noise reduction in post."
+            "\n\n"
+        ),
     )
 
     ntsc_decoder_opts.add_argument(
         "--ntsc-phase-comp",
         action=argparse.BooleanOptionalAction,
-        help="Enable or disable adjusting phase per line using burst phase.\n"
-        "S-Video and CVBS have this option enabled by default.\n"
-        "CVBS LD has this option disabled by default."
-        "\n\n",
+        help=(
+            "Enable or disable adjusting phase per line using burst phase.\n"
+            "  - S-Video and CVBS have this option enabled by default.\n"
+            "  - CVBS LD has this option disabled by default."
+            "\n\n"
+        ),
     )
 
     ntsc_decoder_opts.add_argument(
@@ -247,9 +280,11 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--simple-pal",
         action="store_true",
         default=False,
-        help="Transform: Use 1D UV filter.\n"
-        "Only available with Transform decoders."
-        "\n\n",
+        help=(
+            "Transform: Use 1D UV filter.\n"
+            "  - Only available with Transform decoders."
+            "\n\n"
+        ),
     )
 
     # dropout-correct
@@ -259,17 +294,22 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--no-dropout-correct",
         action="store_true",
         default=False,
-        help="Disable dropout correction. (default: no)\n"
-        "This will run ld-chroma-decoder without dropout correction."
-        "\n\n",
+        help=(
+            "Disable dropout correction. (default: no)\n"
+            "  - This will run ld-chroma-decoder without dropout correction."
+            "\n\n"
+        ),
     )
 
     dropout_correct_opts.add_argument(
         "--dropout-correct-threads",
         type=int,
         metavar="int",
-        help="Specify the number of ld-dropout-correct threads.\n"
-        "Note: This overrides --threads, and setting to 0 uses process defaults.\n\n",
+        help=(
+            "Specify the number of ld-dropout-correct threads.\n"
+            "  - This overrides --threads, and setting to 0 uses process defaults."
+            "\n\n"
+        ),
     )
 
     # process-vbi
@@ -278,9 +318,11 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--process-vbi",
         action="store_true",
         default=False,
-        help="Run ld-process-vbi before exporting. (default: no)\n\n"
-        "Note: The generated JSON file will be used for decoding."
-        "\n\n",
+        help=(
+            "Run ld-process-vbi before exporting. (default: no)\n"
+            "  - The generated JSON file will be used for decoding."
+            "\n\n"
+        ),
     )
 
     process_vbi.add_argument(
@@ -294,8 +336,11 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--process-vbi-threads",
         type=int,
         metavar="int",
-        help="Specify the number of ld-process-vbi threads.\n"
-        "Note: This overrides --threads, and setting to 0 uses process defaults.\n\n",
+        help=(
+            "Specify the number of ld-process-vbi threads.\n"
+            "  - This overrides --threads, and setting to 0 uses process defaults."
+            "\n\n"
+        ),
     )
 
     # process-efm (EXPTERIMENTAL)
@@ -328,9 +373,11 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--export-metadata",
         action="store_true",
         default=False,
-        help="Run ld-export-metadata before exporting. (default: no)\n\n"
-        "Note: The generated subtitles and ffmetadata will be muxed when encoding."
-        "\n\n",
+        help=(
+            "Run ld-export-metadata before exporting. (default: no)\n\n"
+            "  - The generated subtitles and ffmetadata will be muxed when encoding."
+            "\n\n"
+        ),
     )
 
     export_metadata.add_argument(

@@ -18,8 +18,11 @@ def add_ffmpeg_opts(parent: argparse.ArgumentParser) -> None:
         "--ffmpeg-threads",
         type=int,
         metavar="int",
-        help="Specify the number of FFmpeg threads.\n"
-        "Note: This overrides --threads, and setting to 0 uses process defaults.\n\n",
+        help=(
+            "Specify the number of FFmpeg threads.\n"
+            "  - This overrides --threads, and setting to 0 uses process defaults."
+            "\n\n"
+        ),
     )
 
     ffmpeg_opts.add_argument(
@@ -29,7 +32,7 @@ def add_ffmpeg_opts(parent: argparse.ArgumentParser) -> None:
         default=[],
         type=opt_validators.validate_audio_track_opts,
         metavar="file_name",
-        help="Audio track to mux.\nYou can use this option multiple times.\n\n",
+        help="Audio track to mux.\n  - You can use this option multiple times.\n\n",
     )
 
     ffmpeg_opts.add_argument(
@@ -50,15 +53,18 @@ def add_ffmpeg_opts(parent: argparse.ArgumentParser) -> None:
             "offset"
             "]"
         ),
-        help="Audio track to mux (advanced).\n"
-        "You can use this option multiple times.\n"
-        "Only file_name is required. None must be used when skipping an argument.\n\n"
-        "Examples:\n"
-        '\'["/path/to/file.flac", "HiFi", "eng", 192000]\'\n'
-        '\'["/path/to/file.flac", "Linear", "eng", None, None, None, None, 0.15]\'\n'
-        '\'["/path/to/file.pcm", "Analog Audio", None, 44100, "s16le", 2]\'\n'
-        '\'["/path/to/file.dts", "PCM Surround", "eng", 44100, "s16le", 6, "5.1"]\'\n'
-        "\n\n",
+        help=(
+            "Audio track to mux (advanced).\n"
+            "  - You can use this option multiple times.\n"
+            "  - Only file_name is required. None must be used when skipping an arg."
+            "\n\n"
+            "Examples:\n"
+            '  \'["/path/file.flac", "HiFi", "eng", 192000]\'\n'
+            '  \'["/path/file.flac", "Linear", "eng", None, None, None, None, 0.15]\'\n'
+            '  \'["/path/file.pcm", "Analog Audio", None, 44100, "s16le", 2]\'\n'
+            '  \'["/path/file.dts", "PCM Surround", "eng", 44100, "s16le", 6, "5.1"]\''
+            "\n\n"
+        ),
     )
 
     ffmpeg_opts.add_argument(
@@ -67,11 +73,14 @@ def add_ffmpeg_opts(parent: argparse.ArgumentParser) -> None:
         default=[],
         action="append",
         metavar=("key", "value"),
-        help="Add metadata to output the file.\n"
-        "You can use this option multiple times.\n"
-        "Example:\n\n"
-        "--metadata Title foo --metadata Year 2024"
-        "\n\n",
+        help=(
+            "Add metadata to output the file.\n"
+            "  - You can use this option multiple times."
+            "\n\n"
+            "Example:\n"
+            "  --metadata Title foo --metadata Year 2024"
+            "\n\n"
+        ),
     )
 
     ffmpeg_opts.add_argument(
@@ -80,14 +89,15 @@ def add_ffmpeg_opts(parent: argparse.ArgumentParser) -> None:
         default=[],
         action="append",
         metavar="filename",
-        help="Add metadata to the output of the file using ffmetadata files.\n"
-        "You can use this option multiple times.\n\n"
-        "See https://ffmpeg.org/ffmpeg-formats.html#Metadata-1 for details.\n\n"
-        "Note: When using --export-metadata the generated ffmetadata file is also "
-        "used.\n"
-        "Files defined here are used before any generated metadata and take "
-        "priority.\n"
-        "\n\n",
+        help=(
+            "Add metadata to the output of the file using ffmetadata files.\n"
+            "  - You can use this option multiple times.\n"
+            "  - See https://ffmpeg.org/ffmpeg-formats.html#Metadata-1 for details.\n"
+            "  - When using --export-metadata the generated file is also used.\n"
+            "  - Files defined here are used before any generated metadata and take\n"
+            "    priority."
+            "\n\n"
+        ),
     )
 
     ffmpeg_opts.add_argument(
@@ -96,18 +106,24 @@ def add_ffmpeg_opts(parent: argparse.ArgumentParser) -> None:
         choices=list(FieldOrder),
         default=FieldOrder.TFF,
         metavar="order",
-        help="Set a field order. (default: tff)\n"
-        "Available formats:\n\n  "
-        + "\n  ".join(f"{e.name.lower()!s:<5s} {e.value}" for e in FieldOrder)
-        + "\n\n",
+        help=(
+            "Set a field order. (default: tff)"
+            "\n\n"
+            "Available formats:\n  "
+            + "\n  ".join(f"{e.name.lower()!s:<5s} {e.value}" for e in FieldOrder)
+            + "\n\n"
+        ),
     )
 
     ffmpeg_opts.add_argument(
         "--force-anamorphic",
         action="store_true",
         default=False,
-        help="Force widescreen aspect ratio.\n"
-        "This is not allowed when letterbox is used.\n\n",
+        help=(
+            "Force widescreen aspect ratio.\n"
+            "  - This is not allowed when letterbox is used."
+            "\n\n"
+        ),
     )
 
     ffmpeg_opts.add_argument(
@@ -115,18 +131,22 @@ def add_ffmpeg_opts(parent: argparse.ArgumentParser) -> None:
         type=opt_validators.validate_black_levels_opts,
         metavar="R[,G,B]",
         default=None,
-        help="Force black levels using the colorlevels filter.\n"
-        "Use a comma-separated list of numbers to provide values for colorlevels.\n"
-        "If a single number is provided, it is used for all 3."
-        "\n\n",
+        help=(
+            "Force black levels using the colorlevels filter.\n"
+            "  - Use comma-separated numbers.\n"
+            "  - If a single number is provided, it is used for all 3."
+            "\n\n"
+        ),
     )
 
     ffmpeg_opts.add_argument(
         "--hwaccel-device",
         type=str,
-        help="Hardware acceleration device.\n"
-        "Specify a hardware device to use when a supported video profile is selected."
-        "\n\n",
+        help=(
+            "Hardware acceleration device.\n"
+            "  - Specify a hardware device when a supported video profile is selected."
+            "\n\n"
+        ),
     )
 
     ffmpeg_opts.add_argument(
@@ -141,18 +161,23 @@ def add_ffmpeg_opts(parent: argparse.ArgumentParser) -> None:
         type=int,
         default=1024,
         metavar="int",
-        help="Set the thread queue size for FFmpeg. (default: 1024)\n"
-        "Reduce this if you are having out-of-memory issues as a higher value\n"
-        "will allow the decoder to consume more memory."
-        "\n\n",
+        help=(
+            "Set the thread queue size for FFmpeg. (default: 1024)\n"
+            "  - Reduce this if you are having out-of-memory issues as a higher value\n"
+            "    will allow the decoder to consume more memory."
+            "\n\n"
+        ),
     )
 
     ffmpeg_opts.add_argument(
         "--checksum",
         action="store_true",
         default=False,
-        help="Enable SHA256 checksumming on the output streams. (default: no)\n"
-        "This will create a .sha256 file next to your output file.\n"
-        "This may reduce export FPS slightly. FFmpeg must be used to verify checksums."
-        "\n\n",
+        help=(
+            "Enable SHA256 checksumming on the output streams. (default: no)\n"
+            "  - This will create a .sha256 file next to your output file.\n"
+            "  - This may reduce export FPS slightly.\n"
+            "  - FFmpeg must be used to verify checksums."
+            "\n\n"
+        ),
     )

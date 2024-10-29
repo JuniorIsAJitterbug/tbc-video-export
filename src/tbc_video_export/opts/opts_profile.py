@@ -29,20 +29,24 @@ def add_profile_opts(config: Config, parent: argparse.ArgumentParser) -> None:  
         choices=config.get_profile_names(),
         default=profile_default,
         metavar="profile_name",
-        help="Specify an FFmpeg profile to use. "
-        f"(default: {profile_default})\n"
-        "See --list-profiles to see the available profiles.\n"
-        "Note: These are also accessible directly, e.g. --x264"
-        "\n\n",
+        help=(
+            f"Specify an FFmpeg profile to use. (default: {profile_default})\n"
+            "  - Use --list-profiles to see the available profiles.\n"
+            "  - These are also accessible directly, e.g. --x264"
+            "\n\n"
+        ),
     )
 
     profile_opts.add_argument(
         "--list-profiles",
         action=opt_actions.ActionListProfiles,
         config=config,
-        help="Show available profiles.\n\n"
-        f"You can view this in the browser here:\n"
-        f"{consts.PROJECT_URL_WIKI_PROFILES}\n\n",
+        help=(
+            "Show available profiles.\n"
+            f"  - You can view this in the browser here:\n"
+            f"    {consts.PROJECT_URL_WIKI_PROFILES}"
+            "\n\n"
+        ),
     )
 
     profile_opts.add_argument(
@@ -50,9 +54,11 @@ def add_profile_opts(config: Config, parent: argparse.ArgumentParser) -> None:  
         "--container",
         type=str,
         metavar="profile_container",
-        help="Override an FFmpeg profile to use a specific container. Compatibility \n"
-        "with profile is not guaranteed."
-        "\n\n",
+        help=(
+            "Override an FFmpeg profile to use a specific container.\n"
+            "  - Compatibility with profile is not guaranteed."
+            "\n\n"
+        ),
     )
 
     profile_opts.add_argument(
@@ -63,10 +69,12 @@ def add_profile_opts(config: Config, parent: argparse.ArgumentParser) -> None:  
         default=[],
         type=opt_types.TypeAdditionalFilter(config),
         metavar="filter_name",
-        help="Use an additional filter profile when encoding. Compatibility \n"
-        "with profile is not guaranteed.\n"
-        "You can use this option muiltiple times."
-        "\n\n",
+        help=(
+            "Use an additional filter profile when encoding.\n"
+            "  - Compatibility with profile is not guaranteed.\n"
+            "  - You can use this option muiltiple times."
+            "\n\n"
+        ),
     )
 
     profile_opts.add_argument(
@@ -74,12 +82,15 @@ def add_profile_opts(config: Config, parent: argparse.ArgumentParser) -> None:  
         "--append-vf",
         type=str,
         metavar="filter",
-        help="Add a custom filter to the video segment of the complex filter.\n"
-        "Compatibility with profile is not guaranteed.\n"
-        "Use --dry-run to ensure your filter looks correct before encoding.\n\n"
-        "Examples:\n"
-        '--append-video-filter "scale=3480x2160:flags=lanczos,setdar=4/3"'
-        "\n\n",
+        help=(
+            "Add a custom filter to the video segment of the complex filter.\n"
+            "  - Compatibility with profile is not guaranteed.\n"
+            "  - Use --dry-run to ensure your filter looks correct before encoding."
+            "\n\n"
+            "Examples:\n"
+            '  --append-video-filter "scale=3480x2160:flags=lanczos,setdar=4/3"'
+            "\n\n"
+        ),
     )
 
     profile_opts.add_argument(
@@ -87,12 +98,15 @@ def add_profile_opts(config: Config, parent: argparse.ArgumentParser) -> None:  
         "--append-of",
         type=str,
         metavar="filter",
-        help="Add a custom filter to the end of the complex filter.\n"
-        "Compatibility with profile is not guaranteed.\n"
-        "Use --dry-run to ensure your filter looks correct before encoding.\n\n"
-        "Examples:\n"
-        '--append-other-filter "[2:a]loudnorm=i=-14"'
-        "\n\n",
+        help=(
+            "Add a custom filter to the end of the complex filter.\n"
+            "  - Compatibility with profile is not guaranteed.\n"
+            "  - Use --dry-run to ensure your filter looks correct before encoding."
+            "\n\n"
+            "Examples:\n"
+            '  --append-other-filter "[2:a]loudnorm=i=-14"'
+            "\n\n"
+        ),
     )
 
     # add aliases

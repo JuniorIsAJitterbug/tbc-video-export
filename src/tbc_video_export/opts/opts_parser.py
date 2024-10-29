@@ -45,11 +45,13 @@ def parse_opts(config: Config, argv: list[str]) -> tuple[argparse.ArgumentParser
         "output_file",
         type=str,
         nargs="?",
-        help="Path to export to. (default: input_file.X)\n"
-        "If no argument is provided, the output file will be placed in the same "
-        "directory as the input_file.\n"
-        "Do not specify a file extension, as this is set by the profile."
-        "\n\n",
+        help=(
+            "Path to export to. (default: input_file.X)\n"
+            "  - If no argument is provided, the output file will be placed in the\n"
+            "    same directory as the input_file.\n"
+            "  - Do not specify a file extension, as this is set by the profile."
+            "\n\n"
+        ),
     )
 
     general_opts.add_argument(
@@ -65,8 +67,11 @@ def parse_opts(config: Config, argv: list[str]) -> tuple[argparse.ArgumentParser
         type=int,
         default=int(cpu_count / 2),
         metavar="int",
-        help="Specify the number of threads each process can use.\n"
-        "Note: Setting this to 0 uses process defaults.\n\n",
+        help=(
+            "Specify the number of threads each process can use.\n"
+            "  - Setting this to 0 uses process defaults."
+            "\n\n"
+        ),
     )
 
     general_opts.add_argument(
@@ -80,13 +85,16 @@ def parse_opts(config: Config, argv: list[str]) -> tuple[argparse.ArgumentParser
         "--two-step",
         action="store_true",
         default=False,
-        help="Enables two-step mode. (default: no)\n"
-        "Enabling this will export Luma to a file before merging with Chroma.\n"
-        "If you have issues using named pipes, this may be useful as a fallback.\n"
-        "This is generally not required, will take longer, and will require more disk "
-        "space.\n"
-        "Used exclusively with export modes that merge luma and chroma."
-        "\n\n",
+        help=(
+            "Enables two-step mode. (default: no)\n"
+            "  - Enabling this will export Luma to a file before merging with Chroma.\n"
+            "  - If you have issues using named pipes, this may be useful as a\n"
+            "    fallback.\n"
+            "  - This is generally not required, will take longer, and will require\n"
+            "    more disk space.\n"
+            "  - Useful only with export modes that merge luma and chroma."
+            "\n\n"
+        ),
     )
 
     # hidden, used for tests
@@ -99,16 +107,22 @@ def parse_opts(config: Config, argv: list[str]) -> tuple[argparse.ArgumentParser
         type=opt_types.TypeVideoSystem(parser),
         choices=list(VideoSystem),
         metavar="format",
-        help="Force a video system format. (default: from input.tbc.json)\n"
-        "Available formats:\n\n  " + "\n  ".join(str(e) for e in VideoSystem) + "\n\n",
+        help=(
+            "Force a video system format. (default: from input.tbc.json)"
+            "\n\n"
+            "Available formats:\n  " + "\n  ".join(str(e) for e in VideoSystem) + "\n\n"
+        ),
     )
 
     general_opts.add_argument(
         "--input-tbc-json",
         type=str,
         metavar="tbc_json_file",
-        help="Specify a .tbc.json file.\n"
-        "This is generally not needed and should be auto-detected.\n",
+        help=(
+            "Specify a .tbc.json file.\n"
+            "  - This is generally not needed and should be auto-detected."
+            "\n\n"
+        ),
     )
 
     general_opts.add_argument(
@@ -122,9 +136,11 @@ def parse_opts(config: Config, argv: list[str]) -> tuple[argparse.ArgumentParser
         "--dry-run",
         action="store_true",
         default=False,
-        help="Show what would be run without running. (default: no)\n"
-        "This is useful for debugging and validating opts."
-        "\n\n",
+        help=(
+            "Show what would be run without running. (default: no)\n"
+            "  - This is useful for debugging and validating opts."
+            "\n\n"
+        ),
     )
 
     general_opts.add_argument(
@@ -132,8 +148,11 @@ def parse_opts(config: Config, argv: list[str]) -> tuple[argparse.ArgumentParser
         action=opt_actions.ActionDumpConfig,
         config=config,
         default=False,
-        help=f"Dump the default configuration json to "
-        f"{consts.EXPORT_CONFIG_FILE_NAME}.\n\n",
+        help=(
+            f"Dump the default configuration json to "
+            f"{consts.EXPORT_CONFIG_FILE_NAME}."
+            "\n\n"
+        ),
     )
 
     # verbosity
@@ -151,11 +170,12 @@ def parse_opts(config: Config, argv: list[str]) -> tuple[argparse.ArgumentParser
         "-d",
         "--debug",
         action=opt_actions.ActionSetVerbosity,
-        help="Do not suppress INFO, WARNING, or DEBUG messages. (default: no)\n"
-        "If progress is enabled, this will not log to the console.\n"
-        "Useful for debugging issues.\n"
-        "End-users do not need this unless providing logs to developers."
-        "\n\n",
+        help=(
+            "Do not suppress INFO, WARNING, or DEBUG messages. (default: no)\n"
+            "  - If progress is enabled, this will not log to the console.\n"
+            "  - End-users do not need this unless providing logs to developers."
+            "\n\n"
+        ),
     )
 
     # hidden, used for tests
@@ -173,16 +193,18 @@ def parse_opts(config: Config, argv: list[str]) -> tuple[argparse.ArgumentParser
     verbosity_opts.add_argument(
         "--show-process-output",
         action=opt_actions.ActionSetVerbosity,
-        help="Show process output. (default: no)\nThis sets --no-progress.\n\n",
+        help=("Show process output. (default: no)\n  - This sets --no-progress.\n\n"),
     )
 
     verbosity_opts.add_argument(
         "--log-process-output",
         action="store_true",
         default=False,
-        help="Log process output. (default: no)\n"
-        "This will log all process output to separate files."
-        "\n\n",
+        help=(
+            "Log process output. (default: no)\n"
+            "  - This will log all process output to separate files."
+            "\n\n"
+        ),
     )
 
     opts_ldtools.add_ldtool_opts(parser)
@@ -194,21 +216,26 @@ def parse_opts(config: Config, argv: list[str]) -> tuple[argparse.ArgumentParser
         "--luma-only",
         action="store_true",
         default=False,
-        help="Only output a luma video. (default: no)\n"
-        "For Y/C-separated TBCs, this is direct.\n"
-        "For combined TBCs, filtering is applied to strip the color carrier signal out."
-        "\n\n",
+        help=(
+            "Only output a luma video. (default: no)\n"
+            "  - For Y/C-separated TBCs, this is direct.\n"
+            "  - For combined TBCs, filtering is applied to strip the color carrier\n"
+            "    signal out."
+            "\n\n"
+        ),
     )
 
     luma_opts.add_argument(
         "--luma-4fsc",
         action="store_true",
         default=False,
-        help="This uses luma data from the TBC to produce a full signal frame export. "
-        "(default: no)\n"
-        "For combined TBCs, this does not filter out the chroma and thus has \n"
-        "crosshatching."
-        "\n\n",
+        help=(
+            "This uses luma data from the TBC to produce a full signal frame export. "
+            "(default: no)\n"
+            "  - For combined TBCs, this does not filter out the chroma and thus has\n"
+            "    crosshatching."
+            "\n\n"
+        ),
     )
 
     opts_ffmpeg.add_ffmpeg_opts(parser)
