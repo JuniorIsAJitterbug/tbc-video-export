@@ -349,21 +349,24 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         "--process-efm",
         action="store_true",
         default=False,
-        help="Run ld-process-efm before exporting. (default: no)\n\n",
+        help=argparse.SUPPRESS,
+        # help="Run ld-process-efm before exporting. (default: no)\n\n",
     )
 
     process_efm.add_argument(
         "--process-efm-keep-going",
         action="store_true",
         default=False,
-        help="Keep going on errors. (default: no)\n\n",
+        help=argparse.SUPPRESS,
+        # help="Keep going on errors. (default: no)\n\n",
     )
 
     process_efm.add_argument(
         "--process-efm-dts",
         action="store_true",
         default=False,
-        help="Audio is DTS rather than PCM. (default: no)\n\n",
+        help=argparse.SUPPRESS,
+        # help="Audio is DTS rather than PCM. (default: no)\n\n",
     )
 
     # export-metadata

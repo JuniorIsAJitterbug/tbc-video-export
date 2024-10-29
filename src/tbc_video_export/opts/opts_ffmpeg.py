@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import argparse
 
 from tbc_video_export.common.enums import FieldOrder
 from tbc_video_export.opts import opt_types, opt_validators
-
-if TYPE_CHECKING:
-    import argparse
 
 
 def add_ffmpeg_opts(parent: argparse.ArgumentParser) -> None:
@@ -53,18 +50,19 @@ def add_ffmpeg_opts(parent: argparse.ArgumentParser) -> None:
             "offset"
             "]"
         ),
-        help=(
-            "Audio track to mux (advanced).\n"
-            "  - You can use this option multiple times.\n"
-            "  - Only file_name is required. None must be used when skipping an arg."
-            "\n\n"
-            "Examples:\n"
-            '  \'["/path/file.flac", "HiFi", "eng", 192000]\'\n'
-            '  \'["/path/file.flac", "Linear", "eng", None, None, None, None, 0.15]\'\n'
-            '  \'["/path/file.pcm", "Analog Audio", None, 44100, "s16le", 2]\'\n'
-            '  \'["/path/file.dts", "PCM Surround", "eng", 44100, "s16le", 6, "5.1"]\''
-            "\n\n"
-        ),
+        help=argparse.SUPPRESS,
+        # help=(
+        #    "Audio track to mux (advanced).\n"
+        #    "  - You can use this option multiple times.\n"
+        #    "  - Only file_name is required. None must be used when skipping an arg."
+        #    "\n\n"
+        #    "Examples:\n"
+        #    '  \'["/path/file.flac", "HiFi", "eng", 192000]\'\n'
+        #    '  \'["/path/file.flac", "Linear", "eng", None, None, None, None, 0.15]\'\n'  # noqa: E501
+        #    '  \'["/path/file.pcm", "Analog Audio", None, 44100, "s16le", 2]\'\n'
+        #    '  \'["/path/file.dts", "PCM Surround", "eng", 44100, "s16le", 6, "5.1"]\''
+        #    "\n\n"
+        # ),
     )
 
     ffmpeg_opts.add_argument(
