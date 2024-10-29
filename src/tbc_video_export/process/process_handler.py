@@ -140,7 +140,9 @@ class ProcessHandler:
         # create progress handler task if enabled
         if not self._state.opts.no_progress:
             self._progress_handler = ProgressHandler(
-                self._state, [proc for procs in self._procs.values() for proc in procs]
+                self._state,
+                [proc for procs in self._procs.values() for proc in procs],
+                self._stop_event,
             )
 
             self._tasks.add(

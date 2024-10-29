@@ -26,10 +26,12 @@ class ProgressHandler:
         self,
         state: ProgramState,
         procs: list[Process],
+        stop_event: asyncio.Event,
     ) -> None:
         self._state = state
         self._procs = procs
         self._state_str = str(self._state)
+        self._stop_event = stop_event
 
         self._col_w: dict[str, int] = {
             "sender": 22,
@@ -53,7 +55,9 @@ class ProgressHandler:
         This loops through the process handles at the set interval.
         """
         with ansi.create_terminal_buffer():
-            while not all(proc.state.ended for proc in self._procs):
+            while (
+                not all(proc.state.ended for proc in self._procs)
+            ) and not self._stop_event.is_set():
                 self._print_progress()
                 await asyncio.sleep(interval)
 
