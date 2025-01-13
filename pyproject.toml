@@ -2,9 +2,9 @@
 name = "tbc-video-export"
 version = "0.0.0"
 description = "Tool for exporting S-Video and CVBS-type TBCs to video files."
-authors = ["Jitterbug <3130448+JuniorIsAJitterbug@users.noreply.github.com>"]
+authors = ["Jitterbug <jitterbug@posteo.co.uk>"]
 maintainers = [
-    "Jitterbug <3130448+JuniorIsAJitterbug@users.noreply.github.com>",
+    "Jitterbug <jitterbug@posteo.co.uk>",
     "Harry Munday <harry@opcomedia.com>",
 ]
 license = "GPL-3.0-or-later"
