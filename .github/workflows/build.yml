@@ -158,7 +158,7 @@ jobs:
 
   build-macos-binary:
     name: Build macOS binary with PyInstaller
-    runs-on: macos-12
+    runs-on: macos-13
 
     if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     needs:
