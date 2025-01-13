@@ -5,6 +5,7 @@ from functools import partial
 from pathlib import Path
 
 import pytest
+
 from tbc_video_export.common.file_helper import FileHelper
 from tbc_video_export.common.utils import log
 from tbc_video_export.config import Config as ProgramConfig

@@ -7,8 +7,8 @@ from typing import Any
 
 import pytest
 from pymediainfo import MediaInfo  # pyright: ignore[reportMissingTypeStubs]
-from tbc_video_export import main
 
+from tbc_video_export import main
 from tests.conftest import (
     AudioBase,
     OutputTestCase,

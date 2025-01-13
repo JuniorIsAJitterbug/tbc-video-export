@@ -330,9 +330,7 @@ class GetProfileFilter:
         ):
             return False
 
-        if (
-            self.video_system is not None and video_profile.video_system is not None
-        ) and video_profile.video_system is not self.video_system:
-            return False
-
-        return True
+        return not (
+            (self.video_system is not None and video_profile.video_system is not None)
+            and video_profile.video_system is not self.video_system
+        )

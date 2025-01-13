@@ -3,11 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pytest
+
 from tbc_video_export.common import exceptions
 from tbc_video_export.config.config import Config
 
 if TYPE_CHECKING:
     from pytest_mock import MockFixture
+
     from tbc_video_export.config.json import JsonConfig
 
 

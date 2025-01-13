@@ -182,7 +182,7 @@ class ProgramState:
     def total_frames(self) -> int:
         """Total frames detected from the TBC json."""
         tbc_frame_count = self.tbc_json.frame_count
-        start = self.opts.start if self.opts.start is not None else 0
+        start = self.opts.start or 0
         length = (
             self.opts.length
             if self.opts.length is not None
