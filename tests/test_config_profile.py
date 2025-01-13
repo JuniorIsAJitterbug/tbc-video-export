@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING
 import pytest
 
 from tbc_video_export.common import exceptions
+from tbc_video_export.config import Config as ProgramConfig
 from tbc_video_export.config.config import Config
+from tbc_video_export.opts import opts_parser
 
 if TYPE_CHECKING:
     from pytest_mock import MockFixture
@@ -188,3 +190,24 @@ class TestProfile:
         assert len(video_profiles) == 3
         video_profile = video_profiles[2]
         assert video_profile.name == "video_profile_test3"
+
+    def test_config_file_opt(self) -> None:  # noqa: D102
+        pre_opts, _ = opts_parser.parse_pre_opts(
+            [
+                "--config-file",
+                "tests/files/test_profile.json",
+            ]
+        )
+
+        config = ProgramConfig(pre_opts.config_file)
+        assert config.get_default_profile().name == "ffv1_test"
+
+        with pytest.raises(exceptions.InvalidProfileError):
+            pre_opts, _ = opts_parser.parse_pre_opts(
+                [
+                    "--config-file",
+                    "tests/files/invalid.json",
+                ]
+            )
+
+            config = ProgramConfig(pre_opts.config_file)

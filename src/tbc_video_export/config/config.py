@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import logging
-from contextlib import suppress
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
@@ -34,15 +33,21 @@ class Config:
     program configuration.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, config_file: str | None = None) -> None:
         self._data: JsonConfig
         self._additional_filters: list[str] = []
 
-        with suppress(FileNotFoundError, PermissionError, json.JSONDecodeError):
-            # attempt to load the file if it exists
-            if (file_name := self.get_config_file()) is not None:
+        # attempt loading user file if set, or exported file from default location
+        file_name = (
+            Path(config_file) if config_file is not None else self.get_config_file()
+        )
+
+        if file_name is not None:
+            try:
                 with Path.open(file_name, mode="r", encoding="utf-8") as file:
                     self._data = json.load(file)
+            except (FileNotFoundError, PermissionError, json.JSONDecodeError) as e:
+                raise exceptions.InvalidProfileError(str(e), file_name) from e
 
         # use default config
         # not going to check for decode errors on embedded json

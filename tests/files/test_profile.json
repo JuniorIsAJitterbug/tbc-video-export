@@ -1,0 +1,45 @@
+{
+    "profiles": [
+        {
+            "name": "ffv1_test",
+            "default": true,
+            "video_profile": "ffv1_test",
+            "audio_profile": "flac_test"
+        }
+    ],
+    "video_profiles": [
+        {
+            "name": "ffv1_test",
+            "description": "FFV1",
+            "codec": "ffv1",
+            "video_format": "yuv422p10le",
+            "container": "mkv",
+            "opts": [
+                "-coder",
+                1,
+                "-level",
+                3,
+                "-context",
+                1,
+                "-slices",
+                24,
+                "-slicecrc",
+                1,
+                "-g",
+                1
+            ]
+        }
+    ],
+    "audio_profiles": [
+        {
+            "name": "flac_test",
+            "description": "FLAC",
+            "codec": "flac",
+            "opts": [
+                "-compression_level",
+                12
+            ]
+        }
+    ],
+    "filter_profiles": []
+}
