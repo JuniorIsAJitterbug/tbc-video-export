@@ -33,6 +33,7 @@ class Opts(argparse.Namespace):
     input_tbc_json: str | None
     overwrite: bool
     dry_run: bool
+    config_file: str | None
     dump_default_config: bool
 
     # verbosity

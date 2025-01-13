@@ -28,8 +28,10 @@ async def _run(argv: list[str]) -> None:
     asyncio.get_event_loop().set_exception_handler(exceptions.loop_exception_handler)
 
     try:
-        config = Config()
-        parser, opts = opts_parser.parse_opts(config, argv)
+        pre_opts, args = opts_parser.parse_pre_opts(argv)
+        config = Config(pre_opts.config_file)
+        parser, opts = opts_parser.parse_opts(config, args, pre_opts)
+
         log.set_verbosity(opts)
 
         files = FileHelper(opts, config)

@@ -23,7 +23,22 @@ if TYPE_CHECKING:
     from tbc_video_export.config import Config
 
 
-def parse_opts(config: Config, argv: list[str]) -> tuple[argparse.ArgumentParser, Opts]:
+def parse_pre_opts(argv: list[str]) -> tuple[Opts, list[str]]:
+    """Parse opts that are required early."""
+    parser = argparse.ArgumentParser(add_help=False)
+
+    parser.add_argument(
+        "--config-file",
+        type=str,
+        help=("Load configuration from file. (default: use embedded config)\n\n"),
+    )
+
+    return parser.parse_known_intermixed_args(argv, namespace=Opts())
+
+
+def parse_opts(
+    config: Config, argv: list[str], pre_opts: Opts | None = None
+) -> tuple[argparse.ArgumentParser, Opts]:
     """Parse program opts."""
     parser = argparse.ArgumentParser(
         prog=consts.APPLICATION_NAME,
@@ -143,6 +158,14 @@ def parse_opts(config: Config, argv: list[str]) -> tuple[argparse.ArgumentParser
         ),
     )
 
+    # parsed in parse_pre_opts, added here for --help
+    general_opts.add_argument(
+        "--config-file",
+        type=str,
+        metavar="config_file",
+        help=("Load configuration from file. (default: use embedded config)\n\n"),
+    )
+
     general_opts.add_argument(
         "--dump-default-config",
         action=opt_actions.ActionDumpConfig,
@@ -241,7 +264,7 @@ def parse_opts(config: Config, argv: list[str]) -> tuple[argparse.ArgumentParser
     opts_ffmpeg.add_ffmpeg_opts(parser)
     opts_profile.add_profile_opts(config, parser)
 
-    opts = parser.parse_intermixed_args(argv, namespace=Opts())
+    opts = parser.parse_intermixed_args(argv, namespace=pre_opts or Opts())
     return (parser, opts)
 
 
