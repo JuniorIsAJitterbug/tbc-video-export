@@ -70,7 +70,7 @@ select = [
     "N",      # pep8-naming
     "UP",     # pyupgrade
     "SLF001", # private-member-access
-    "TCH",    # flake8-type-checking
+    "TC",     # flake8-type-checking
     "ARG",    # flake8-unused-arguments
     "PTH",    # flake8-use-pathlib
     "A",      # flake8-builtins
