@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
+
 from tbc_video_export.common import exceptions
 from tbc_video_export.common.enums import VideoSystem
 from tbc_video_export.common.tbc_json_helper import TBCJsonHelper

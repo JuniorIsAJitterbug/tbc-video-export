@@ -273,7 +273,7 @@ class PipeNamedNT(Pipe):
     @staticmethod
     def _handle_winerror(ret: int | None = None) -> None:
         """Print windows related errors."""
-        match ret if ret is not None else win32.GetLastError():
+        match ret or win32.GetLastError():
             case winerror.ERROR_BROKEN_PIPE:
                 # The pipe has been ended.
                 return

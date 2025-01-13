@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from unittest import mock
 
 import pytest
+
 from tbc_video_export.common.utils import ansi
 from tbc_video_export.common.utils.flatlist import FlatList
 

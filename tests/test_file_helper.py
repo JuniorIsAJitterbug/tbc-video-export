@@ -5,6 +5,7 @@ from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING
 
 import pytest
+
 from tbc_video_export.common import exceptions
 from tbc_video_export.common.enums import ProcessName, TBCType, VideoSystem
 from tbc_video_export.common.file_helper import FileHelper
@@ -120,9 +121,10 @@ class TestTBCJson:
 
             assert e.value == "Unable to find luma TBC."
 
-        with NamedTemporaryFile(suffix="_chroma.tbc") as file, pytest.raises(
-            exceptions.TBCError
-        ) as e:
+        with (
+            NamedTemporaryFile(suffix="_chroma.tbc") as file,
+            pytest.raises(exceptions.TBCError) as e,
+        ):
             state = program_state([], Path(file.name.replace("_chroma.tbc", "")))
             helper = FileHelper(state.opts, state.config)
 
@@ -163,10 +165,7 @@ class TestTBCJson:
         timestamp = "__timestamp__"
 
         assert helper.get_log_file(proc, tbc_type, timestamp) == Path(
-            f"__timestamp__"
-            f"_{helper.input_name.stem}"
-            f"_{str(proc)}"
-            f"_{str(tbc_type)}.log"
+            f"__timestamp___{helper.input_name.stem}_{str(proc)}_{str(tbc_type)}.log"
         )
 
     @pytest.mark.parametrize("proc", procs)

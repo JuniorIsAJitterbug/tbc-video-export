@@ -93,6 +93,7 @@ ignore = [
     "PLR2004", # magic-value-comparison
     "PLC0415", # import-outside-top-level
     "PYI034",  # non-self-return-type
+    "A005",    # stdlib-module-shadowing
     "D100",    # undocumented-public-module
     "D104",    # undocumented-public-package
     "D107",    # undocumented-public-init

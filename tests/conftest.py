@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import pytest
+
 from tbc_video_export.common.enums import ExportMode, ProcessName, TBCType
 from tbc_video_export.common.file_helper import FileHelper
 from tbc_video_export.config import Config as ProgramConfig

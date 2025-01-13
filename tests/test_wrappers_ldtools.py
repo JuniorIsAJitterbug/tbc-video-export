@@ -5,9 +5,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
+
 from tbc_video_export.common import exceptions
 from tbc_video_export.common.enums import TBCType
-
 from tests.conftest import WrapperTestCase, get_path
 
 if TYPE_CHECKING:
