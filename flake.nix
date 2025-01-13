@@ -2,7 +2,7 @@
   description = "tbc-video-export dev flake";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     devenv.url = "github:cachix/devenv";
     nixpkgs-python.url = "github:cachix/nixpkgs-python";
     jitterbug.url = "github:JuniorIsAJitterbug/nur-packages";
@@ -33,20 +33,18 @@
         let
           commonPackages = with pkgs; [
             mediainfo
+            libmediainfo
+            openssl
+            ruff
+            ffmpeg_4
             inputs.jitterbug.packages.${pkgs.system}.vhs-decode
           ];
-
-          commonLibraryPath = pkgs.lib.makeLibraryPath [ pkgs.libmediainfo ];
         in
         {
           devenv.shells = {
             default = {
               name = "tbc-video-export";
-
-              enterShell = ''
-                LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${commonLibraryPath}
-              '';
-              packages = commonPackages ++ [ pkgs.ruff pkgs.ffmpeg_4 ];
+              packages = commonPackages;
 
               languages.python = {
                 enable = true;
@@ -55,35 +53,16 @@
                 poetry = {
                   enable = true;
                   activate.enable = true;
-                  install.enable = true;
-                  install.allExtras = true;
+                  install = {
+                    enable = true;
+                    allExtras = true;
+                  };
                 };
               };
 
               pre-commit.hooks = {
                 ruff.enable = true;
                 pyright.enable = true;
-              };
-            };
-
-            ci = {
-              name = "tbc-video-export (CI)";
-
-              enterShell = ''
-                echo LD_LIBRARY_PATH=${commonLibraryPath} >> $GITHUB_ENV
-              '';
-              packages = commonPackages ++ [ pkgs.ffmpeg_4 ];
-
-              languages.python = {
-                enable = true;
-                version = "3.10";
-
-                poetry = {
-                  enable = true;
-                  activate.enable = true;
-                  install.enable = true;
-                  install.allExtras = true;
-                };
               };
             };
           };
