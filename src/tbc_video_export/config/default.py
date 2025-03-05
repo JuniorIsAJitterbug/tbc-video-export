@@ -316,7 +316,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "H.264 AVC",
             "codec": "libx264",
             "video_format": "yuv420p",
-            "container": "mov",
+            "container": "mp4",
             "opts": [
                 "-crf",
                 18,
@@ -334,7 +334,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "H.264 AVC - Lossless",
             "codec": "libx264",
             "video_format": "yuv422p10",
-            "container": "mov",
+            "container": "mp4",
             "opts": [
                 "-qp",
                 0,
@@ -350,7 +350,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "H.264 AVC - Web",
             "codec": "libx264",
             "video_format": "yuv420p",
-            "container": "mov",
+            "container": "mp4",
             "opts": [
                 "-crf",
                 18,
@@ -366,7 +366,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "H.264 AVC - VA-API",
             "codec": "h264_vaapi",
             "video_format": "yuv420p",
-            "container": "mov",
+            "container": "mp4",
             "opts": [
                 "-rc_mode",
                 "CQP",
@@ -382,7 +382,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "H.264 AVC - Nvidia NVENC - Web",
             "codec": "h264_nvenc",
             "video_format": "yuv420p",
-            "container": "mov",
+            "container": "mp4",
             "opts": [
                 "-rc",
                 "constqp",
@@ -398,7 +398,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "H.264 AVC - Intel QuickSync - Web",
             "codec": "h264_qsv",
             "video_format": "yuv420p",
-            "container": "mov",
+            "container": "mp4",
             "opts": [
                 "-global_quality",
                 19,
@@ -412,7 +412,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "H.264 AVC - AMD AMF - Web",
             "codec": "h264_amf",
             "video_format": "yuv420p",
-            "container": "mov",
+            "container": "mp4",
             "opts": [
                 "-quality",
                 2,
@@ -432,7 +432,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "H.264 AVC - Apple Video Toolbox - Web",
             "codec": "h264_videotoolbox",
             "video_format": "yuv420p",
-            "container": "mov",
+            "container": "mp4",
             "opts": [
                 "-profile:v",
                 "main",
@@ -448,7 +448,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "H.265 HEVC",
             "codec": "libx265",
             "video_format": "yuv420p",
-            "container": "mov",
+            "container": "mp4",
             "opts": [
                 "-crf",
                 23,
@@ -465,7 +465,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "H.265 HEVC - Lossless",
             "codec": "libx265",
             "video_format": "yuv422p10",
-            "container": "mov",
+            "container": "mp4",
             "opts": [
                 "-preset",
                 "slow",
@@ -480,7 +480,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "H.265 HEVC - Web",
             "codec": "libx265",
             "video_format": "yuv420p",
-            "container": "mov",
+            "container": "mp4",
             "opts": [
                 "-crf",
                 23,
@@ -495,7 +495,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "H.265 HEVC - VA-API - Web",
             "codec": "hevc_vaapi",
             "video_format": "yuv420p",
-            "container": "mov",
+            "container": "mp4",
             "opts": [
                 "-rc_mode",
                 "CQP",
@@ -511,7 +511,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "H.265 HEVC - Nvidia NVENC - Web",
             "codec": "hevc_nvenc",
             "video_format": "yuv420p",
-            "container": "mov",
+            "container": "mp4",
             "opts": [
                 "-rc",
                 "constqp",
@@ -529,7 +529,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "H.265 HEVC - Intel QuickSync - Web",
             "codec": "hevc_qsv",
             "video_format": "yuv420p",
-            "container": "mov",
+            "container": "mp4",
             "opts": [
                 "-global_quality",
                 19,
@@ -543,7 +543,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "H.265 HEVC - AMD AMF - Web",
             "codec": "hevc_amf",
             "video_format": "yuv420p",
-            "container": "mov",
+            "container": "mp4",
             "opts": [
                 "-quality",
                 2,
@@ -563,7 +563,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "description": "H.265 HEVC - Apple Video Toolbox - Web",
             "codec": "hevc_videotoolbox",
             "video_format": "yuv420p",
-            "container": "mov",
+            "container": "mp4",
             "opts": [
                 "-profile:v",
                 "main",

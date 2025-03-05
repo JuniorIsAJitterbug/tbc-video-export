@@ -1130,7 +1130,7 @@ class TestOutput:
             id="x264",
             input_opts=["--quiet", "--overwrite", "--x264"],
             input_tbc="pal_svideo",
-            output_file="pal_svideo.mov",
+            output_file="pal_svideo.mp4",
             output_video_codec=codec_values["x264"],
             output_video_base=VideoBasePAL(
                 scan_type="MBAFF",
@@ -1144,7 +1144,7 @@ class TestOutput:
             id="x264_lossless",
             input_opts=["--quiet", "--overwrite", "--x264_lossless"],
             input_tbc="pal_svideo",
-            output_file="pal_svideo.mov",
+            output_file="pal_svideo.mp4",
             output_video_codec=codec_values["x264_lossless"],
             output_video_base=VideoBasePAL(
                 scan_type="MBAFF",
@@ -1158,7 +1158,7 @@ class TestOutput:
             id="x264_web",
             input_opts=["--quiet", "--overwrite", "--x264_web"],
             input_tbc="pal_svideo",
-            output_file="pal_svideo.mov",
+            output_file="pal_svideo.mp4",
             output_video_codec=codec_values["x264_web"],
             output_video_base=VideoBasePAL(
                 scan_type="Progressive",
@@ -1174,7 +1174,7 @@ class TestOutput:
             id="x265",
             input_opts=["--quiet", "--overwrite", "--x265"],
             input_tbc="pal_svideo",
-            output_file="pal_svideo.mov",
+            output_file="pal_svideo.mp4",
             output_video_codec=codec_values["x265"],
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
@@ -1186,7 +1186,7 @@ class TestOutput:
             id="x265_lossless",
             input_opts=["--quiet", "--overwrite", "--x265_lossless"],
             input_tbc="pal_svideo",
-            output_file="pal_svideo.mov",
+            output_file="pal_svideo.mp4",
             output_video_codec=codec_values["x265_lossless"],
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
@@ -1198,7 +1198,7 @@ class TestOutput:
             id="x265_web",
             input_opts=["--quiet", "--overwrite", "--x265_web"],
             input_tbc="pal_svideo",
-            output_file="pal_svideo.mov",
+            output_file="pal_svideo.mp4",
             output_video_codec=codec_values["x265_web"],
             output_video_base=VideoBasePAL(
                 scan_type="Progressive",
