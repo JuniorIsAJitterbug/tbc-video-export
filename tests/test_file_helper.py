@@ -204,7 +204,7 @@ class TestTBCJson:
                     "--process-efm",
                     "--process-vbi",
                     "--export-metadata",
-                    "--appimage",
+                    "--tbc-tools-appimage",
                     file.name,
                 ],
                 Path("tests/files/pal_svideo.tbc"),

@@ -26,7 +26,7 @@ class Opts(argparse.Namespace):
     input_file: str
     output_file: str | None
     threads: int
-    appimage: str
+    tbc_tools_appimage: str
     two_step: bool
     async_nt_pipes: bool
     video_system: VideoSystem | None
