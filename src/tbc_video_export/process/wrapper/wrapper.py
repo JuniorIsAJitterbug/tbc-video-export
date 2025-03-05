@@ -37,7 +37,7 @@ class Wrapper(ABC):
     @property
     def binary(self) -> FlatList:
         """Return wrapped binary name."""
-        return FlatList(self._state.file_helper.get_tool(self.process_name))
+        return FlatList(self._state.file_helper.tools[self.process_name])
 
     @cached_property
     def tbc_type(self) -> TBCType:

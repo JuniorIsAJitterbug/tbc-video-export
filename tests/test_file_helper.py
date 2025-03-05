@@ -184,13 +184,19 @@ class TestTBCJson:
         )
         helper = FileHelper(state.opts, state.config)
 
-        assert helper.get_tool(proc) == Path(str(proc))
+        assert helper.tools[proc] == Path(str(proc))
 
-    @pytest.mark.parametrize("proc", procs)
+    appimage_tbc_tools_procs = [
+        ProcessName.LD_CHROMA_DECODER,
+        ProcessName.LD_DROPOUT_CORRECT,
+        ProcessName.LD_EXPORT_METADATA,
+        ProcessName.LD_PROCESS_EFM,
+        ProcessName.LD_PROCESS_VBI,
+    ]
+
     def test_tools_appimage(  # noqa: D102
         self,
         program_state: Callable[[list[str], Path], ProgramState],
-        proc: ProcessName,
     ) -> None:
         with NamedTemporaryFile() as file:
             state = program_state(
@@ -205,10 +211,12 @@ class TestTBCJson:
             )
             helper = FileHelper(state.opts, state.config)
 
-            assert helper.get_tool(proc) == [
-                Path(file.name),
-                str(proc),
-            ]
+            # ensure appimage only used for tbc-tools
+            for k, v in helper.tools.items():
+                if k in self.appimage_tbc_tools_procs:
+                    assert v == [Path(file.name), str(k)]
+                else:
+                    assert v == Path(str(k))
 
     def test_out_file_dir(  # noqa: D102
         self,

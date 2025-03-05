@@ -177,16 +177,6 @@ class FileHelper:
         """Return absolute path to input file with extension."""
         return Path(f"{self.input_name}.{extension}")
 
-    def get_tool(self, process_name: ProcessName) -> Path | list[Path | str]:
-        """Return absolute path to tool binary from process."""
-        # if appimage is set, all binary paths are set to the appimage location
-        # so we return a list containing the appimage file with the binary
-        # name we want to use
-        if self._opts.appimage:
-            return [self.tools[process_name], str(process_name)]
-
-        return self.tools[process_name]
-
     def check_output_dir(self) -> None:
         """Check if output directory exists.
 
@@ -241,48 +231,48 @@ class FileHelper:
 
         return tbcs
 
-    def _get_tool_paths(self) -> dict[ProcessName, Path]:
+    def _get_tool_paths(self) -> dict[ProcessName, Path | list[Path | str]]:
         """Get required tool paths from PATH or script path."""
-        tools: dict[ProcessName, Path] = {}
+        tools: dict[ProcessName, Path | list[Path | str]] = {}
         tools[ProcessName.FFMPEG] = self._get_tool_path(ProcessName.FFMPEG)
 
         if not self._opts.no_dropout_correct and not self._opts.luma_4fsc:
-            tools[ProcessName.LD_DROPOUT_CORRECT] = self._get_tool_path(
+            tools[ProcessName.LD_DROPOUT_CORRECT] = self._get_tbc_tool_path(
                 ProcessName.LD_DROPOUT_CORRECT
             )
 
         if not self._opts.luma_4fsc:
-            tools[ProcessName.LD_CHROMA_DECODER] = self._get_tool_path(
+            tools[ProcessName.LD_CHROMA_DECODER] = self._get_tbc_tool_path(
                 ProcessName.LD_CHROMA_DECODER
             )
 
         if self._opts.process_vbi:
-            tools[ProcessName.LD_PROCESS_VBI] = self._get_tool_path(
+            tools[ProcessName.LD_PROCESS_VBI] = self._get_tbc_tool_path(
                 ProcessName.LD_PROCESS_VBI
             )
 
         if self._opts.process_efm:
-            tools[ProcessName.LD_PROCESS_EFM] = self._get_tool_path(
+            tools[ProcessName.LD_PROCESS_EFM] = self._get_tbc_tool_path(
                 ProcessName.LD_PROCESS_EFM
             )
 
         if self._opts.export_metadata:
-            tools[ProcessName.LD_EXPORT_METADATA] = self._get_tool_path(
+            tools[ProcessName.LD_EXPORT_METADATA] = self._get_tbc_tool_path(
                 ProcessName.LD_EXPORT_METADATA
             )
 
         return tools
 
     def _get_tool_path(self, tool_name: ProcessName) -> Path:
-        # if appimage is defined, use it as the location for the tools
-        if os.name != "nt":
-            binary = (
-                self._opts.appimage
-                if self._opts.appimage
-                else str(tool_name).lower().replace("_", "-")
-            )
-        else:
+        if os.name == "nt":
             # append .exe on NT
-            binary = f"{tool_name}.exe"
+            return files.find_binary(f"{tool_name}.exe")
 
-        return files.find_binary(binary)
+        return files.find_binary(str(tool_name))
+
+    def _get_tbc_tool_path(self, tool_name: ProcessName) -> Path | list[Path | str]:
+        if self._opts.appimage:
+            # return list with appimage file and tool name
+            return [files.find_binary(self._opts.appimage), str(tool_name)]
+
+        return self._get_tool_path(tool_name)
