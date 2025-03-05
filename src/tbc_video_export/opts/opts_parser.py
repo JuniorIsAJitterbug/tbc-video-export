@@ -90,10 +90,10 @@ def parse_opts(
     )
 
     general_opts.add_argument(
-        "--appimage",
+        "--tbc-tools-appimage",
         type=str,
         metavar="appimage file",
-        help="Run the tools from an AppImage file.\n\n",
+        help="Run the tbc-tools from an AppImage file.\n\n",
     )
 
     general_opts.add_argument(

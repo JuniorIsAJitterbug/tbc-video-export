@@ -271,8 +271,8 @@ class FileHelper:
         return files.find_binary(str(tool_name))
 
     def _get_tbc_tool_path(self, tool_name: ProcessName) -> Path | list[Path | str]:
-        if self._opts.appimage:
+        if self._opts.tbc_tools_appimage:
             # return list with appimage file and tool name
-            return [files.find_binary(self._opts.appimage), str(tool_name)]
+            return [files.find_binary(self._opts.tbc_tools_appimage), str(tool_name)]
 
         return self._get_tool_path(tool_name)
