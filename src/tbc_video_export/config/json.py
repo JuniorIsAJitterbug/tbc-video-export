@@ -24,6 +24,7 @@ class JsonProfile(TypedDict):
     video_profile: str | list[str]
     audio_profile: NotRequired[str]
     filter_profiles: NotRequired[list[str]]
+    deprecated: NotRequired[bool]
 
 
 class JsonSubProfile(TypedDict):

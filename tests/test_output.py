@@ -59,7 +59,7 @@ class TestOutput:
             "format_settings__gop": "N=1",
             "format_settings__wrapping_mode": "Frame (D-10)",
         },
-        "x264": {
+        "h264": {
             "format": "AVC",
             "format_profile": "High@L3.1",
             "encoding_settings": [
@@ -67,7 +67,7 @@ class TestOutput:
                 "interlaced=tff",
             ],
         },
-        "x264_lossless": {
+        "h264_lossless": {
             "format": "AVC",
             "format_profile": "High 4:4:4 Predictive@L6.2",
             "encoding_settings": [
@@ -75,14 +75,14 @@ class TestOutput:
                 "interlaced=tff",
             ],
         },
-        "x264_web": {
+        "h264_web": {
             "format": "AVC",
             "format_profile": "High@L3.1",
             "encoding_settings": [
                 "crf=18.0",
             ],
         },
-        "x265": {
+        "h265": {
             "format": "HEVC",
             "format_profile": "Main@L3@Main",
             "encoding_settings": [
@@ -90,12 +90,12 @@ class TestOutput:
                 "interlace=1",
             ],
         },
-        "x265_lossless": {
+        "h265_lossless": {
             "format": "HEVC",
             "format_profile": "Format Range@L8.5@Main",
             "encoding_settings": ["interlace=1", " lossless "],
         },
-        "x265_web": {
+        "h265_web": {
             "format": "HEVC",
             "format_profile": "Main@L3.1@Main",
             "encoding_settings": [
@@ -1127,11 +1127,11 @@ class TestOutput:
             ),
         ),
         OutputTestCase(
-            id="x264",
-            input_opts=["--quiet", "--overwrite", "--x264"],
+            id="h264",
+            input_opts=["--quiet", "--overwrite", "--h264"],
             input_tbc="pal_svideo",
             output_file="pal_svideo.mp4",
-            output_video_codec=codec_values["x264"],
+            output_video_codec=codec_values["h264"],
             output_video_base=VideoBasePAL(
                 scan_type="MBAFF",
             ),
@@ -1141,11 +1141,11 @@ class TestOutput:
             ),
         ),
         OutputTestCase(
-            id="x264_lossless",
-            input_opts=["--quiet", "--overwrite", "--x264_lossless"],
+            id="h264_lossless",
+            input_opts=["--quiet", "--overwrite", "--h264_lossless"],
             input_tbc="pal_svideo",
             output_file="pal_svideo.mp4",
-            output_video_codec=codec_values["x264_lossless"],
+            output_video_codec=codec_values["h264_lossless"],
             output_video_base=VideoBasePAL(
                 scan_type="MBAFF",
             ),
@@ -1155,11 +1155,11 @@ class TestOutput:
             ),
         ),
         OutputTestCase(
-            id="x264_web",
-            input_opts=["--quiet", "--overwrite", "--x264_web"],
+            id="h264_web",
+            input_opts=["--quiet", "--overwrite", "--h264_web"],
             input_tbc="pal_svideo",
             output_file="pal_svideo.mp4",
-            output_video_codec=codec_values["x264_web"],
+            output_video_codec=codec_values["h264_web"],
             output_video_base=VideoBasePAL(
                 scan_type="Progressive",
                 framerate_num="50",
@@ -1171,11 +1171,11 @@ class TestOutput:
             ),
         ),
         OutputTestCase(
-            id="x265",
-            input_opts=["--quiet", "--overwrite", "--x265"],
+            id="h265",
+            input_opts=["--quiet", "--overwrite", "--h265"],
             input_tbc="pal_svideo",
             output_file="pal_svideo.mp4",
-            output_video_codec=codec_values["x265"],
+            output_video_codec=codec_values["h265"],
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
                 bit_depth=8,
@@ -1183,11 +1183,11 @@ class TestOutput:
             ),
         ),
         OutputTestCase(
-            id="x265_lossless",
-            input_opts=["--quiet", "--overwrite", "--x265_lossless"],
+            id="h265_lossless",
+            input_opts=["--quiet", "--overwrite", "--h265_lossless"],
             input_tbc="pal_svideo",
             output_file="pal_svideo.mp4",
-            output_video_codec=codec_values["x265_lossless"],
+            output_video_codec=codec_values["h265_lossless"],
             output_video_base=VideoBasePAL(),
             output_video_color=VideoColorPAL(
                 bit_depth=10,
@@ -1195,11 +1195,11 @@ class TestOutput:
             ),
         ),
         OutputTestCase(
-            id="x265_web",
-            input_opts=["--quiet", "--overwrite", "--x265_web"],
+            id="h265_web",
+            input_opts=["--quiet", "--overwrite", "--h265_web"],
             input_tbc="pal_svideo",
             output_file="pal_svideo.mp4",
-            output_video_codec=codec_values["x265_web"],
+            output_video_codec=codec_values["h265_web"],
             output_video_base=VideoBasePAL(
                 scan_type="Progressive",
                 framerate_num="50",

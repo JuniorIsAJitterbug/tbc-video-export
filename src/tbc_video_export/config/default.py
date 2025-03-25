@@ -49,31 +49,31 @@ DEFAULT_CONFIG: JsonConfig = {
             "audio_profile": "pcm_24",
         },
         {
-            "name": "x264",
+            "name": "h264",
             "video_profile": [
                 "x264",
-                "x264_vaapi",
-                "x264_nvenc",
-                "x264_quicksync",
-                "x264_amf",
-                "x264_videotoolbox",
+                "h264_vaapi",
+                "h264_nvenc",
+                "h264_quicksync",
+                "h264_amf",
+                "h264_videotoolbox",
             ],
             "audio_profile": "aac",
         },
         {
-            "name": "x264_lossless",
+            "name": "h264_lossless",
             "video_profile": "x264_lossless",
             "audio_profile": "aac",
         },
         {
-            "name": "x264_web",
+            "name": "h264_web",
             "video_profile": [
                 "x264_web",
-                "x264_vaapi",
-                "x264_nvenc",
-                "x264_quicksync",
-                "x264_amf",
-                "x264_videotoolbox",
+                "h264_vaapi",
+                "h264_nvenc",
+                "h264_quicksync",
+                "h264_amf",
+                "h264_videotoolbox",
             ],
             "audio_profile": "aac",
             "filter_profiles": [
@@ -81,31 +81,31 @@ DEFAULT_CONFIG: JsonConfig = {
             ],
         },
         {
-            "name": "x265",
+            "name": "h265",
             "video_profile": [
                 "x265",
-                "x265_vaapi",
-                "x265_nvenc",
-                "x265_quicksync",
-                "x265_amf",
-                "x265_videotoolbox",
+                "h265_vaapi",
+                "h265_nvenc",
+                "h265_quicksync",
+                "h265_amf",
+                "h265_videotoolbox",
             ],
             "audio_profile": "aac",
         },
         {
-            "name": "x265_lossless",
+            "name": "h265_lossless",
             "video_profile": "x265_lossless",
             "audio_profile": "aac",
         },
         {
-            "name": "x265_web",
+            "name": "h265_web",
             "video_profile": [
                 "x265_web",
-                "x265_vaapi",
-                "x265_nvenc",
-                "x265_quicksync",
-                "x265_amf",
-                "x265_videotoolbox",
+                "h265_vaapi",
+                "h265_nvenc",
+                "h265_quicksync",
+                "h265_amf",
+                "h265_videotoolbox",
             ],
             "audio_profile": "aac",
             "filter_profiles": [
@@ -135,6 +135,78 @@ DEFAULT_CONFIG: JsonConfig = {
             "filter_profiles": [
                 "bwdif",
             ],
+        },
+        # DEPRECATED
+        # These will be removed at some point in the future
+        {
+            "name": "x264",
+            "video_profile": [
+                "x264",
+                "h264_vaapi",
+                "h264_nvenc",
+                "h264_quicksync",
+                "h264_amf",
+                "h264_videotoolbox",
+            ],
+            "audio_profile": "aac",
+            "deprecated": True,
+        },
+        {
+            "name": "x264_lossless",
+            "video_profile": "x264_lossless",
+            "audio_profile": "aac",
+            "deprecated": True,
+        },
+        {
+            "name": "x264_web",
+            "video_profile": [
+                "x264_web",
+                "h264_vaapi",
+                "h264_nvenc",
+                "h264_quicksync",
+                "h264_amf",
+                "h264_videotoolbox",
+            ],
+            "audio_profile": "aac",
+            "filter_profiles": [
+                "bwdif",
+            ],
+            "deprecated": True,
+        },
+        {
+            "name": "x265",
+            "video_profile": [
+                "x265",
+                "h265_vaapi",
+                "h265_nvenc",
+                "h265_quicksync",
+                "h265_amf",
+                "h265_videotoolbox",
+            ],
+            "audio_profile": "aac",
+            "deprecated": True,
+        },
+        {
+            "name": "x265_lossless",
+            "video_profile": "x265_lossless",
+            "audio_profile": "aac",
+            "deprecated": True,
+        },
+        {
+            "name": "x265_web",
+            "video_profile": [
+                "x265_web",
+                "h265_vaapi",
+                "h265_nvenc",
+                "h265_quicksync",
+                "h265_amf",
+                "h265_videotoolbox",
+            ],
+            "audio_profile": "aac",
+            "filter_profiles": [
+                "bwdif",
+            ],
+            "deprecated": True,
         },
     ],
     "video_profiles": [
@@ -313,7 +385,7 @@ DEFAULT_CONFIG: JsonConfig = {
         },
         {
             "name": "x264",
-            "description": "H.264 AVC",
+            "description": "H.264 AVC - x264",
             "codec": "libx264",
             "video_format": "yuv420p",
             "container": "mp4",
@@ -331,7 +403,7 @@ DEFAULT_CONFIG: JsonConfig = {
         },
         {
             "name": "x264_lossless",
-            "description": "H.264 AVC - Lossless",
+            "description": "H.264 AVC - x264 - Lossless",
             "codec": "libx264",
             "video_format": "yuv422p10",
             "container": "mp4",
@@ -347,7 +419,7 @@ DEFAULT_CONFIG: JsonConfig = {
         },
         {
             "name": "x264_web",
-            "description": "H.264 AVC - Web",
+            "description": "H.264 AVC - x264 - Web",
             "codec": "libx264",
             "video_format": "yuv420p",
             "container": "mp4",
@@ -362,7 +434,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "filter_profiles_override": [],
         },
         {
-            "name": "x264_vaapi",
+            "name": "h264_vaapi",
             "description": "H.264 AVC - VA-API",
             "codec": "h264_vaapi",
             "video_format": "yuv420p",
@@ -378,7 +450,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "hardware_accel": "vaapi",
         },
         {
-            "name": "x264_nvenc",
+            "name": "h264_nvenc",
             "description": "H.264 AVC - Nvidia NVENC - Web",
             "codec": "h264_nvenc",
             "video_format": "yuv420p",
@@ -394,7 +466,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "hardware_accel": "nvenc",
         },
         {
-            "name": "x264_quicksync",
+            "name": "h264_quicksync",
             "description": "H.264 AVC - Intel QuickSync - Web",
             "codec": "h264_qsv",
             "video_format": "yuv420p",
@@ -408,7 +480,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "hardware_accel": "quicksync",
         },
         {
-            "name": "x264_amf",
+            "name": "h264_amf",
             "description": "H.264 AVC - AMD AMF - Web",
             "codec": "h264_amf",
             "video_format": "yuv420p",
@@ -428,7 +500,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "hardware_accel": "amf",
         },
         {
-            "name": "x264_videotoolbox",
+            "name": "h264_videotoolbox",
             "description": "H.264 AVC - Apple Video Toolbox - Web",
             "codec": "h264_videotoolbox",
             "video_format": "yuv420p",
@@ -445,7 +517,7 @@ DEFAULT_CONFIG: JsonConfig = {
         },
         {
             "name": "x265",
-            "description": "H.265 HEVC",
+            "description": "H.265 HEVC - x265",
             "codec": "libx265",
             "video_format": "yuv420p",
             "container": "mp4",
@@ -462,7 +534,7 @@ DEFAULT_CONFIG: JsonConfig = {
         },
         {
             "name": "x265_lossless",
-            "description": "H.265 HEVC - Lossless",
+            "description": "H.265 HEVC - x265 - Lossless",
             "codec": "libx265",
             "video_format": "yuv422p10",
             "container": "mp4",
@@ -477,7 +549,7 @@ DEFAULT_CONFIG: JsonConfig = {
         },
         {
             "name": "x265_web",
-            "description": "H.265 HEVC - Web",
+            "description": "H.265 HEVC - x265 - Web",
             "codec": "libx265",
             "video_format": "yuv420p",
             "container": "mp4",
@@ -491,7 +563,7 @@ DEFAULT_CONFIG: JsonConfig = {
             ],
         },
         {
-            "name": "x265_vaapi",
+            "name": "h265_vaapi",
             "description": "H.265 HEVC - VA-API - Web",
             "codec": "hevc_vaapi",
             "video_format": "yuv420p",
@@ -507,7 +579,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "hardware_accel": "vaapi",
         },
         {
-            "name": "x265_nvenc",
+            "name": "h265_nvenc",
             "description": "H.265 HEVC - Nvidia NVENC - Web",
             "codec": "hevc_nvenc",
             "video_format": "yuv420p",
@@ -525,7 +597,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "hardware_accel": "nvenc",
         },
         {
-            "name": "x265_quicksync",
+            "name": "h265_quicksync",
             "description": "H.265 HEVC - Intel QuickSync - Web",
             "codec": "hevc_qsv",
             "video_format": "yuv420p",
@@ -539,7 +611,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "hardware_accel": "quicksync",
         },
         {
-            "name": "x265_amf",
+            "name": "h265_amf",
             "description": "H.265 HEVC - AMD AMF - Web",
             "codec": "hevc_amf",
             "video_format": "yuv420p",
@@ -559,7 +631,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "hardware_accel": "amf",
         },
         {
-            "name": "x265_videotoolbox",
+            "name": "h265_videotoolbox",
             "description": "H.265 HEVC - Apple Video Toolbox - Web",
             "codec": "hevc_videotoolbox",
             "video_format": "yuv420p",

@@ -95,6 +95,11 @@ class ActionListProfiles(argparse.Action):
 
         for profile_name in self._profile_names:
             profile = self._config.get_profile(GetProfileFilter(profile_name))
+
+            # skip deprecated
+            if profile.deprecated:
+                continue
+
             video_profiles = self._config.get_video_profiles_for_profile(profile_name)
 
             data = (

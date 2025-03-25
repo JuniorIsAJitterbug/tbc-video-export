@@ -54,6 +54,11 @@ class Profile:
         """Return filter profiles."""
         return self._filter_profiles
 
+    @property
+    def deprecated(self) -> bool:
+        """Returns True if profile is deprecated."""
+        return self._profile.get("deprecated", False)
+
     @filter_profiles.setter
     def filter_profiles(self, filter_profiles: list[ProfileFilter]) -> None:
         """Set filter profiles."""
