@@ -246,7 +246,7 @@ class TestWrappersFFmpeg:
         WrapperTestCase(
             id="override container",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
-            input_opts=["--profile", "x264", "--profile-container", "mkv"],
+            input_opts=["--profile", "h264", "--profile-container", "mkv"],
             expected_opts=[{"out_file.mkv"}],
         ),
         WrapperTestCase(
@@ -292,7 +292,7 @@ class TestWrappersFFmpeg:
         WrapperTestCase(
             id="vaapi hwaccel",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
-            input_opts=["--x264", "--vaapi", "--hwaccel-device", "TEST"],
+            input_opts=["--h264", "--vaapi", "--hwaccel-device", "TEST"],
             expected_opts=[
                 {"-hwaccel", "vaapi"},
                 {"-hwaccel_output_format", "vaapi"},
@@ -304,7 +304,7 @@ class TestWrappersFFmpeg:
         WrapperTestCase(
             id="nvenc hwaccel",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
-            input_opts=["--x264", "--nvenc", "--hwaccel-device", "TEST"],
+            input_opts=["--h264", "--nvenc", "--hwaccel-device", "TEST"],
             expected_opts=[
                 {"-gpu", "TEST"},
                 {"-c:v", "h264_nvenc"},
@@ -314,7 +314,7 @@ class TestWrappersFFmpeg:
         WrapperTestCase(
             id="quicksync hwaccel",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
-            input_opts=["--x264", "--quicksync", "--hwaccel-device", "TEST"],
+            input_opts=["--h264", "--quicksync", "--hwaccel-device", "TEST"],
             expected_opts=[
                 {"-hwaccel", "qsv"},
                 {"-qsv_device", "TEST"},
@@ -325,7 +325,7 @@ class TestWrappersFFmpeg:
         WrapperTestCase(
             id="amf hwaccel",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
-            input_opts=["--x264", "--amf"],
+            input_opts=["--h264", "--amf"],
             expected_opts=[
                 {"-c:v", "h264_amf"},
             ],
@@ -334,7 +334,7 @@ class TestWrappersFFmpeg:
         WrapperTestCase(
             id="amf hwaccel invalid device (exception)",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
-            input_opts=["--x264", "--amf", "--hwaccel-device", "TEST"],
+            input_opts=["--h264", "--amf", "--hwaccel-device", "TEST"],
             expected_opts=[
                 {"-c:v", "h264_amf"},
             ],
@@ -344,7 +344,7 @@ class TestWrappersFFmpeg:
         WrapperTestCase(
             id="videotoolbox hwaccel",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
-            input_opts=["--x264", "--videotoolbox"],
+            input_opts=["--h264", "--videotoolbox"],
             expected_opts=[
                 {"-c:v", "h264_videotoolbox"},
             ],

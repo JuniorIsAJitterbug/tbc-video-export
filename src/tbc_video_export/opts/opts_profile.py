@@ -32,7 +32,7 @@ def add_profile_opts(config: Config, parent: argparse.ArgumentParser) -> None:  
         help=(
             f"Specify an FFmpeg profile to use. (default: {profile_default})\n"
             "  - Use --list-profiles to see the available profiles.\n"
-            "  - These are also accessible directly, e.g. --x264"
+            "  - These are also accessible directly, e.g. --h264"
             "\n\n"
         ),
     )

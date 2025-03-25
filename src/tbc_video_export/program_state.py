@@ -241,7 +241,11 @@ class ProgramState:
             output_file.append(str(self.file_helper.output_video_file_luma))
 
         output_file.append(str(self.file_helper.output_video_file))
-        profile.append(f"{self.profile.name}")
+
+        profile.append(
+            self.profile.name
+            + (ansi.error_color(" **DEPRECATED**") if self.profile.deprecated else "")
+        )
 
         output_files = ", ".join(output_file)
         profiles = (
