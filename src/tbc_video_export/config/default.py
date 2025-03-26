@@ -405,7 +405,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "name": "x264_lossless",
             "description": "H.264 AVC - x264 - Lossless",
             "codec": "libx264",
-            "video_format": "yuv422p10",
+            "video_format": "yuv422p10le",
             "container": "mp4",
             "opts": [
                 "-qp",
@@ -536,7 +536,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "name": "x265_lossless",
             "description": "H.265 HEVC - x265 - Lossless",
             "codec": "libx265",
-            "video_format": "yuv422p10",
+            "video_format": "yuv422p10le",
             "container": "mp4",
             "opts": [
                 "-preset",
@@ -671,7 +671,7 @@ DEFAULT_CONFIG: JsonConfig = {
             "name": "av1_lossless",
             "description": "AV1 - Lossless",
             "codec": "libaom-av1",
-            "video_format": "yuv422p10",
+            "video_format": "yuv422p10le",
             "container": "mp4",
             "opts": [
                 "-crf",
