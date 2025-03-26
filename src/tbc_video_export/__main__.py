@@ -45,10 +45,6 @@ async def _run(argv: list[str]) -> None:
 
         handler = ProcessHandler(state)
 
-        logging.getLogger("console").info(
-            f"{strings.application_header()}\n\n{state}\n"
-        )
-
         if os.name == "nt":
             from tbc_video_export.common.utils import win32
 
@@ -57,6 +53,10 @@ async def _run(argv: list[str]) -> None:
             terminal_ctx = nullcontext()
 
         with interrupts.InterruptHandler(handler), terminal_ctx:
+            logging.getLogger("console").info(
+                f"{strings.application_header()}\n\n{state}\n"
+            )
+
             await handler.run()
     except Exception as e:  # noqa: BLE001
         exceptions.handle_exceptions(e)
