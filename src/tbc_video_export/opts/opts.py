@@ -76,6 +76,7 @@ class Opts(argparse.Namespace):
     # dropout-correct
     no_dropout_correct: bool
     dropout_correct_threads: int | None
+    dropout_allow_interfield: bool
 
     # luma
     luma_only: bool

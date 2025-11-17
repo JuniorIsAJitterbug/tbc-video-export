@@ -27,11 +27,10 @@ class WrapperLDDropoutCorrect(Wrapper):
 
     @property
     def command(self) -> FlatList:  # noqa: D102
-        return FlatList(
+        l = FlatList(
             (
                 self.binary,
                 self._get_thread_opts(),
-                "-i",
                 self._state.file_helper.tbcs[self._config.tbc_type],
                 "--input-json",
                 self._state.file_helper.tbc_json.file_name,
@@ -40,6 +39,9 @@ class WrapperLDDropoutCorrect(Wrapper):
                 self._config.output_pipes.out_path,
             )
         )
+        if self._state.opts.dropout_allow_interfield is False:
+            l.append("-i")
+        return l
 
     def _get_thread_opts(self) -> FlatList | None:
         thread_count = self._state.opts.threads

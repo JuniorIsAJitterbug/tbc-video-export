@@ -312,6 +312,18 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
         ),
     )
 
+    dropout_correct_opts.add_argument(
+        "--dropout-allow-interfield",
+        action="store_true",
+        default=False,
+        help=(
+            "Allow interfield dropout correction. (default: no)\n"
+            "  - This will run ld-dropout-correct without the --intra flag."
+            "\n\n"
+        ),
+    )
+
+
     # process-vbi
     process_vbi = parent.add_argument_group("process vbi")
     process_vbi.add_argument(
