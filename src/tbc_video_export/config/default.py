@@ -232,7 +232,7 @@ DEFAULT_CONFIG: JsonConfig = {
                 "-context",
                 1,
                 "-slices",
-                24,
+                4,
                 "-slicecrc",
                 1,
                 "-g",
