@@ -33,7 +33,7 @@ class TestOutput:
             "format": "FFV1",
             "format_settings__gop": "N=1",
             "coder_type": "Range Coder",
-            "maxslicescount": "24",
+            "maxslicescount": "4",
             "errordetectiontype": "Per slice",
         },
         "prores_hq": {
@@ -119,7 +119,7 @@ class TestOutput:
         "format": "FFV1",
         "format_settings__gop": "N=1",
         "coder_type": "Range Coder",
-        "maxslicescount": "24",
+        "maxslicescount": "4",
         "errordetectiontype": "Per slice",
     }
 
@@ -513,8 +513,8 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBaseNTSC(
                 width=760,
-                height=509,
-                display_aspect_ratio="1.273",
+                height=508,
+                display_aspect_ratio="1.275",
             ),
             output_video_color=VideoColorNTSC(
                 bit_depth=10,
@@ -625,8 +625,8 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBaseNTSC(
                 width=760,
-                height=509,
-                display_aspect_ratio="1.273",
+                height=508,
+                display_aspect_ratio="1.275",
             ),
             output_video_color=VideoColorNTSC(
                 bit_depth=10,
@@ -737,8 +737,8 @@ class TestOutput:
             output_video_codec=codec_ffv1,
             output_video_base=VideoBaseNTSC(
                 width=760,
-                height=509,
-                display_aspect_ratio="1.273",
+                height=508,
+                display_aspect_ratio="1.275",
             ),
             output_video_color=VideoColorNTSC(
                 bit_depth=10,
@@ -848,10 +848,9 @@ class TestOutput:
             output_file="palm_svideo.mkv",
             output_video_codec=codec_ffv1,
             output_video_base=VideoBasePALM(
-                width=759,
+                width=760,
                 height=508,
-                pixel_aspect_ratio="0.852",
-                display_aspect_ratio="1.273",
+                display_aspect_ratio="1.275",
             ),
             output_video_color=VideoColorPALM(
                 bit_depth=10,
