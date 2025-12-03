@@ -426,6 +426,7 @@ class TestWrappersChromaDecoder:
                 {"--lfll", "259"},
                 {"--ffrl", "17"},
                 {"--lfrl", "525"},
+                {"--pad", "2"},
             ],
         ),
         # NTSC
@@ -498,10 +499,11 @@ class TestWrappersChromaDecoder:
             input_tbc=f"{get_path('ntsc_svideo')}.tbc",
             input_opts=["--vbi"],
             expected_opts=[
-                {"--ffll", "15"},
+                {"--ffll", "16"},
                 {"--lfll", "259"},
-                {"--ffrl", "16"},
+                {"--ffrl", "17"},
                 {"--lfrl", "525"},
+                {"--pad", "2"},
             ],
         ),
         # general

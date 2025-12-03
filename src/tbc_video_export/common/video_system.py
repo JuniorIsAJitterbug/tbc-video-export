@@ -113,7 +113,7 @@ video_system_ntsc = VideoSystemData(
         "default": VideoSystemData.ActiveLines(20, 259, 40, 525, None),  # unused
         "full_vertical": VideoSystemData.ActiveLines(1, 259, 2, 525, None),
         "letterbox": VideoSystemData.ActiveLines(61, 224, 122, 448, 1),  # unsure!
-        "vbi": VideoSystemData.ActiveLines(15, 259, 16, 525, 1),
+        "vbi": VideoSystemData.ActiveLines(16, 259, 17, 525, 2),  # unsure!
     },
     aspect_ratio={
         "default": VideoSystemData.AspectRatio(352, 413),  # unused
@@ -144,7 +144,7 @@ video_system_palm = VideoSystemData(
         "default": VideoSystemData.ActiveLines(20, 259, 40, 525, None),  # unused
         "full_vertical": VideoSystemData.ActiveLines(1, 259, 2, 525, None),
         "letterbox": VideoSystemData.ActiveLines(0, 0, 0, 0, 0),  # Sample required!
-        "vbi": VideoSystemData.ActiveLines(16, 259, 17, 525, 1),
+        "vbi": VideoSystemData.ActiveLines(16, 259, 17, 525, 2),  # unsure!
     },
     aspect_ratio={
         "default": VideoSystemData.AspectRatio(352, 413),  # unused
