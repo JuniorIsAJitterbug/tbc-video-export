@@ -59,18 +59,6 @@ class TypeAdditionalFilter:
         return value
 
 
-class TypeOverrideAudioProfile:
-    """Return ProfileFilter if it exists."""
-
-    def __init__(self, config: Config) -> None:
-        self._config = config
-
-    def __call__(self, value: str) -> str:  # noqa: D102
-        # add to config
-        self._config.add_additional_filter(value)
-        return value
-    
-
 class TypeDropoutInterfieldCorrection:
     """Return TBCType value if it exists."""
 

@@ -172,7 +172,7 @@ class AudioBase:  # noqa: D101
     title: str | None = field(default=None)
     language: str | None = field(default=None)
     channel_s: int = field(default=2)
-    channel_layout: str = field(default="L R")
+    channel_layout: str | None = field(default="L R")
 
 
 @dataclass

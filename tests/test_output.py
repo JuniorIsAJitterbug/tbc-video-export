@@ -1296,6 +1296,32 @@ class TestOutput:
             ],
         ),
         OutputTestCase(
+            id="overwrite audio profile",
+            input_opts=[
+                "--quiet",
+                "--overwrite",
+                "--audio-track",
+                "tests/files/audio.flac",
+                "--pcm_24",
+            ],
+            input_tbc="pal_svideo",
+            output_file="pal_svideo.mkv",
+            output_video_codec=codec_ffv1,
+            output_video_base=VideoBasePAL(),
+            output_video_color=VideoColorPAL(
+                bit_depth=10,
+                chroma_subsampling="4:2:2",
+            ),
+            output_audio_base=[
+                AudioBase(
+                    format="PCM",
+                    bit_depth=24,
+                    sampling_rate=44100,
+                    channel_layout=None,
+                ),
+            ],
+        ),
+        OutputTestCase(
             id="mux audio tracks with advanced settings",
             input_opts=[
                 "--quiet",
@@ -1577,7 +1603,7 @@ class TestOutput:
         "test_case",
         (pytest.param(test_case, id=test_case.id) for test_case in audio_test_cases),
     )
-    def test_audio_muxing(self, test_case: OutputTestCase):  # noqa: D102
+    def test_audio(self, test_case: OutputTestCase):  # noqa: D102
         self.run_output_validation(test_case)
 
     @pytest.mark.parametrize(
