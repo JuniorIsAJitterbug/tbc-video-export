@@ -28,6 +28,11 @@ class FileHelper:
 
         self._profile = self._config.get_profile(GetProfileFilter(self._opts.profile))
 
+        # overwrite audio profile if opt set
+        if self._opts.audio_profile is not None:
+            self._profile.audio_profile = config.get_audio_profile(
+                self._opts.audio_profile
+            )
         # initially set both input and output files to the input file
         # file without file extension
         self._input_path = self._output_path = Path(self._opts.input_file).parent

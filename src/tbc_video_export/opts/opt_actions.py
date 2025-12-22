@@ -217,4 +217,4 @@ class ActionSetAudioOverride(argparse.Action):
         option_strings: str | None = None,
         **kwargs: Any,  # noqa: ARG002
     ) -> None:
-        namespace.audio_profile = str(option_strings)[2:].replace("-", "_").lower()
+        namespace.audio_profile = str(option_strings)[2:].lower()

@@ -118,6 +118,31 @@ class Config:
         except exceptions.InvalidProfileError as e:
             raise exceptions.InvalidProfileError(str(e), self.get_config_file()) from e
 
+    def get_audio_profile(self, profile_name: str) -> ProfileAudio:
+        """Return an audio profile from a name."""
+        try:
+            profile = next(
+                (
+                    profile
+                    for profile in self.audio_profiles
+                    if profile.name == profile_name
+                ),
+                None,
+            )
+
+            if profile is None:
+                err_msg = f"Could not find audio profile {profile_name}."
+
+                raise exceptions.InvalidProfileError(err_msg)
+
+            return profile
+        except KeyError as e:
+            raise exceptions.InvalidProfileError(
+                "Could not load audio profiles.", self.get_config_file()
+            ) from e
+        except exceptions.InvalidProfileError as e:
+            raise exceptions.InvalidProfileError(str(e), self.get_config_file()) from e
+
     def get_profile_names(self) -> list[str]:
         """Return a list of unique profile names for a given profile type."""
         return list(dict.fromkeys(profile.name for profile in self.profiles))

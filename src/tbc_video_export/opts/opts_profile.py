@@ -154,12 +154,13 @@ def add_profile_opts(config: Config, parent: argparse.ArgumentParser) -> None:  
         )
 
     # audio profile aliases
-    audio_type_opts = parent.add_argument_group("audio profile alises")
+    audio_profile_opts = parent.add_argument_group("audio profile alises")
 
-    for audio_type in config.get_audio_profile_names():
-        audio_type_opts.add_argument(
-            f"--{audio_type.replace('_', '-')}",
+    for profile_name in config.get_audio_profile_names():
+        audio_profile_opts.add_argument(
+            f"--{profile_name}",
             type=str,
+            dest="audio_profile",
             action=opt_actions.ActionSetAudioOverride,
             help=argparse.SUPPRESS,
         )
