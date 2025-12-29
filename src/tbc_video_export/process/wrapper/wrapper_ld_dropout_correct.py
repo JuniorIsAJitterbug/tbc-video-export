@@ -5,7 +5,7 @@ import os
 from functools import cached_property
 from typing import TYPE_CHECKING
 
-from tbc_video_export.common.enums import PipeType, ProcessName
+from tbc_video_export.common.enums import PipeType, ProcessName, TBCType
 from tbc_video_export.common.utils import FlatList
 from tbc_video_export.process.wrapper.wrapper import Wrapper
 
@@ -27,11 +27,12 @@ class WrapperLDDropoutCorrect(Wrapper):
 
     @property
     def command(self) -> FlatList:  # noqa: D102
-        l = FlatList(
+        return FlatList(
             (
                 self.binary,
                 self._get_thread_opts(),
                 self._state.file_helper.tbcs[self._config.tbc_type],
+                None if self.dropout_interfield_correction else "-i",
                 "--input-json",
                 self._state.file_helper.tbc_json.file_name,
                 "--output-json",
@@ -39,9 +40,6 @@ class WrapperLDDropoutCorrect(Wrapper):
                 self._config.output_pipes.out_path,
             )
         )
-        if self._state.opts.dropout_allow_interfield is False:
-            l.append("-i")
-        return l
 
     def _get_thread_opts(self) -> FlatList | None:
         thread_count = self._state.opts.threads
@@ -85,6 +83,17 @@ class WrapperLDDropoutCorrect(Wrapper):
     @cached_property
     def env(self) -> dict[str, str] | None:  # noqa: D102
         return None
+    
+    @cached_property
+    def dropout_interfield_correction(self) -> bool:  # noqa: D102
+        # when `dropout_interfield_correction` set to NONE, disable, else
+        #   when tbc_type is LUMA or CHROMA and `dropout_interfield_correction`` matches, enable
+        #   when tbc_type is COMBINED or `dropout_interfield_correction` is COMBINED, enable
+        return self._state.opts.dropout_interfield_correction != TBCType.NONE and (
+            self._state.opts.dropout_interfield_correction == self.tbc_type
+            or self._state.opts.dropout_interfield_correction == TBCType.COMBINED
+            or self.tbc_type == TBCType.COMBINED
+        )
 
     @cached_property
     def ignore_error(self) -> bool:  # noqa: D102

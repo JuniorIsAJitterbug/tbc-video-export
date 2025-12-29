@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import argparse
 
-from tbc_video_export.common.enums import ChromaDecoder
+from tbc_video_export.common.enums import ChromaDecoder, TBCType
 from tbc_video_export.opts import opt_types
 
 
@@ -313,16 +313,22 @@ def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
     )
 
     dropout_correct_opts.add_argument(
-        "--dropout-allow-interfield",
-        action="store_true",
-        default=False,
+        "--dropout-interfield-correction",
+        type=opt_types.TypeDropoutInterfieldCorrection(parent),
+        choices=list(TBCType),
+        default=TBCType.NONE,
         help=(
-            "Allow interfield dropout correction. (default: no)\n"
+            "Enable interfield dropout correction.\n"
             "  - This will run ld-dropout-correct without the --intra flag."
+            "\n\n"
+            "Available Options:\n"
+            f"  {TBCType.NONE}     Disable interfield dropout correction. (default)\n"
+            f"  {TBCType.LUMA}     Enabled for LUMA only\n"
+            f"  {TBCType.CHROMA}   Enabled for CHROMA only\n"
+            f"  {TBCType.COMBINED} Enabled for LUMA and CHROMA"
             "\n\n"
         ),
     )
-
 
     # process-vbi
     process_vbi = parent.add_argument_group("process vbi")
