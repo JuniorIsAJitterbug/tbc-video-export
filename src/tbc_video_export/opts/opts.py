@@ -13,6 +13,7 @@ if TYPE_CHECKING:
         HardwareAccelType,
         VideoFormatType,
         VideoSystem,
+        TBCType,
     )
 
 
@@ -76,7 +77,7 @@ class Opts(argparse.Namespace):
     # dropout-correct
     no_dropout_correct: bool
     dropout_correct_threads: int | None
-    dropout_allow_interfield: bool
+    dropout_interfield_correction: TBCType
 
     # luma
     luma_only: bool

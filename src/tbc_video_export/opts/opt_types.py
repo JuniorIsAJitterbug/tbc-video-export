@@ -6,6 +6,7 @@ from tbc_video_export.common.enums import (
     ChromaDecoder,
     FieldOrder,
     VideoSystem,
+    TBCType,
 )
 
 if TYPE_CHECKING:
@@ -68,6 +69,22 @@ class TypeOverrideAudioProfile:
         # add to config
         self._config.add_additional_filter(value)
         return value
+    
+
+class TypeDropoutInterfieldCorrection:
+    """Return TBCType value if it exists."""
+
+    def __init__(self, parser: argparse.ArgumentParser) -> None:
+        self._parser = parser
+
+    def __call__(self, value: str) -> TBCType:  # noqa: D102
+        try:
+            return TBCType[value.upper()]
+        except KeyError:
+            self._parser.error(
+                f"argument --dropout-interfield-correction: invalid value: '{value}', "
+                f"check --help for available options."
+            )
 
 
 class TypeChromaDecoder:
