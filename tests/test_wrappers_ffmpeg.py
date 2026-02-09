@@ -8,6 +8,7 @@ import pytest
 from tbc_video_export.common import exceptions
 from tbc_video_export.common.enums import ExportMode, TBCType
 from tbc_video_export.common.utils import ansi
+from tbc_video_export.common.video_system import video_system_pal
 from tests.conftest import WrapperTestCase, get_path
 
 if TYPE_CHECKING:
@@ -19,6 +20,14 @@ if TYPE_CHECKING:
 
 class TestWrappersFFmpeg:
     """Tests for FFmpeg wrapper."""
+
+    pal_setparams = (
+        f"setparams="
+        f"range={video_system_pal.ffmpeg_config.color_range}:"
+        f"colorspace={video_system_pal.ffmpeg_config.color_space}:"
+        f"color_primaries={video_system_pal.ffmpeg_config.color_primaries}:"
+        f"color_trc={video_system_pal.ffmpeg_config.color_trc}"
+    )
 
     audio_file = "tests/files/audio.flac"
 
@@ -299,7 +308,7 @@ class TestWrappersFFmpeg:
                 {"-vaapi_device", "TEST"},
                 {"-c:v", "h264_vaapi"},
             ],
-            expected_str=[",format=yuv420p,hwupload[v_output]"],
+            expected_str=[f",format=yuv420p,{pal_setparams},hwupload[v_output]"],
         ),
         WrapperTestCase(
             id="nvenc hwaccel",
@@ -309,7 +318,7 @@ class TestWrappersFFmpeg:
                 {"-gpu", "TEST"},
                 {"-c:v", "h264_nvenc"},
             ],
-            expected_str=[",format=yuv420p[v_output]"],
+            expected_str=[f",format=yuv420p,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="quicksync hwaccel",
@@ -320,7 +329,7 @@ class TestWrappersFFmpeg:
                 {"-qsv_device", "TEST"},
                 {"-c:v", "h264_qsv"},
             ],
-            expected_str=[",format=yuv420p[v_output]"],
+            expected_str=[f",format=yuv420p,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="amf hwaccel",
@@ -329,7 +338,7 @@ class TestWrappersFFmpeg:
             expected_opts=[
                 {"-c:v", "h264_amf"},
             ],
-            expected_str=[",format=yuv420p[v_output]"],
+            expected_str=[f",format=yuv420p,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="amf hwaccel invalid device (exception)",
@@ -338,7 +347,7 @@ class TestWrappersFFmpeg:
             expected_opts=[
                 {"-c:v", "h264_amf"},
             ],
-            expected_str=[",format=yuv420p[v_output]"],
+            expected_str=[f",format=yuv420p,{pal_setparams}[v_output]"],
             expected_exc=pytest.raises(exceptions.InvalidProfileError),
         ),
         WrapperTestCase(
@@ -348,7 +357,7 @@ class TestWrappersFFmpeg:
             expected_opts=[
                 {"-c:v", "h264_videotoolbox"},
             ],
-            expected_str=[",format=yuv420p[v_output]"],
+            expected_str=[f",format=yuv420p,{pal_setparams}[v_output]"],
         ),
     ]
 
@@ -357,115 +366,115 @@ class TestWrappersFFmpeg:
             id="8bit",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--8bit"],
-            expected_str=["format=yuv422p[v_output]"],
+            expected_str=[f"format=yuv422p,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="10bit",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--10bit"],
-            expected_str=["format=yuv422p10le[v_output]"],
+            expected_str=[f"format=yuv422p10le,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="16bit",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--16bit"],
-            expected_str=["format=yuv422p16le[v_output]"],
+            expected_str=[f"format=yuv422p16le,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="8bit yuv420p",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--8bit", "--yuv420"],
-            expected_str=["format=yuv420p[v_output]"],
+            expected_str=[f"format=yuv420p,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="10bit yuv420p",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--10bit", "--yuv420"],
-            expected_str=["format=yuv420p10le[v_output]"],
+            expected_str=[f"format=yuv420p10le,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="16bit yuv420p",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--16bit", "--yuv420"],
-            expected_str=["format=yuv420p16le[v_output]"],
+            expected_str=[f"format=yuv420p16le,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="8bit yuv422p",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--8bit", "--yuv422"],
-            expected_str=["format=yuv422p[v_output]"],
+            expected_str=[f"format=yuv422p,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="10bit yuv422p",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--10bit", "--yuv422"],
-            expected_str=["format=yuv422p10le[v_output]"],
+            expected_str=[f"format=yuv422p10le,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="16bit yuv422p",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--16bit", "--yuv422"],
-            expected_str=["format=yuv422p16le[v_output]"],
+            expected_str=[f"format=yuv422p16le,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="8bit yuv444p",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--8bit", "--yuv444"],
-            expected_str=["format=yuv444p[v_output]"],
+            expected_str=[f"format=yuv444p,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="10bit yuv444p",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--10bit", "--yuv444"],
-            expected_str=["format=yuv444p10le[v_output]"],
+            expected_str=[f"format=yuv444p10le,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="16bit yuv444p",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--16bit", "--yuv444"],
-            expected_str=["format=yuv444p16le[v_output]"],
+            expected_str=[f"format=yuv444p16le,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="8bit gray",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--8bit", "--gray"],
-            expected_str=["format=gray8[v_output]"],
+            expected_str=[f"format=gray8,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="10bit gray",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--10bit", "--gray"],
-            expected_str=["format=gray16le[v_output]"],
+            expected_str=[f"format=gray16le,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="16bit gray",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--16bit", "--gray"],
-            expected_str=["format=gray16le[v_output]"],
+            expected_str=[f"format=gray16le,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="luma only",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--luma-only"],
-            expected_str=["format=gray16le[v_output]"],
+            expected_str=[f"format=gray16le,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="8bit gray (luma only)",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--luma-only", "--8bit"],
-            expected_str=["format=gray8[v_output]"],
+            expected_str=[f"format=gray8,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="10bit gray (luma only)",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--luma-only", "--10bit"],
-            expected_str=["format=gray16le[v_output]"],
+            expected_str=[f"format=gray16le,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="16bit gray (luma only)",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--luma-only", "--16bit"],
-            expected_str=["format=gray16le[v_output]"],
+            expected_str=[f"format=gray16le,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="format without bitdepth (exception)",
@@ -498,7 +507,7 @@ class TestWrappersFFmpeg:
                 "TEST_FILTER",
             ],
             expected_str=[
-                ",TEST_FILTER,format=yuv422p10le[v_output]",
+                f",TEST_FILTER,format=yuv422p10le,{pal_setparams}[v_output]",
                 "[v_output],TEST_FILTER",
             ],
         ),
@@ -525,6 +534,7 @@ class TestWrappersFFmpeg:
                 ",colorlevels=rimin=255/255:gimin=255/255:bimin=255/255"
                 ",test_video_filter"
                 ",format=yuv422p10le"
+                f",{pal_setparams}"
                 "[v_output]"
                 ",[2:a]pan=stereo|FR=FR|FL=FR"
                 ",test_other_filter"
@@ -537,7 +547,7 @@ class TestWrappersFFmpeg:
             input_opts=["--two-step"],
             tbc_type=TBCType.LUMA,
             export_mode=ExportMode.LUMA,
-            expected_str=["[0:v]setfield=tff[v_output]"],
+            expected_str=[f"[0:v]setfield=tff,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
             id="embed tbc json",
