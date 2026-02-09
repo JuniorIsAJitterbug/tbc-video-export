@@ -54,7 +54,6 @@ class WrapperFFmpeg(Wrapper):
                 self._get_map_opts(),
                 self._get_timecode_opt(),
                 self._get_framerate_opt(),
-                self._get_color_opts(),
                 self._get_codec_opts(),
                 self._get_metadata_opts(),
                 self._get_output_opt(),
@@ -185,8 +184,6 @@ class WrapperFFmpeg(Wrapper):
         input_opts.append(
             (
                 self._get_thread_queue_size_opt(),
-                "-color_range",
-                video_system_data.ffmpeg_config.color_range,
                 "-i",
                 i,
             )
@@ -275,6 +272,7 @@ class WrapperFFmpeg(Wrapper):
         _vf, _of = self._state.config.get_profile_filters(self._get_profile())
 
         # set video filters
+        video_filters.append(f"setfield={self._get_field_order()}")
         video_filters += _vf
 
         if (arf := self._get_aspect_ratio_filter()) is not None:
@@ -293,6 +291,7 @@ class WrapperFFmpeg(Wrapper):
             video_filters.append(self._state.opts.append_video_filter)
 
         video_filters.append(f"format={self._get_profile_video_format()}")
+        video_filters.append(self._get_setparams_filter())
 
         if self._state.opts.hwaccel_type is not None and self._hwaccel_filter:
             video_filters.append(self._hwaccel_filter)
@@ -307,12 +306,7 @@ class WrapperFFmpeg(Wrapper):
 
     def _get_filter_complex_opts(self) -> FlatList:  # noqa: C901, PLR0912
         """Return opts for filter complex."""
-        field_filter = f"setfield={self._get_field_order()}"
         video_filters, other_filters = self._get_filters()
-
-        # add setfield to start of filters
-        video_filters.insert(0, field_filter)
-
         video_filters_str = ",".join(video_filters)
         other_filters_str = f",{of}" if (of := ",".join(other_filters)) else ""
 
@@ -332,9 +326,7 @@ class WrapperFFmpeg(Wrapper):
                 )
 
                 complex_filter = (
-                    f"[0:v]format={consts.FFMPEG_DEFAULT_LUMA_FORMAT}[luma];"
-                    f"[1:v]format={consts.FFMPEG_DEFAULT_CHROMA_FORMAT}[chroma];"
-                    f"[luma]extractplanes=y[y];[chroma]extractplanes=u+v[u][v];"
+                    f"[0:v]extractplanes=y[y];[1:v]extractplanes=u+v[u][v];"
                     f"[y][u][v]mergeplanes={mergeplanes}:format={consts.FFMPEG_DEFAULT_CHROMA_FORMAT},"
                 )
 
@@ -349,9 +341,14 @@ class WrapperFFmpeg(Wrapper):
             case _:
                 complex_filter = "[0:v]"
 
-                # luma step in two-step should not use any filters (excluding setfield)
+                # luma step in two-step should only use setfield and setparams filters
                 if self._is_two_step_luma_mode():
-                    video_filters_str = field_filter
+                    video_filters_str = ",".join(
+                        [
+                            f"setfield={self._get_field_order()}",
+                            self._get_setparams_filter(),
+                        ]
+                    )
                     other_filters_str = ""
 
         return FlatList(
@@ -427,21 +424,15 @@ class WrapperFFmpeg(Wrapper):
 
         return None  # do not return default ar
 
-    def _get_color_opts(self) -> FlatList | None:
-        """Return opts for color settings."""
+    def _get_setparams_filter(self) -> str:
+        """Return filter for setparams."""
         ffmpeg_config = self._state.video_system_data.ffmpeg_config
-
-        return FlatList(
-            (
-                "-color_range",
-                ffmpeg_config.color_range,
-                "-colorspace",
-                ffmpeg_config.color_space,
-                "-color_primaries",
-                ffmpeg_config.color_primaries,
-                "-color_trc",
-                ffmpeg_config.color_trc,
-            )
+        return (
+            f"setparams="
+            f"range={ffmpeg_config.color_range}:"
+            f"colorspace={ffmpeg_config.color_space}:"
+            f"color_primaries={ffmpeg_config.color_primaries}:"
+            f"color_trc={ffmpeg_config.color_trc}"
         )
 
     def _get_codec_opts(self) -> FlatList:
