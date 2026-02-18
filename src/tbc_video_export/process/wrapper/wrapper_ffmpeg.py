@@ -200,7 +200,7 @@ class WrapperFFmpeg(Wrapper):
         if self._state.opts.start is None and self._state.opts.length is None:
             return None, None
 
-        fps = self._state.video_system_data.ffmpeg_config.fps_fraction
+        fps = self._state.video_system_data.fps_fraction
         start_frame = self._state.opts.start or 0
 
         ss = f"{float(Fraction(start_frame) / fps):.6f}" if start_frame > 0 else None

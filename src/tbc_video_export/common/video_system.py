@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from fractions import Fraction
-from typing import ClassVar, Literal, TypeAlias
+from typing import Literal, TypeAlias
 
 from tbc_video_export.common.enums import ChromaDecoder, ExportMode, VideoSystem
 
@@ -25,6 +25,7 @@ class VideoSystemData:
     aspect_ratio: dict[VideoAspectRatioType, AspectRatio]
     chroma_decoder: dict[ExportMode, ChromaDecoder]
     ffmpeg_config: FFmpegConfig
+    fps_fraction: Fraction
 
     @staticmethod
     def get(system: VideoSystem) -> VideoSystemData:
@@ -73,16 +74,6 @@ class VideoSystemData:
         color_trc: str
         fps: str
 
-        _FPS_RATES: ClassVar[dict[str, Fraction]] = {
-            "pal": Fraction(25),
-            "ntsc": Fraction(30000, 1001),
-        }
-
-        @property
-        def fps_fraction(self) -> Fraction:
-            """Return fps as a Fraction for precise frame-to-time arithmetic."""
-            return self._FPS_RATES[self.fps]
-
 
 video_system_pal = VideoSystemData(
     size={
@@ -113,6 +104,7 @@ video_system_pal = VideoSystemData(
         "bt709",
         "pal",
     ),
+    fps_fraction=Fraction(25),
 )
 
 video_system_ntsc = VideoSystemData(
@@ -144,6 +136,7 @@ video_system_ntsc = VideoSystemData(
         "bt709",
         "ntsc",
     ),
+    fps_fraction=Fraction(30000, 1001),
 )
 
 video_system_palm = VideoSystemData(
@@ -175,6 +168,7 @@ video_system_palm = VideoSystemData(
         "bt709",
         "ntsc",
     ),
+    fps_fraction=Fraction(30000, 1001),
 )
 
 VideoSizeType: TypeAlias = Literal["default", "4fsc"]
