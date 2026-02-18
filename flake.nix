@@ -21,51 +21,63 @@
     ];
   };
 
-  outputs = inputs@{ flake-parts, nixpkgs, jitterbug, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = [
-        inputs.devenv.flakeModule
-      ];
+  outputs =
+    {
+      flake-parts,
+      devenv,
+      jitterbug,
+      ...
+    }@inputs:
+    flake-parts.lib.mkFlake
+      {
+        inherit inputs;
+      }
+      {
+        imports = [
+          devenv.flakeModule
+        ];
 
-      systems = [ "x86_64-linux" ];
+        systems = [ "x86_64-linux" ];
 
-      perSystem = { config, self', inputs', pkgs, lib, system, ... }:
-        let
-          commonPackages = with pkgs; [
-            mediainfo
-            libmediainfo
-            openssl
-            ruff
-            ffmpeg_4
-            inputs.jitterbug.packages.${pkgs.system}.vhs-decode
-          ];
-        in
-        {
-          devenv.shells = {
-            default = {
-              name = "tbc-video-export";
-              packages = commonPackages;
+        perSystem =
+          {
+            pkgs,
+            system,
+            ...
+          }:
+          {
+            devenv.shells = {
+              default = {
+                name = "tbc-video-export";
+                packages = with pkgs; [
+                  mediainfo
+                  libmediainfo
+                  openssl
+                  ruff
+                  ffmpeg_4
+                  jitterbug.packages.${system}.vhs-decode
+                ];
 
-              languages.python = {
-                enable = true;
-                version = "3.10";
-
-                poetry = {
+                languages.python = {
                   enable = true;
-                  activate.enable = true;
-                  install = {
+                  version = "3.10";
+
+                  poetry = {
                     enable = true;
-                    allExtras = true;
+                    activate.enable = true;
+                    install = {
+                      enable = true;
+                      allExtras = true;
+                    };
                   };
                 };
-              };
 
-              pre-commit.hooks = {
-                ruff.enable = true;
-                pyright.enable = true;
+                pre-commit.hooks = {
+                  ruff.enable = true;
+                  pyright.enable = true;
+                };
               };
             };
           };
-        };
-    };
+      };
 }
