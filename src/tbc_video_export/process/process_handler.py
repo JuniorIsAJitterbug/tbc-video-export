@@ -39,6 +39,15 @@ class ProcessHandler:
         self._user_cancellation_event = asyncio.Event()
         self._proc_error_event = asyncio.Event()
 
+    @property
+    def completed_successfully(self) -> bool:
+        """Return True if the handler has run and all processes finished without error."""
+        return (
+            self._has_run
+            and not self._proc_error_event.is_set()
+            and not self._user_cancellation_event.is_set()
+        )
+
     async def run(self) -> None:
         """Start the procs."""
         self._create_wrapper_groups()
