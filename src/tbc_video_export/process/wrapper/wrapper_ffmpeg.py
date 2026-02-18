@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from fractions import Fraction
 from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -194,12 +195,30 @@ class WrapperFFmpeg(Wrapper):
 
         return input_opts
 
+    def _get_audio_trim_opts(self) -> tuple[str | None, str | None]:
+        """Return -ss and -t values for trimming audio inputs to match --start/--length."""
+        if self._state.opts.start is None and self._state.opts.length is None:
+            return None, None
+
+        fps = self._state.video_system_data.ffmpeg_config.fps_fraction
+        start_frame = self._state.opts.start or 0
+
+        ss = f"{float(Fraction(start_frame) / fps):.6f}" if start_frame > 0 else None
+        t = f"{float(Fraction(self._state.total_frames) / fps):.6f}"
+        return ss, t
+
     def _get_audio_input_opts(self) -> FlatList:
         """Return opts for audio input."""
         input_opts = FlatList()
+        audio_ss, audio_t = self._get_audio_trim_opts()
 
         # audio
         for track in self._state.opts.audio_track:
+            if audio_ss is not None:
+                input_opts.append(("-ss", audio_ss))
+            if audio_t is not None:
+                input_opts.append(("-t", audio_t))
+
             if (offset := track.offset) is not None:
                 input_opts.append(("-itsoffset", offset))
 

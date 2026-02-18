@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal, TypeAlias
+from fractions import Fraction
+from typing import ClassVar, Literal, TypeAlias
 
 from tbc_video_export.common.enums import ChromaDecoder, ExportMode, VideoSystem
 
@@ -71,6 +72,16 @@ class VideoSystemData:
         color_primaries: str
         color_trc: str
         fps: str
+
+        _FPS_RATES: ClassVar[dict[str, Fraction]] = {
+            "pal": Fraction(25),
+            "ntsc": Fraction(30000, 1001),
+        }
+
+        @property
+        def fps_fraction(self) -> Fraction:
+            """Return fps as a Fraction for precise frame-to-time arithmetic."""
+            return self._FPS_RATES[self.fps]
 
 
 video_system_pal = VideoSystemData(
