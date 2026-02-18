@@ -58,6 +58,9 @@ async def _run(argv: list[str]) -> None:
             )
 
             await handler.run()
+
+            if not handler.completed_successfully:
+                sys.exit(1)
     except Exception as e:  # noqa: BLE001
         exceptions.handle_exceptions(e)
     finally:
