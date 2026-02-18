@@ -196,7 +196,7 @@ class WrapperFFmpeg(Wrapper):
         return input_opts
 
     def _get_audio_trim_opts(self) -> tuple[str | None, str | None]:
-        """Return -ss and -t values for trimming audio inputs to match --start/--length."""
+        """Return -ss and -t values for trimming audio inputs to match --start/--length."""  # noqa: E501
         if self._state.opts.start is None and self._state.opts.length is None:
             return None, None
 
