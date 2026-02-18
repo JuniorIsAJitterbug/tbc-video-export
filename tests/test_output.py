@@ -33,7 +33,7 @@ class TestOutput:
             "format": "FFV1",
             "format_settings__gop": "N=1",
             "coder_type": "Range Coder",
-            "maxslicescount": "24",
+            "maxslicescount": "4",
             "errordetectiontype": "Per slice",
         },
         "prores_hq": {
@@ -119,7 +119,7 @@ class TestOutput:
         "format": "FFV1",
         "format_settings__gop": "N=1",
         "coder_type": "Range Coder",
-        "maxslicescount": "24",
+        "maxslicescount": "4",
         "errordetectiontype": "Per slice",
     }
 
