@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import sys
 from contextlib import suppress
 from functools import cached_property
 from pathlib import Path
@@ -17,8 +18,13 @@ if TYPE_CHECKING:
 
     from tbc_video_export.common.enums import ProcessName, TBCType
 
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
 
-assert os.name == "posix"  # keep the type checker happy
+
+assert os.name == "posix"  # noqa: S101
 
 
 class PipeNamedPosix(Pipe):
@@ -40,13 +46,12 @@ class PipeNamedPosix(Pipe):
                     "Unable to create pipes due to permissions."
                 ) from e
 
+    @override
     async def __aenter__(self) -> Pipe:
         """Enter posix pipe context."""
         try:
             logging.getLogger("console").debug(f"Creating named pipe {self.in_path}")
             os.mkfifo(self.in_path)
-
-            return self
         except FileNotFoundError as e:
             raise exceptions.PipeError(
                 "Unable to create pipes due to permissions."
@@ -55,7 +60,10 @@ class PipeNamedPosix(Pipe):
             raise exceptions.PipeError(
                 "Unable to create pipes due to permissions."
             ) from e
+        else:
+            return self
 
+    @override
     async def __aexit__(
         self,
         exc_type: type[BaseException] | None,
@@ -66,16 +74,19 @@ class PipeNamedPosix(Pipe):
         PipeNamedPosix.tmp_dir = ""
         self.close()
 
+    @override
     @cached_property
-    def pipe_type(self) -> PipeType:  # noqa: D102
+    def pipe_type(self) -> PipeType:
         return PipeType.NAMED_POSIX
 
+    @override
     @cached_property
-    def in_path(self) -> Path | str:  # noqa: D102
+    def in_path(self) -> Path | str:
         return Path(PipeNamedPosix.tmp_dir).joinpath(
             f"{self._process_name}-{self._tbc_type}"
         )
 
+    @override
     @cached_property
     def out_path(self) -> Path | str:
         """Get pipe stdout string.
@@ -84,14 +95,17 @@ class PipeNamedPosix(Pipe):
         """
         return self.in_path
 
+    @override
     @property
-    def in_handle(self) -> int | None:  # noqa: D102
+    def in_handle(self) -> int | None:
         return None
 
+    @override
     @property
-    def out_handle(self) -> int | None:  # noqa: D102
+    def out_handle(self) -> int | None:
         return None
 
+    @override
     def close(self) -> None:
         """Close pipe."""
         logging.getLogger("console").debug(f"Closing pipe {self.in_path}")
@@ -100,5 +114,5 @@ class PipeNamedPosix(Pipe):
             Path.unlink(Path(self.in_path))
 
             # other pipes may exist in the directory, only remove if empty
-            if len(os.listdir(PipeNamedPosix.tmp_dir)) == 0:
+            if sum(1 for _ in Path(PipeNamedPosix.tmp_dir).iterdir()) == 0:
                 Path.rmdir(Path(PipeNamedPosix.tmp_dir))

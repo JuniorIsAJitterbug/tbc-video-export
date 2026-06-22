@@ -1,9 +1,18 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 
 from tbc_video_export.common.enums import ProcessName
+
+
+@dataclass
+class ExportStateMessage:
+    """Message data from process/wrappers."""
+
+    message: str
+    timestamp: datetime
+    process: ProcessName
 
 
 @dataclass
@@ -13,7 +22,7 @@ class ExportState:
     size: float = 0.0
     bitrate: str = "n/a"
     duration: str = "n/a   "
-    messages: list[ExportStateMessage] = field(default_factory=list)
+    messages: list[ExportStateMessage] = field(default_factory=list[ExportStateMessage])
     concealments: int | None = None
 
     def merge_snapshot(self, snapshot: ExportStateSnapshot) -> None:
@@ -40,7 +49,7 @@ class ExportState:
         snapshots.
         """
         self.messages.append(
-            ExportStateMessage(message, datetime.now(), ProcessName.NONE)
+            ExportStateMessage(message, datetime.now(timezone.utc), ProcessName.NONE)
         )
 
 
@@ -53,12 +62,3 @@ class ExportStateSnapshot:
     duration: str | None = None
     message: ExportStateMessage | None = None
     concealments: int | None = None
-
-
-@dataclass
-class ExportStateMessage:
-    """Message data from process/wrappers."""
-
-    message: str
-    timestamp: datetime
-    process: ProcessName

@@ -14,8 +14,8 @@ from tbc_video_export.process.wrapper.pipe.pipe_factory import (
 __all__ = [
     "ConsumablePipe",
     "Pipe",
-    "PipeInputGeneric",
-    "PipeOutputGeneric",
     "PipeFactory",
     "PipeFactoryConfig",
+    "PipeInputGeneric",
+    "PipeOutputGeneric",
 ]

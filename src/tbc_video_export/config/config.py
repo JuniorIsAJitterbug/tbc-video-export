@@ -97,51 +97,28 @@ class Config:
     def get_profile(self, profile_filter: GetProfileFilter) -> Profile:
         """Return a profile from a filter."""
         try:
-            profile = next(
-                (profile for profile in self.profiles if profile_filter.match(profile)),
-                None,
-            )
-
-            if profile is None:
-                err_msg = f"Could not find profile {profile_filter.name}."
-
-                if profile_filter.hwaccel_type is not None:
-                    err_msg += f" ({profile_filter.hwaccel_type.value})"
-
-                raise exceptions.InvalidProfileError(err_msg)
-
-            return profile
+            profile = self._get_filtered_profile(profile_filter)
         except KeyError as e:
             raise exceptions.InvalidProfileError(
                 "Could not load profiles.", self.get_config_file()
             ) from e
         except exceptions.InvalidProfileError as e:
             raise exceptions.InvalidProfileError(str(e), self.get_config_file()) from e
+        else:
+            return profile
 
     def get_audio_profile(self, profile_name: str) -> ProfileAudio:
         """Return an audio profile from a name."""
         try:
-            profile = next(
-                (
-                    profile
-                    for profile in self.audio_profiles
-                    if profile.name == profile_name
-                ),
-                None,
-            )
-
-            if profile is None:
-                err_msg = f"Could not find audio profile {profile_name}."
-
-                raise exceptions.InvalidProfileError(err_msg)
-
-            return profile
+            profile = self._get_audio_profile(profile_name)
         except KeyError as e:
             raise exceptions.InvalidProfileError(
                 "Could not load audio profiles.", self.get_config_file()
             ) from e
         except exceptions.InvalidProfileError as e:
             raise exceptions.InvalidProfileError(str(e), self.get_config_file()) from e
+        else:
+            return profile
 
     def get_profile_names(self) -> list[str]:
         """Return a list of unique profile names for a given profile type."""
@@ -162,13 +139,7 @@ class Config:
 
     def get_video_profiles_for_profile(self, profile_name: str) -> list[ProfileVideo]:
         """Return list of video profiles for a given profile."""
-        video_profiles: list[ProfileVideo] = []
-
-        for profile in self.profiles:
-            if profile.name == profile_name:
-                video_profiles.append(profile.video_profile)
-
-        return video_profiles
+        return [p.video_profile for p in self.profiles if p.name == profile_name]
 
     def get_audio_profile_names(self) -> list[str]:
         """Return all audio profile names.."""
@@ -239,20 +210,19 @@ class Config:
         filter_profiles = profile.filter_profiles
 
         # populate filters
-        for vf in (profile.video_filter for profile in filter_profiles):
-            if vf is not None:
-                video_filters.append(vf)
+        video_filters = [
+            p.video_filter for p in filter_profiles if p.video_filter is not None
+        ]
 
-        for of in (profile.other_filter for profile in filter_profiles):
-            if of is not None:
-                other_filters.append(of)
+        other_filters = [
+            p.other_filter for p in filter_profiles if p.other_filter is not None
+        ]
 
         # add additional video profile filters
-        for name in profile.video_profile.filter_profiles_additions:
-            self._add_filter(name, video_filters, other_filters)
-
-        # add additional opt filters
-        for name in self._additional_filters:
+        for name in [
+            *profile.video_profile.filter_profiles_additions,
+            *self._additional_filters,
+        ]:
             self._add_filter(name, video_filters, other_filters)
 
         return video_filters, other_filters
@@ -268,6 +238,39 @@ class Config:
 
         if (of := filter_profile.other_filter) is not None:
             other_filters.append(of)
+
+    def _get_audio_profile(self, profile_name: str) -> ProfileAudio:
+        profile = next(
+            (
+                profile
+                for profile in self.audio_profiles
+                if profile.name == profile_name
+            ),
+            None,
+        )
+
+        if profile is None:
+            raise exceptions.InvalidProfileError(
+                f"Could not find audio profile {profile_name}."
+            )
+
+        return profile
+
+    def _get_filtered_profile(self, profile_filter: GetProfileFilter) -> Profile:
+        profile = next(
+            (profile for profile in self.profiles if profile_filter.match(profile)),
+            None,
+        )
+
+        if profile is None:
+            err_msg = f"Could not find profile {profile_filter.name}."
+
+            if profile_filter.hwaccel_type is not None:
+                err_msg += f" ({profile_filter.hwaccel_type.value})"
+
+            raise exceptions.InvalidProfileError(err_msg)
+
+        return profile
 
     def _generate_profile(self, profile_name: str) -> list[Profile]:
         try:
@@ -331,12 +334,12 @@ class Config:
                     ]
 
                 profiles.append(profile)
-
-            return profiles
         except KeyError as e:
             raise exceptions.InvalidProfileError(
                 "Unable to generate profiles.", self.get_config_file()
             ) from e
+        else:
+            return profiles
 
 
 @dataclass

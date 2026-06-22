@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 from contextlib import nullcontext
+from importlib import import_module
 
 from tbc_video_export.common import FileHelper, exceptions
 from tbc_video_export.common.utils import interrupts, log, strings
@@ -46,9 +47,9 @@ async def _run(argv: list[str]) -> None:
         handler = ProcessHandler(state)
 
         if os.name == "nt":
-            from tbc_video_export.common.utils import win32
-
-            terminal_ctx = win32.VirtualTerminal()
+            terminal_ctx = import_module(
+                "tbc_video_export.common.utils.win32"
+            ).VirtualTerminal()
         else:
             terminal_ctx = nullcontext()
 

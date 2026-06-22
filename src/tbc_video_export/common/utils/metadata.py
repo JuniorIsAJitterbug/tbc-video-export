@@ -10,7 +10,7 @@ def get_url_from_metadata(name: str) -> str:
     return next(
         (
             url.split(" ")[1]
-            for url in _metadata.get_all("Project-URL")  # pyright: ignore[reportOptionalIterable]
+            for url in _metadata.get_all("Project-URL", "unknown")
             if str(url).startswith(name)
         ),
         f"{name}_url",

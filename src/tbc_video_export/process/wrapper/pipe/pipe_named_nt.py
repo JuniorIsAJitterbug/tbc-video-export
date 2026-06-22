@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import sys
 from contextlib import suppress
 from dataclasses import dataclass
 from functools import cached_property
@@ -19,13 +20,18 @@ if TYPE_CHECKING:
 
     from tbc_video_export.common.enums import ProcessName, TBCType
 
-assert os.name == "nt"
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
 
-import pywintypes  # noqa: E402
-import win32file  # noqa: E402
-import win32pipe  # noqa: E402
-import win32security  # noqa: E402
-import winerror  # noqa: E402
+assert os.name == "nt"  # noqa: S101
+
+import pywintypes  # noqa: E402 # pyrefly: ignore [missing-import]
+import win32file  # noqa: E402 # pyrefly: ignore [missing-import]
+import win32pipe  # noqa: E402 # pyrefly: ignore [missing-import]
+import win32security  # noqa: E402 # pyrefly: ignore [missing-import]
+import winerror  # noqa: E402 # pyrefly: ignore [missing-import]
 
 from tbc_video_export.common.utils import win32  # noqa: E402
 
@@ -75,6 +81,7 @@ class PipeNamedNT(Pipe):
             self.out_path, win32pipe.PIPE_ACCESS_INBOUND
         )
 
+    @override
     async def __aenter__(self) -> Pipe:
         """Enter named NT pipe context."""
         # starts the pipe bridge thread
@@ -82,6 +89,7 @@ class PipeNamedNT(Pipe):
 
         return self
 
+    @override
     async def __aexit__(
         self,
         exc_type: type[BaseException] | None,
@@ -91,32 +99,38 @@ class PipeNamedNT(Pipe):
         """Exit named NT pipe context."""
         self.close()
 
+    @override
     @cached_property
-    def pipe_type(self) -> PipeType:  # noqa: D102
+    def pipe_type(self) -> PipeType:
         return PipeType.NAMED_NT
 
+    @override
     @cached_property
-    def in_path(self) -> Path | str:  # noqa: D102
+    def in_path(self) -> Path | str:
         return (
             rf"\\.\pipe\{consts.APPLICATION_NAME}-{self._id}-"
             rf"{self._process_name}-{self._tbc_type}-in"
         )
 
+    @override
     @cached_property
-    def out_path(self) -> Path | str:  # noqa: D102
+    def out_path(self) -> Path | str:
         return (
             rf"\\.\pipe\{consts.APPLICATION_NAME}-{self._id}-"
             rf"{self._process_name}-{self._tbc_type}-out"
         )
 
+    @override
     @property
-    def in_handle(self) -> int | None:  # noqa: D102
+    def in_handle(self) -> int | None:
         return None
 
+    @override
     @property
-    def out_handle(self) -> int | None:  # noqa: D102
+    def out_handle(self) -> int | None:
         return None
 
+    @override
     def close(self) -> None:
         """Close named pipe."""
         self._close_pipe(str(self.in_path), win32file.GENERIC_READ)
@@ -204,7 +218,7 @@ class PipeNamedNT(Pipe):
     def _create_pipe(self, data: PipeNamedNT.PipeData) -> None:
         """Create named pipe."""
         try:
-            pipe = win32pipe.CreateNamedPipe(  # pyright: ignore [reportUnknownMemberType]
+            pipe = win32pipe.CreateNamedPipe(
                 str(data.pipe_name),
                 data.open_mode,
                 data.pipe_mode,
@@ -229,7 +243,7 @@ class PipeNamedNT(Pipe):
         try:
             if data.file_handle is not None:
                 logging.getLogger("console").debug(f"Connecting {data.pipe_name}")
-                if win32pipe.ConnectNamedPipe(data.file_handle, None):  # pyright: ignore [reportUnknownMemberType]
+                if win32pipe.ConnectNamedPipe(data.file_handle, None):
                     self._handle_winerror()
 
                 logging.getLogger("console").debug(f"Connected {data.pipe_name}")
@@ -263,7 +277,7 @@ class PipeNamedNT(Pipe):
 
     @staticmethod
     def _disconnect_pipe(data: PipeData) -> None:
-        """Disconnnect a pipe."""
+        """Disconnect a pipe."""
         if data.file_handle is None:
             raise exceptions.PipeError("Pipe handle does not exist.")
 

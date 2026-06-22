@@ -11,9 +11,9 @@ if TYPE_CHECKING:
         ChromaDecoder,
         FieldOrder,
         HardwareAccelType,
+        TBCType,
         VideoFormatType,
         VideoSystem,
-        TBCType,
     )
 
 

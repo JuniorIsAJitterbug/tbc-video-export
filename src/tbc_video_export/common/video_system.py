@@ -20,11 +20,11 @@ class VideoSystemData:
     vhs_decode/tools/ld-chroma-decoder/outputwriter.cpp
     """
 
-    size: dict[VideoSizeType, Size]
-    active_lines: dict[VideoActiveLinesType, ActiveLines]
-    aspect_ratio: dict[VideoAspectRatioType, AspectRatio]
+    size: dict[VideoSizeType, VideoSystemData.Size]
+    active_lines: dict[VideoActiveLinesType, VideoSystemData.ActiveLines]
+    aspect_ratio: dict[VideoAspectRatioType, VideoSystemData.AspectRatio]
     chroma_decoder: dict[ExportMode, ChromaDecoder]
-    ffmpeg_config: FFmpegConfig
+    ffmpeg_config: VideoSystemData.FFmpegConfig
     fps_fraction: Fraction
 
     @staticmethod

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property
@@ -11,6 +12,11 @@ if TYPE_CHECKING:
     from types import TracebackType
 
     from tbc_video_export.common.enums import PipeType, ProcessName, TBCType
+
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
 
 
 class Pipe(ABC):
@@ -37,6 +43,7 @@ class Pipe(ABC):
     ) -> None | bool:
         """Cleanup pipes and any temp dirs."""
 
+    @override
     def __str__(self) -> str:
         """Return formatted string containing pipe paths."""
         return (
@@ -87,5 +94,9 @@ class ConsumablePipe:
 
 
 # generics for wrappers
-PipeInputGeneric = TypeVar("PipeInputGeneric", None, Pipe, tuple[Pipe, ...])
-PipeOutputGeneric = TypeVar("PipeOutputGeneric", None, Pipe, tuple[Pipe, ...])
+PipeInputGeneric = TypeVar(
+    "PipeInputGeneric", None, Pipe, tuple[Pipe], tuple[Pipe, ...]
+)
+PipeOutputGeneric = TypeVar(
+    "PipeOutputGeneric", None, Pipe, tuple[Pipe], tuple[Pipe, ...]
+)

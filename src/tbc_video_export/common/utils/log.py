@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts
@@ -12,11 +13,17 @@ if TYPE_CHECKING:
 
     from tbc_video_export.opts.opts import Opts
 
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
+
 
 class ColorFormatter(logging.Formatter):
     """Formatter class for logging."""
 
-    def format(self, record: logging.LogRecord):  # noqa: A003
+    @override
+    def format(self, record: logging.LogRecord):
         """Return colored formatter based on log level."""
         match record.levelno:
             case logging.DEBUG:
@@ -39,7 +46,8 @@ class ColorFormatter(logging.Formatter):
 
         return formatter.format(record)
 
-    def formatException(self, ei: Any) -> str:  # noqa: N802
+    @override
+    def formatException(self, ei: Any) -> str:
         """Return colored exception formatter."""
         return ansi.error_color(super().formatException(ei))
 

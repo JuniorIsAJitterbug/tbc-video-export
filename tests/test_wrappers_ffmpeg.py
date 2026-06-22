@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from contextlib import nullcontext
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 import pytest
 
@@ -14,6 +15,7 @@ from tests.conftest import WrapperTestCase, get_path
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from tbc_video_export.process.wrapper.pipe.pipe import Pipe
     from tbc_video_export.process.wrapper.wrapper_ffmpeg import WrapperFFmpeg
     from tbc_video_export.program_state import ProgramState
 
@@ -31,7 +33,7 @@ class TestWrappersFFmpeg:
 
     audio_file = "tests/files/audio.flac"
 
-    general_cases = [
+    general_cases: ClassVar[list[WrapperTestCase]] = [
         WrapperTestCase(
             id="set threads (global)",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
@@ -174,7 +176,7 @@ class TestWrappersFFmpeg:
             id="set invalid field order (exception)",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--field-order", "invalid"],
-            expected_exc=pytest.raises(SystemExit),
+            expected_exc=SystemExit,
         ),
         WrapperTestCase(
             id="set widescreen (pal)",
@@ -297,7 +299,7 @@ class TestWrappersFFmpeg:
         ),
     ]
 
-    hwaccel_cases = [
+    hwaccel_cases: ClassVar[list[WrapperTestCase]] = [
         WrapperTestCase(
             id="vaapi hwaccel",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
@@ -348,7 +350,7 @@ class TestWrappersFFmpeg:
                 {"-c:v", "h264_amf"},
             ],
             expected_str=[f",format=yuv420p,{pal_setparams}[v_output]"],
-            expected_exc=pytest.raises(exceptions.InvalidProfileError),
+            expected_exc=exceptions.InvalidProfileError,
         ),
         WrapperTestCase(
             id="videotoolbox hwaccel",
@@ -361,7 +363,7 @@ class TestWrappersFFmpeg:
         ),
     ]
 
-    bitdepth_cases = [
+    bitdepth_cases: ClassVar[list[WrapperTestCase]] = [
         WrapperTestCase(
             id="8bit",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
@@ -480,11 +482,11 @@ class TestWrappersFFmpeg:
             id="format without bitdepth (exception)",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--yuv420"],
-            expected_exc=pytest.raises(SystemExit),
+            expected_exc=SystemExit,
         ),
     ]
 
-    filter_cases = [
+    filter_cases: ClassVar[list[WrapperTestCase]] = [
         WrapperTestCase(
             id="add filter profile",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
@@ -495,7 +497,7 @@ class TestWrappersFFmpeg:
             id="add invalid filter profile (exception)",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--profile-add-filter", "invalid"],
-            expected_exc=pytest.raises(exceptions.InvalidProfileError),
+            expected_exc=exceptions.InvalidProfileError,
         ),
         WrapperTestCase(
             id="add custom filters",
@@ -583,16 +585,21 @@ class TestWrappersFFmpeg:
         "test_case",
         (pytest.param(test_case, id=test_case.id) for test_case in test_cases),
     )
-    def test_ffmpeg_opts(  # noqa: D102
+    def test_ffmpeg_opts(
         self,
-        force_ansi_support_on: None,  # noqa: ARG002
+        force_ansi_support_on: None,
         program_state: Callable[[list[str], str, str | None], ProgramState],
         ffmpeg_wrapper_chroma: Callable[
-            [ProgramState, TBCType, ExportMode | None], WrapperFFmpeg
+            [ProgramState, TBCType, ExportMode | None],
+            WrapperFFmpeg[tuple[Pipe, ...], None],
         ],
         test_case: WrapperTestCase,
     ) -> None:
-        with test_case.expected_exc:
+        with (
+            pytest.raises(test_case.expected_exc)
+            if test_case.expected_exc is not None
+            else nullcontext()
+        ):
             state = program_state(
                 test_case.input_opts, test_case.input_tbc, test_case.out_file
             )
@@ -613,12 +620,13 @@ class TestWrappersFFmpeg:
             for e in test_case.unexpected_str:
                 assert not any(e in cmd for cmd in cmds)
 
-    def test_ffmpeg_env(  # noqa: D102
+    def test_ffmpeg_env(
         self,
-        force_ansi_support_on: None,  # noqa: ARG002
+        force_ansi_support_on: None,
         program_state: Callable[[list[str], str, str | None], ProgramState],
         ffmpeg_wrapper_chroma: Callable[
-            [ProgramState, TBCType, ExportMode | None], WrapperFFmpeg
+            [ProgramState, TBCType, ExportMode | None],
+            WrapperFFmpeg[tuple[Pipe, ...], None],
         ],
     ) -> None:
         state = program_state([], "tests/files/pal_svideo.tbc", "out_file")
@@ -638,12 +646,13 @@ class TestWrappersFFmpeg:
         assert ffmpeg_wrapper.env is not None
         assert "FFREPORT" in ffmpeg_wrapper.env
 
-    def test_ffmpeg_export_messages(  # noqa: D102
+    def test_ffmpeg_export_messages(
         self,
-        force_ansi_support_on: None,  # noqa: ARG002
+        force_ansi_support_on: None,
         program_state: Callable[[list[str], str, str | None], ProgramState],
         ffmpeg_wrapper_chroma: Callable[
-            [ProgramState, TBCType, ExportMode | None], WrapperFFmpeg
+            [ProgramState, TBCType, ExportMode | None],
+            WrapperFFmpeg[tuple[Pipe, ...], None],
         ],
     ) -> None:
         state = program_state(

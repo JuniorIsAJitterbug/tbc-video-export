@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING
@@ -23,6 +24,11 @@ if TYPE_CHECKING:
     from tbc_video_export.config.config import Config
     from tbc_video_export.config.profile import Profile
     from tbc_video_export.opts import Opts
+
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
 
 
 @dataclass
@@ -191,6 +197,7 @@ class ProgramState:
 
         return min(tbc_frame_count - start, max(0, length))
 
+    @override
     def __str__(self) -> str:
         """Return formatted string of program state."""
         log_files: list[str] = []

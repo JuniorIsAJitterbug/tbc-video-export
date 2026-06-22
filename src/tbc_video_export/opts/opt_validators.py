@@ -36,7 +36,7 @@ def validate_opts(
     _validate_decoder_opts(state, opts)
 
 
-def valiate_metadata_file_exists(value: str) -> Path:
+def validate_metadata_file_exists(value: str) -> Path:
     """Return metadata path if it exists."""
     if (path := Path(value)).is_file():
         return path.absolute()
@@ -52,43 +52,23 @@ def validate_audio_track_opts(value: str) -> AudioTrackOpt:
 def validate_audio_track_advanced_opts(value: str) -> AudioTrackOpt:
     """Validate input types for the audio track advanced object."""
     try:
-        data: list[Any] = literal_eval(value)
-        type_check: set[bool] = set()
-
-        if not data:
-            raise exceptions.FileIOError(
-                "File path is required for ffmpeg track, see --help for examples."
-            )
-
-        # ensure input are correct types
-        with suppress(IndexError):
-            type_check.add(isinstance(data[0], str))
-            type_check.add(isinstance(data[1], str | None))
-            type_check.add(isinstance(data[2], str | None))
-            type_check.add(isinstance(data[3], str | int | None))
-            type_check.add(isinstance(data[4], str | None))
-            type_check.add(isinstance(data[5], int | None))
-            type_check.add(isinstance(data[6], str | None))
-            type_check.add(isinstance(data[7], int | float | None))
-
-        if False in type_check:
-            raise SyntaxError
+        data = _validate_audio_adv_opts(value)
 
         # clone input and change file name to absolute path
         opts = data.copy()
         opts[0] = Path(data[0]).absolute()
-
-        return AudioTrackOpt(*opts)
     except (SyntaxError, AttributeError) as e:
         raise exceptions.InvalidOptsError(
             "Invalid FFmpeg audio track opts, check --help for examples."
         ) from e
+    else:
+        return AudioTrackOpt(*opts)
 
 
 def validate_black_levels_opts(value: str) -> tuple[int, int, int] | None:
     """Validate black level opts.
 
-    If a single value is provded we return it three times, if 3 values are provides we
+    If a single value is provided we return it three times, if 3 values are provided we
     return all 3.
     """
     try:
@@ -96,7 +76,7 @@ def validate_black_levels_opts(value: str) -> tuple[int, int, int] | None:
             if len(values) == 1:
                 return (int(values[0]), int(values[0]), int(values[0]))
 
-            if len(values) == 3:
+            if len(values) == 3:  # noqa: PLR2004
                 return (int(values[0]), int(values[1]), int(values[2]))
     except ValueError as e:
         raise exceptions.InvalidOptsError(
@@ -106,6 +86,32 @@ def validate_black_levels_opts(value: str) -> tuple[int, int, int] | None:
     raise exceptions.InvalidOptsError(
         "Invalid black levels, check --help for examples."
     )
+
+
+def _validate_audio_adv_opts(value: str) -> list[Any]:
+    data: list[Any] = literal_eval(value)
+    type_check: set[bool] = set()
+
+    if not data:
+        raise exceptions.FileIOError(
+            "File path is required for ffmpeg track, see --help for examples."
+        )
+
+    # ensure input are correct types
+    with suppress(IndexError):
+        type_check.add(isinstance(data[0], str))
+        type_check.add(isinstance(data[1], str | None))
+        type_check.add(isinstance(data[2], str | None))
+        type_check.add(isinstance(data[3], str | int | None))
+        type_check.add(isinstance(data[4], str | None))
+        type_check.add(isinstance(data[5], int | None))
+        type_check.add(isinstance(data[6], str | None))
+        type_check.add(isinstance(data[7], int | float | None))
+
+    if False in type_check:
+        raise SyntaxError
+
+    return data
 
 
 def _validate_line_opts(parser: argparse.ArgumentParser, opts: Opts) -> None:

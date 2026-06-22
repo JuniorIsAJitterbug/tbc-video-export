@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import importlib.metadata
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -24,7 +24,7 @@ PROJECT_CREDITS: Final = (
     "  Harry Munday\tProject Management (https://github.com/harrypm)\n"
 )
 PROJECT_SUMMARY: Final = f"{_metadata['Summary']}\n\n{PROJECT_CREDITS}"
-PROJECT_URL: Final = _metadata["Home-Page"]
+PROJECT_URL: Final = get_url_from_metadata("Home-Page")
 PROJECT_URL_ISSUES: Final = get_url_from_metadata("Issues")
 PROJECT_URL_WIKI: Final = get_url_from_metadata("Wiki")
 PROJECT_URL_DISCORD: Final = get_url_from_metadata("Discord")
@@ -32,7 +32,7 @@ PROJECT_URL_WIKI_COMMANDLIST: Final = f"{PROJECT_URL_WIKI}/Command-List"
 PROJECT_URL_WIKI_PROFILES: Final = f"{PROJECT_URL_WIKI}/FFmpeg-Profiles"
 
 
-CURRENT_TIMESTAMP: Final = datetime.now().strftime("%y-%m-%d_%H%M%S%f")[:-3]
+CURRENT_TIMESTAMP: Final = datetime.now(timezone.utc).strftime("%y-%m-%d_%H%M%S%f")[:-3]
 EXPORT_CONFIG_FILE_NAME: Final = Path(f"{APPLICATION_NAME}.json")
 TWO_STEP_OUT_FILE_LUMA_SUFFIX: Final = "luma"
 

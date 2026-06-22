@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import os
+from contextlib import nullcontext
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 import pytest
 
@@ -28,7 +29,7 @@ if TYPE_CHECKING:
 class TestWrappersProcessVBI:
     """Tests for ld-process-vbi wrapper."""
 
-    test_cases = [
+    test_cases: ClassVar[list[WrapperTestCase]] = [
         WrapperTestCase(
             id="default ld-process-vbi opts",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
@@ -135,7 +136,7 @@ class TestWrappersProcessVBI:
         "test_case",
         (pytest.param(test_case, id=test_case.id) for test_case in test_cases),
     )
-    def test_process_vbi_opts(  # noqa: D102
+    def test_process_vbi_opts(
         self,
         program_state: Callable[[list[str], str], ProgramState],
         ldtools_process_vbi_wrapper: Callable[
@@ -143,7 +144,11 @@ class TestWrappersProcessVBI:
         ],
         test_case: WrapperTestCase,
     ) -> None:
-        with test_case.expected_exc:
+        with (
+            pytest.raises(test_case.expected_exc)
+            if test_case.expected_exc is not None
+            else nullcontext()
+        ):
             state = program_state(test_case.input_opts, test_case.input_tbc)
             process_vbi_wrapper = ldtools_process_vbi_wrapper(state, test_case.tbc_type)
             cmds = process_vbi_wrapper.command.data
@@ -160,7 +165,7 @@ class TestWrappersProcessVBI:
             for e in test_case.unexpected_str:
                 assert not any(e in cmd for cmd in cmds)
 
-    def test_process_vbi_json(  # noqa: D102
+    def test_process_vbi_json(
         self,
         program_state: Callable[[list[str], str], ProgramState],
         ldtools_process_vbi_wrapper: Callable[
@@ -201,7 +206,7 @@ class TestWrappersProcessVBI:
 class TestWrappersDropoutCorrect:
     """Tests for ld-dropout-correct wrapper."""
 
-    test_cases = [
+    test_cases: ClassVar[list[WrapperTestCase]] = [
         WrapperTestCase(
             id="default ld-dropout-correct luma opts",
             input_tbc=f"{get_path('pal_svideo')}.tbc",
@@ -281,7 +286,7 @@ class TestWrappersDropoutCorrect:
         "test_case",
         (pytest.param(test_case, id=test_case.id) for test_case in test_cases),
     )
-    def test_dropout_correct_opts(  # noqa: D102
+    def test_dropout_correct_opts(
         self,
         program_state: Callable[[list[str], str], ProgramState],
         ldtools_dropout_correct_wrapper: Callable[
@@ -289,7 +294,11 @@ class TestWrappersDropoutCorrect:
         ],
         test_case: WrapperTestCase,
     ) -> None:
-        with test_case.expected_exc:
+        with (
+            pytest.raises(test_case.expected_exc)
+            if test_case.expected_exc is not None
+            else nullcontext()
+        ):
             state = program_state(test_case.input_opts, test_case.input_tbc)
             dropout_correct_wrapper = ldtools_dropout_correct_wrapper(
                 state, test_case.tbc_type
@@ -312,7 +321,7 @@ class TestWrappersDropoutCorrect:
 class TestWrappersChromaDecoder:
     """Tests for ld-chroma-decoder wrapper."""
 
-    test_cases = [
+    test_cases: ClassVar[list[WrapperTestCase]] = [
         # PAL
         WrapperTestCase(
             id="pal svideo luma opts",
@@ -354,7 +363,7 @@ class TestWrappersChromaDecoder:
             input_tbc=f"{get_path('pal_svideo')}.tbc",
             input_opts=["--chroma-decoder", "ntsc2d"],
             expected_opts=[],
-            expected_exc=pytest.raises(exceptions.InvalidChromaDecoderError),
+            expected_exc=exceptions.InvalidChromaDecoderError,
         ),
         WrapperTestCase(
             id="pal letterbox",
@@ -408,14 +417,14 @@ class TestWrappersChromaDecoder:
             input_tbc=f"{get_path('palm_svideo')}.tbc",
             input_opts=["--chroma-decoder", "ntsc2d"],
             expected_opts=[],
-            expected_exc=pytest.raises(exceptions.InvalidChromaDecoderError),
+            expected_exc=exceptions.InvalidChromaDecoderError,
         ),
         WrapperTestCase(
             id="pal-m letterbox (exception)",
             input_tbc=f"{get_path('palm_svideo')}.tbc",
             input_opts=["--letterbox"],
             expected_opts=[],
-            expected_exc=pytest.raises(exceptions.SampleRequiredError),
+            expected_exc=exceptions.SampleRequiredError,
         ),
         WrapperTestCase(
             id="pal-m vbi",
@@ -481,7 +490,7 @@ class TestWrappersChromaDecoder:
             input_tbc=f"{get_path('ntsc_svideo')}.tbc",
             input_opts=["--chroma-decoder", "transform2d"],
             expected_opts=[],
-            expected_exc=pytest.raises(exceptions.InvalidChromaDecoderError),
+            expected_exc=exceptions.InvalidChromaDecoderError,
         ),
         WrapperTestCase(
             id="ntsc letterbox",
@@ -539,7 +548,7 @@ class TestWrappersChromaDecoder:
                 "--luma-nr",
                 "5",
             ],
-            expected_exc=pytest.raises(exceptions.InvalidOptsError),
+            expected_exc=exceptions.InvalidOptsError,
             expected_opts=[{"--luma-nr", "5.0"}],
         ),
         WrapperTestCase(
@@ -550,7 +559,7 @@ class TestWrappersChromaDecoder:
                 "--luma-nr",
                 "5",
             ],
-            expected_exc=pytest.raises(exceptions.InvalidOptsError),
+            expected_exc=exceptions.InvalidOptsError,
             expected_opts=[{"--luma-nr", "0"}],
         ),
         WrapperTestCase(
@@ -601,7 +610,7 @@ class TestWrappersChromaDecoder:
                 "--chroma-nr",
                 "5",
             ],
-            expected_exc=pytest.raises(SystemExit),
+            expected_exc=SystemExit,
         ),
         WrapperTestCase(
             id="chroma gain (luma)",
@@ -718,7 +727,7 @@ class TestWrappersChromaDecoder:
         "test_case",
         (pytest.param(test_case, id=test_case.id) for test_case in test_cases),
     )
-    def test_chroma_decoder_opts(  # noqa: D102
+    def test_chroma_decoder_opts(
         self,
         program_state: Callable[[list[str], str], ProgramState],
         ldtools_chroma_decoder_wrapper: Callable[
@@ -726,7 +735,11 @@ class TestWrappersChromaDecoder:
         ],
         test_case: WrapperTestCase,
     ) -> None:
-        with test_case.expected_exc:
+        with (
+            pytest.raises(test_case.expected_exc)
+            if test_case.expected_exc is not None
+            else nullcontext()
+        ):
             state = program_state(test_case.input_opts, test_case.input_tbc)
             chroma_decoder_wrapper = ldtools_chroma_decoder_wrapper(
                 state, test_case.tbc_type

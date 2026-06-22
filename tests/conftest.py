@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from contextlib import AbstractContextManager, nullcontext
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -28,23 +27,23 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class WrapperTestCase:  # noqa: D101
-    id: str  # noqa: A003
+class WrapperTestCase:
+    id: str
     input_opts: list[str]
     input_tbc: str
     out_file: str | None = "out_file"
     tbc_type: TBCType = TBCType.NONE
     export_mode: ExportMode | None = None
-    expected_opts: list[set[str]] = field(default_factory=list)
-    expected_str: list[str] = field(default_factory=list)
-    expected_exc: AbstractContextManager[Any] = nullcontext()
-    unexpected_opts: list[set[str]] = field(default_factory=list)
-    unexpected_str: list[str] = field(default_factory=list)
+    expected_opts: list[set[str]] = field(default_factory=list[set[str]])
+    expected_str: list[str] = field(default_factory=list[str])
+    expected_exc: type[BaseException] | None = None
+    unexpected_opts: list[set[str]] = field(default_factory=list[set[str]])
+    unexpected_str: list[str] = field(default_factory=list[str])
 
 
 @dataclass
-class WrapperGroupTestCase:  # noqa: D101
-    id: str  # noqa: A003
+class WrapperGroupTestCase:
+    id: str
     input_opts: list[str]
     input_tbc: Path
     tbc_type: TBCType
@@ -52,8 +51,8 @@ class WrapperGroupTestCase:  # noqa: D101
 
 
 @dataclass
-class FileHelperTestCase:  # noqa: D101
-    id: str  # noqa: A003
+class FileHelperTestCase:
+    id: str
     input_tbc: Path
     input_name: Path
     luma_tbc: Path
@@ -69,7 +68,7 @@ class FileHelperTestCase:  # noqa: D101
 
 
 @dataclass
-class VideoBase:  # noqa: D101
+class VideoBase:
     width: int
     height: int
     pixel_aspect_ratio: str
@@ -81,7 +80,7 @@ class VideoBase:  # noqa: D101
 
 
 @dataclass
-class VideoBasePAL(VideoBase):  # noqa D101
+class VideoBasePAL(VideoBase):
     width: int = field(default=928)
     height: int = field(default=576)
     pixel_aspect_ratio: str = field(default="0.833")
@@ -93,7 +92,7 @@ class VideoBasePAL(VideoBase):  # noqa D101
 
 
 @dataclass
-class VideoBasePALM(VideoBase):  # noqa D101
+class VideoBasePALM(VideoBase):
     width: int = field(default=760)
     height: int = field(default=488)
     pixel_aspect_ratio: str = field(default="0.852")
@@ -105,7 +104,7 @@ class VideoBasePALM(VideoBase):  # noqa D101
 
 
 @dataclass
-class VideoBaseNTSC(VideoBase):  # noqa D101
+class VideoBaseNTSC(VideoBase):
     width: int = field(default=760)
     height: int = field(default=488)
     pixel_aspect_ratio: str = field(default="0.852")
@@ -117,7 +116,7 @@ class VideoBaseNTSC(VideoBase):  # noqa D101
 
 
 @dataclass
-class VideoColor:  # noqa: D101
+class VideoColor:
     color_space: str
     bit_depth: int | None
     chroma_subsampling: str | None
@@ -129,7 +128,7 @@ class VideoColor:  # noqa: D101
 
 
 @dataclass
-class VideoColorPAL(VideoColor):  # noqa: D101
+class VideoColorPAL(VideoColor):
     color_space: str = field(default="YUV")
     bit_depth: int | None = field(default=None)
     chroma_subsampling: str | None = field(default=None)
@@ -141,7 +140,7 @@ class VideoColorPAL(VideoColor):  # noqa: D101
 
 
 @dataclass
-class VideoColorPALM(VideoColor):  # noqa: D101
+class VideoColorPALM(VideoColor):
     color_space: str = field(default="YUV")
     bit_depth: int | None = field(default=None)
     chroma_subsampling: str | None = field(default=None)
@@ -153,7 +152,7 @@ class VideoColorPALM(VideoColor):  # noqa: D101
 
 
 @dataclass
-class VideoColorNTSC(VideoColor):  # noqa: D101
+class VideoColorNTSC(VideoColor):
     color_space: str = field(default="YUV")
     bit_depth: int | None = field(default=None)
     chroma_subsampling: str | None = field(default=None)
@@ -165,8 +164,8 @@ class VideoColorNTSC(VideoColor):  # noqa: D101
 
 
 @dataclass
-class AudioBase:  # noqa: D101
-    format: str  # noqa: A003
+class AudioBase:
+    format: str
     bit_depth: int
     sampling_rate: int
     title: str | None = field(default=None)
@@ -176,25 +175,25 @@ class AudioBase:  # noqa: D101
 
 
 @dataclass
-class OutputTestCase:  # noqa: D101
-    id: str  # noqa: A003
+class OutputTestCase:
+    id: str
     input_opts: list[str]
     input_tbc: str
     output_file: str
     output_video_codec: dict[str, str | list[str]]
     output_video_base: VideoBase
     output_video_color: VideoColor
-    output_audio_base: list[AudioBase] = field(default_factory=list)
-    output_metadata: dict[str, Any] = field(default_factory=dict)
-    expected_exc: AbstractContextManager[Any] = nullcontext()
+    output_audio_base: list[AudioBase] = field(default_factory=list[AudioBase])
+    output_metadata: dict[str, Any] = field(default_factory=dict[str, Any])
+    expected_exc: type[BaseException] | None = None
 
 
-def get_path(path: str):  # noqa: D103
+def get_path(path: str):
     return Path.joinpath(Path(__file__).parent, "files", path).absolute()
 
 
 @pytest.fixture
-def force_ansi_support_on(mocker: MockFixture):  # noqa: D103
+def force_ansi_support_on(mocker: MockFixture):
     mocker.patch(
         "tbc_video_export.common.utils.ansi.has_ansi_support",
         mocker.Mock(return_value=True),
@@ -202,7 +201,7 @@ def force_ansi_support_on(mocker: MockFixture):  # noqa: D103
 
 
 @pytest.fixture
-def force_ansi_support_off(mocker: MockFixture) -> None:  # noqa: D103
+def force_ansi_support_off(mocker: MockFixture) -> None:
     mocker.patch(
         "tbc_video_export.common.utils.ansi.has_ansi_support",
         mocker.Mock(return_value=False),
@@ -210,7 +209,7 @@ def force_ansi_support_off(mocker: MockFixture) -> None:  # noqa: D103
 
 
 @pytest.fixture
-def program_state():  # noqa D102
+def program_state():
     def _inner(test_opts: list[str], path: Path, out_file: str | None = "out_file"):
         config = ProgramConfig()
 
@@ -230,7 +229,7 @@ def program_state():  # noqa D102
 
 
 @pytest.fixture
-def ldtools_process_vbi_wrapper():  # noqa D102
+def ldtools_process_vbi_wrapper():
     def _init(state: ProgramState, tbc_type: TBCType):
         return WrapperLDProcessVBI(
             state,
@@ -241,7 +240,7 @@ def ldtools_process_vbi_wrapper():  # noqa D102
 
 
 @pytest.fixture
-def ldtools_dropout_correct_wrapper():  # noqa D102
+def ldtools_dropout_correct_wrapper():
     def _init(state: ProgramState, tbc_type: TBCType):
         pipe = PipeFactory.create_dummy_pipe()
 
@@ -254,7 +253,7 @@ def ldtools_dropout_correct_wrapper():  # noqa D102
 
 
 @pytest.fixture
-def ldtools_chroma_decoder_wrapper():  # noqa D102
+def ldtools_chroma_decoder_wrapper():
     def _init(state: ProgramState, tbc_type: TBCType):
         pipe = PipeFactory.create_dummy_pipe()
 
@@ -267,7 +266,7 @@ def ldtools_chroma_decoder_wrapper():  # noqa D102
 
 
 @pytest.fixture
-def ffmpeg_wrapper_chroma():  # noqa D102
+def ffmpeg_wrapper_chroma():
     def _inner(
         state: ProgramState, tbc_type: TBCType, export_mode: ExportMode | None = None
     ):

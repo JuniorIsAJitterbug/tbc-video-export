@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import sys
 from functools import cached_property
 from typing import TYPE_CHECKING
 
@@ -12,19 +13,26 @@ if TYPE_CHECKING:
     from tbc_video_export.process.wrapper.wrapper_config import WrapperConfig
     from tbc_video_export.program_state import ProgramState
 
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
 
-class WrapperLDExportMetadata(Wrapper):
+
+class WrapperLDExportMetadata(Wrapper[None, None]):
     """Wrapper for ld-export-metadata."""
 
     def __init__(self, state: ProgramState, config: WrapperConfig[None, None]) -> None:
         super().__init__(state, config)
         self._config = config
 
-    def post_fn(self) -> None:  # noqa: D102
+    @override
+    def post_fn(self) -> None:
         pass
 
+    @override
     @property
-    def command(self) -> FlatList:  # noqa: D102
+    def command(self) -> FlatList:
         return FlatList(
             (
                 self.binary,
@@ -36,42 +44,52 @@ class WrapperLDExportMetadata(Wrapper):
             ),
         )
 
+    @override
     @cached_property
-    def process_name(self) -> ProcessName:  # noqa: D102
+    def process_name(self) -> ProcessName:
         return ProcessName.LD_EXPORT_METADATA
 
+    @override
     @cached_property
-    def supported_pipe_types(self) -> PipeType:  # noqa: D102
+    def supported_pipe_types(self) -> PipeType:
         return PipeType.NONE
 
+    @override
     @cached_property
-    def stdin(self) -> int | None:  # noqa: D102
+    def stdin(self) -> int | None:
         return None
 
+    @override
     @cached_property
-    def stdout(self) -> int | None:  # noqa: D102
+    def stdout(self) -> int | None:
         return asyncio.subprocess.DEVNULL
 
+    @override
     @cached_property
-    def stderr(self) -> int | None:  # noqa: D102
+    def stderr(self) -> int | None:
         return asyncio.subprocess.PIPE
 
+    @override
     @cached_property
-    def log_output(self) -> bool:  # noqa: D102
+    def log_output(self) -> bool:
         return True
 
+    @override
     @cached_property
-    def log_stdout(self) -> bool:  # noqa: D102
+    def log_stdout(self) -> bool:
         return False
 
+    @override
     @cached_property
-    def env(self) -> dict[str, str] | None:  # noqa: D102
+    def env(self) -> dict[str, str] | None:
         return None
 
+    @override
     @cached_property
-    def ignore_error(self) -> bool:  # noqa: D102
+    def ignore_error(self) -> bool:
         return False
 
+    @override
     @cached_property
-    def stop_on_last_alive(self) -> bool:  # noqa: D102
+    def stop_on_last_alive(self) -> bool:
         return False

@@ -12,7 +12,7 @@ from tbc_video_export.common.enums import (
     ProcessName,
     TBCType,
 )
-from tbc_video_export.process.wrapper import Wrapper, WrapperConfig
+from tbc_video_export.process.wrapper import WrapperConfig
 from tbc_video_export.process.wrapper.pipe import (
     ConsumablePipe,
     Pipe,
@@ -55,7 +55,7 @@ class WrapperGroup:
         self._tbc_types = tbc_types
         self._process_names = process_names
 
-        self.wrappers: list[Wrapper] = []
+        self.wrappers = []
         self.consumable_pipes: list[ConsumablePipe] = []
 
         self._create_pipe_config = partial(
@@ -193,9 +193,9 @@ class WrapperGroup:
 
             # create ffmpeg wrapper
             self.wrappers.append(
-                WrapperFFmpeg(
+                WrapperFFmpeg[tuple[Pipe, ...], None](
                     self._state,
-                    WrapperConfig[tuple[Pipe], None](
+                    WrapperConfig[tuple[Pipe, ...], None](
                         self._export_mode,
                         self._tbc_types,
                         self._get_pipes_for_consumer(

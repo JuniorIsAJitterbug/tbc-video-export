@@ -854,22 +854,22 @@ DEFAULT_CONFIG: JsonConfig = {
         },
         {
             "name": "resize_pal_standard",
-            "description": "Resize to PAL standard SD resoluton (720x576)",
+            "description": "Resize to PAL standard SD resolution (720x576)",
             "video_filter": "scale=720x576:flags=lanczos,setdar=4/3",
         },
         {
             "name": "resize_ntsc_standard",
-            "description": "Resize to NTSC standard SD resoluton (720x480)",
+            "description": "Resize to NTSC standard SD resolution (720x480)",
             "video_filter": "scale=720x480:flags=lanczos,setdar=4/3",
         },
         {
             "name": "resize_pal_d10",
-            "description": "Resize and pad to D10 (Sony IMX/XDCAM) resoluton (720x608)",  # noqa: E501
+            "description": "Resize and pad to D10 (Sony IMX/XDCAM) resolution (720x608)",  # noqa: E501
             "video_filter": "scale=720x608:flags=lanczos",
         },
         {
             "name": "resize_ntsc_d10",
-            "description": "Resize and pad to D10 (Sony IMX/XDCAM) resoluton (720x512)",  # noqa: E501
+            "description": "Resize and pad to D10 (Sony IMX/XDCAM) resolution (720x512)",  # noqa: E501
             "video_filter": "scale=720x512:flags=lanczos",
         },
     ],

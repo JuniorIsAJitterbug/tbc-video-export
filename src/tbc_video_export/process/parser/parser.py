@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 from tbc_video_export.process.parser.export_state import (
@@ -97,4 +97,4 @@ class Parser(ABC):
 
     def _create_log_line(self, line: str) -> ExportStateMessage:
         """Return a log line object."""
-        return ExportStateMessage(line, datetime.now(), self.process_name)
+        return ExportStateMessage(line, datetime.now(timezone.utc), self.process_name)

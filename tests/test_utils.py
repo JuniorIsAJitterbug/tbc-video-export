@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
 from unittest import mock
 
 import pytest
@@ -9,18 +8,15 @@ import pytest
 from tbc_video_export.common.utils import ansi
 from tbc_video_export.common.utils.flatlist import FlatList
 
-if TYPE_CHECKING:
-    from pytest import LogCaptureFixture
-
 
 class TestUtils:
     """Tests for utils."""
 
     @pytest.fixture(autouse=True)
-    def clear_cache(self) -> None:  # noqa: D102
+    def clear_cache(self) -> None:
         ansi.has_ansi_support.cache_clear()
 
-    def test_ansi_support_posix(self) -> None:  # noqa: D102
+    def test_ansi_support_posix(self) -> None:
         with (
             mock.patch("os.name", "posix"),
             mock.patch("os.isatty") as os_isatty,
@@ -33,7 +29,7 @@ class TestUtils:
             os_isatty.return_value = False
             assert not ansi.has_ansi_support()
 
-    def test_ansi_support_nt_11(self) -> None:  # noqa: D102
+    def test_ansi_support_nt_11(self) -> None:
         with (
             mock.patch("os.name", "nt"),
             mock.patch("platform.release", mock.Mock(return_value="10")),
@@ -48,7 +44,7 @@ class TestUtils:
             os_isatty.return_value = False
             assert not ansi.has_ansi_support()
 
-    def test_ansi_support_nt_10(self) -> None:  # noqa: D102
+    def test_ansi_support_nt_10(self) -> None:
         with (
             mock.patch("os.name", "nt"),
             mock.patch("platform.release", mock.Mock(return_value="10")),
@@ -63,7 +59,7 @@ class TestUtils:
             os_isatty.return_value = False
             assert not ansi.has_ansi_support()
 
-    def test_ansi_support_nt_10_old(self) -> None:  # noqa: D102
+    def test_ansi_support_nt_10_old(self) -> None:
         with (
             mock.patch("os.name", "nt"),
             mock.patch("platform.release", mock.Mock(return_value="10")),
@@ -78,7 +74,7 @@ class TestUtils:
             os_isatty.return_value = False
             assert not ansi.has_ansi_support()
 
-    def test_terminal_buffer(self, caplog: LogCaptureFixture) -> None:  # noqa: D102
+    def test_terminal_buffer(self, caplog: pytest.LogCaptureFixture) -> None:
         with caplog.at_level(logging.INFO, logger="progress"):
             with ansi.create_terminal_buffer():
                 assert caplog.record_tuples == [
@@ -91,7 +87,7 @@ class TestUtils:
                 ("progress", logging.INFO, "\x1b[?1049l\x1b[?25h")
             ]
 
-    def test_ansi_codes(self, force_ansi_support_on: None) -> None:  # noqa: D102, ARG002
+    def test_ansi_codes(self, force_ansi_support_on: None) -> None:
         assert ansi.default_color("test") == "\x1b[38;5;255mtest\x1b[0;39m"
         assert ansi.error_color("test") == "\x1b[0;31mtest\x1b[0;39m"
         assert ansi.success_color("test") == "\x1b[0;32mtest\x1b[0;39m"
@@ -115,11 +111,11 @@ class TestUtils:
         assert ansi.show_cursor() == "\x1b[?25h"
         assert ansi.hide_cursor() == "\x1b[?25l"
 
-    def test_ansi_off(self, force_ansi_support_off: None) -> None:  # noqa: D102, ARG002
+    def test_ansi_off(self, force_ansi_support_off: None) -> None:
         ansi.default_color.cache_clear()
         assert ansi.default_color("test") == "test"
 
-    def test_flatlist(self) -> None:  # noqa :D102
+    def test_flatlist(self) -> None:
         data = FlatList()
 
         assert not data
@@ -129,7 +125,7 @@ class TestUtils:
         data.append(("4", "5"))
         data.append(d for d in ["6", "7"])
         data.append(FlatList(["8", "9"]))
-        data.append([10, 11] + [12])
+        data.append([10, 11, 12])
 
         assert str(data) == "1 2 3 4 5 6 7 8 9 10 11 12"
         assert data.data == [

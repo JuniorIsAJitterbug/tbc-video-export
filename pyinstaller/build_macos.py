@@ -11,6 +11,7 @@ from pathlib import Path
 import dunamai
 import PyInstaller.__main__
 import PyInstaller.utils.osx as osxutils
+
 from tbc_video_export.common import consts
 
 version = dunamai.Version.parse(consts.PROJECT_VERSION).base

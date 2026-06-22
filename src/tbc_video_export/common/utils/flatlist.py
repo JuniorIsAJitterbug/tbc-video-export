@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+import sys
 from collections import abc
 from collections.abc import Generator, Sequence
 from pathlib import Path
 from typing import TypeAlias
+
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
 
 
 class FlatList:
@@ -13,6 +19,7 @@ class FlatList:
         self.data: list[str] = []
         self.append(values)
 
+    @override
     def __str__(self) -> str:
         """Return data as a space separated string."""
         return " ".join(self.data)

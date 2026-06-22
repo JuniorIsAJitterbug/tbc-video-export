@@ -1,8 +1,14 @@
 from __future__ import annotations
 
+import sys
 from enum import Enum, Flag, auto
 from functools import cache
-from typing import TypeVar
+from typing import Final, TypeVar
+
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
 
 T = TypeVar("T", bound=Flag)
 
@@ -44,6 +50,7 @@ class TBCType(Flag):
     LUMA = auto()
     CHROMA = auto()
 
+    @override
     def __str__(self) -> str:
         """Return enum name as string."""
         return str(self.name)
@@ -67,16 +74,18 @@ class VideoSystem(Enum):
     PAL_M = "pal_m"
     NTSC = "ntsc"
 
+    @override
     def __str__(self) -> str:
         """Return formatted enum value as string."""
         return self.value.replace("_", "-").lower()
 
+    @override
     @classmethod
     def _missing_(cls, value: object) -> VideoSystem | None:
         """Check if formatted string is in enum."""
         if isinstance(value, str):
             for member in cls:
-                if str(member.value) == str(value):
+                if str(member.value) == value:
                     return member
         return None
 
@@ -94,6 +103,7 @@ class ChromaDecoder(Enum):
     NTSC3D = "ntsc3d"
     NTSC3DNOADAPT = "ntsc3dnoadapt"
 
+    @override
     def __str__(self) -> str:
         """Return enum name as string."""
         return self.name
@@ -107,6 +117,7 @@ class FieldOrder(Enum):
     BFF = "Interlaced (Bottom Field First)"
     PROG = "Progressive"
 
+    @override
     def __str__(self) -> str:
         """Return enum value as string."""
         return self.value
@@ -123,6 +134,7 @@ class ProcessName(Flag):
     LD_CHROMA_DECODER = auto()
     FFMPEG = auto()
 
+    @override
     def __str__(self) -> str:
         """Return formatted enum name as string."""
         return str(self.name).replace("_", "-").lower()
@@ -149,6 +161,7 @@ class PipeType(Flag):
     NAMED_NT = auto()
     NAMED = NAMED_POSIX | NAMED_NT
 
+    @override
     def __str__(self) -> str:
         """Return formatted enum name as string."""
         return str(self.name).upper()
@@ -172,29 +185,38 @@ class HardwareAccelType(Enum):
     VIDEOTOOLBOX = "videotoolbox"
 
 
+_VideoFormatGRAY: Final[dict[int, str]] = {
+    8: "gray8",
+    10: "gray16le",
+    16: "gray16le",
+}
+
+_VideoFormatYUV420: Final[dict[int, str]] = {
+    8: "yuv420p",
+    10: "yuv420p10le",
+    16: "yuv420p16le",
+}
+
+_VideoFormatYUV422: Final[dict[int, str]] = {
+    8: "yuv422p",
+    10: "yuv422p10le",
+    16: "yuv422p16le",
+}
+
+_VideoFormatYUV444: Final[dict[int, str]] = {
+    8: "yuv444p",
+    10: "yuv444p10le",
+    16: "yuv444p16le",
+}
+
+
 class VideoFormatType(Enum):
     """Video format types for profiles."""
 
-    GRAY = {
-        8: "gray8",
-        10: "gray16le",
-        16: "gray16le",
-    }
-    YUV420 = {
-        8: "yuv420p",
-        10: "yuv420p10le",
-        16: "yuv420p16le",
-    }
-    YUV422 = {
-        8: "yuv422p",
-        10: "yuv422p10le",
-        16: "yuv422p16le",
-    }
-    YUV444 = {
-        8: "yuv444p",
-        10: "yuv444p10le",
-        16: "yuv444p16le",
-    }
+    GRAY = _VideoFormatGRAY
+    YUV420 = _VideoFormatYUV420
+    YUV422 = _VideoFormatYUV422
+    YUV444 = _VideoFormatYUV444
 
     @classmethod
     def get_new_format(cls, current_format: str, new_bitdepth: int) -> str | None:

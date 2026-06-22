@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Generic
 
 from tbc_video_export.common import exceptions
 from tbc_video_export.common.enums import FlagHelper, PipeType
 from tbc_video_export.common.utils import FlatList
-from tbc_video_export.process.wrapper.pipe import (
-    Pipe,
+from tbc_video_export.process.wrapper.pipe import Pipe
+from tbc_video_export.process.wrapper.pipe.pipe import (
     PipeInputGeneric,
     PipeOutputGeneric,
 )
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from tbc_video_export.program_state import ProgramState
 
 
-class Wrapper(ABC):
+class Wrapper(ABC, Generic[PipeInputGeneric, PipeOutputGeneric]):
     """Abstract Wrapper class."""
 
     def __init__(

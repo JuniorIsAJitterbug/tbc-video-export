@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
+from re import escape
 from tempfile import NamedTemporaryFile
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 import pytest
 
@@ -21,7 +22,7 @@ if TYPE_CHECKING:
 class TestTBCJson:
     """Tests for tbc json helper."""
 
-    test_cases = [
+    test_cases: ClassVar[list[FileHelperTestCase]] = [
         FileHelperTestCase(
             id="pal svideo",
             input_tbc=Path("tests/files/pal_svideo.tbc"),
@@ -73,7 +74,7 @@ class TestTBCJson:
         "test_case",
         (pytest.param(test_case, id=test_case.id) for test_case in test_cases),
     )
-    def test_paths(  # noqa: D102
+    def test_paths(
         self,
         program_state: Callable[[list[str], Path], ProgramState],
         test_case: FileHelperTestCase,
@@ -93,7 +94,7 @@ class TestTBCJson:
         assert test_case.cc_file == helper.cc_file
         assert test_case.tbc_types == helper.tbc_types
 
-    def test_setting_json(  # noqa: D102
+    def test_setting_json(
         self,
         program_state: Callable[[list[str], Path], ProgramState],
     ) -> None:
@@ -107,7 +108,7 @@ class TestTBCJson:
         tbc_json_helper = helper.tbc_json
         assert tbc_json_helper.video_system == VideoSystem.NTSC
 
-    def test_missing_tbc(  # noqa: D102
+    def test_missing_tbc(
         self,
         program_state: Callable[[list[str], Path], ProgramState],
     ) -> None:
@@ -116,27 +117,26 @@ class TestTBCJson:
 
         # Clear tbc locations to cause exception
         helper.tbcs.clear()
-        with pytest.raises(exceptions.TBCError) as e:
+        with pytest.raises(
+            exceptions.TBCError, match=escape("Unable to find luma TBC.")
+        ):
             _ = helper.tbc_luma
-
-            assert e.value == "Unable to find luma TBC."
 
         with (
             NamedTemporaryFile(suffix="_chroma.tbc") as file,
-            pytest.raises(exceptions.TBCError) as e,
+            pytest.raises(
+                exceptions.TBCError,
+                match=escape("Location contains chroma TBC but no luma TBC."),
+            ),
         ):
-            state = program_state([], Path(file.name.replace("_chroma.tbc", "")))
-            helper = FileHelper(state.opts, state.config)
+            _ = program_state([], Path(file.name.replace("_chroma.tbc", "")))
 
-            assert e.value == "TBC not found at location."
+        with pytest.raises(
+            exceptions.TBCError, match=escape("TBC not found at location.")
+        ):
+            _ = program_state([], Path("tests/files/invalid"))
 
-        with pytest.raises(exceptions.TBCError) as e:
-            state = program_state([], Path("tests/files/invalid"))
-            helper = FileHelper(state.opts, state.config)
-
-            assert e.value == "Location contains chroma TBC but no luma TBC."
-
-    procs = [
+    procs: ClassVar[list[ProcessName]] = [
         ProcessName.FFMPEG,
         ProcessName.LD_CHROMA_DECODER,
         ProcessName.LD_DROPOUT_CORRECT,
@@ -145,7 +145,7 @@ class TestTBCJson:
         ProcessName.LD_PROCESS_VBI,
     ]
 
-    tbc_types = [
+    tbc_types: ClassVar[list[TBCType]] = [
         TBCType.CHROMA,
         TBCType.COMBINED,
         TBCType.LUMA,
@@ -153,7 +153,7 @@ class TestTBCJson:
 
     @pytest.mark.parametrize("proc", procs)
     @pytest.mark.parametrize("tbc_type", tbc_types)
-    def test_log_files(  # noqa: D102
+    def test_log_files(
         self,
         program_state: Callable[[list[str], Path], ProgramState],
         proc: ProcessName,
@@ -165,11 +165,11 @@ class TestTBCJson:
         timestamp = "__timestamp__"
 
         assert helper.get_log_file(proc, tbc_type, timestamp) == Path(
-            f"__timestamp___{helper.input_name.stem}_{str(proc)}_{str(tbc_type)}.log"
+            f"__timestamp___{helper.input_name.stem}_{proc}_{tbc_type}.log"
         )
 
     @pytest.mark.parametrize("proc", procs)
-    def test_tools(  # noqa: D102
+    def test_tools(
         self,
         program_state: Callable[[list[str], Path], ProgramState],
         proc: ProcessName,
@@ -186,7 +186,7 @@ class TestTBCJson:
 
         assert helper.tools[proc] == Path(str(proc))
 
-    appimage_tbc_tools_procs = [
+    appimage_tbc_tools_procs: ClassVar[list[ProcessName]] = [
         ProcessName.LD_CHROMA_DECODER,
         ProcessName.LD_DROPOUT_CORRECT,
         ProcessName.LD_EXPORT_METADATA,
@@ -194,7 +194,7 @@ class TestTBCJson:
         ProcessName.LD_PROCESS_VBI,
     ]
 
-    def test_tools_appimage(  # noqa: D102
+    def test_tools_appimage(
         self,
         program_state: Callable[[list[str], Path], ProgramState],
     ) -> None:
@@ -218,7 +218,7 @@ class TestTBCJson:
                 else:
                     assert v == Path(str(k))
 
-    def test_out_file_dir(  # noqa: D102
+    def test_out_file_dir(
         self,
         program_state: Callable[[list[str], Path, str], ProgramState],
     ) -> None:
@@ -233,12 +233,13 @@ class TestTBCJson:
         )
         helper = FileHelper(state.opts, state.config)
 
-        with pytest.raises(exceptions.FileIOError) as e:
+        with pytest.raises(
+            exceptions.FileIOError,
+            match=escape("Output directory does not exist (invalid_dir)."),
+        ):
             helper.check_output_dir()
 
-            assert e.value == "Output directory does not exist (invalid_dir/test)."
-
-    def test_out_file(  # noqa: D102
+    def test_out_file(
         self,
         program_state: Callable[[list[str], Path, str], ProgramState],
     ) -> None:
@@ -254,12 +255,11 @@ class TestTBCJson:
             )
             helper = FileHelper(state.opts, state.config)
 
-            with pytest.raises(exceptions.FileIOError) as e:
+            with pytest.raises(
+                exceptions.FileIOError,
+                match=escape(f"{file.name} exists, use --overwrite or move the file."),
+            ):
                 helper.check_output_file()
-
-                assert (
-                    e.value == f"{file.name} exists, use --overwrite or move the file."
-                )
 
         with NamedTemporaryFile(suffix=".luma.mkv") as file:
             state = program_state(
@@ -274,9 +274,8 @@ class TestTBCJson:
             )
             helper = FileHelper(state.opts, state.config)
 
-            with pytest.raises(exceptions.FileIOError) as e:
+            with pytest.raises(
+                exceptions.FileIOError,
+                match=escape(f"{file.name} exists, use --overwrite or move the file."),
+            ):
                 helper.check_output_file()
-
-                assert (
-                    e.value == f"{file.name} exists, use --overwrite or move the file."
-                )

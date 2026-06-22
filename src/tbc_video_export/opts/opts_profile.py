@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from tbc_video_export.config import Config
 
 
-def add_profile_opts(config: Config, parent: argparse.ArgumentParser) -> None:  # noqa: C901
+def add_profile_opts(config: Config, parent: argparse.ArgumentParser) -> None:
     """Add profile opts to the parent arg parser."""
     # chroma/combined profiles
     profile_default = config.get_default_profile().name
@@ -72,7 +72,7 @@ def add_profile_opts(config: Config, parent: argparse.ArgumentParser) -> None:  
         help=(
             "Use an additional filter profile when encoding.\n"
             "  - Compatibility with profile is not guaranteed.\n"
-            "  - You can use this option muiltiple times."
+            "  - You can use this option multiple times."
             "\n\n"
         ),
     )
@@ -142,7 +142,7 @@ def add_profile_opts(config: Config, parent: argparse.ArgumentParser) -> None:  
         )
 
     # profile aliases
-    profile_opts = parent.add_argument_group("profile alises")
+    profile_opts = parent.add_argument_group("profile aliases")
 
     for profile_name in config.get_profile_names():
         profile_opts.add_argument(
@@ -154,7 +154,7 @@ def add_profile_opts(config: Config, parent: argparse.ArgumentParser) -> None:  
         )
 
     # audio profile aliases
-    audio_profile_opts = parent.add_argument_group("audio profile alises")
+    audio_profile_opts = parent.add_argument_group("audio profile aliases")
 
     for profile_name in config.get_audio_profile_names():
         audio_profile_opts.add_argument(

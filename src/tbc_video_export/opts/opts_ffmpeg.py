@@ -83,7 +83,7 @@ def add_ffmpeg_opts(parent: argparse.ArgumentParser) -> None:
 
     ffmpeg_opts.add_argument(
         "--metadata-file",
-        type=opt_validators.valiate_metadata_file_exists,
+        type=opt_validators.validate_metadata_file_exists,
         default=[],
         action="append",
         metavar="filename",

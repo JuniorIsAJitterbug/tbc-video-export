@@ -10,6 +10,7 @@ import PyInstaller.__main__
 from pyinstaller_versionfile import (  # pyright: ignore[reportMissingTypeStubs]
     create_versionfile,  # pyright: ignore[reportUnknownVariableType]
 )
+
 from tbc_video_export.common import consts
 
 # use .99 as the 4th integer if non-final release

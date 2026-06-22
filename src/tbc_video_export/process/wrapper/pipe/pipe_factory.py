@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import astuple, dataclass
+from importlib import import_module
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common.enums import PipeType
@@ -13,14 +14,6 @@ if TYPE_CHECKING:
 
     from tbc_video_export.common.enums import ProcessName, TBCType
     from tbc_video_export.process.wrapper.pipe.pipe import Pipe
-
-if os.name == "nt":
-    from tbc_video_export.process.wrapper.pipe.pipe_named_nt import (
-        PipeNamedNT,
-    )
-    from tbc_video_export.process.wrapper.pipe.pipe_named_nt_async import (
-        PipeNamedNTAsync,
-    )
 
 
 @dataclass
@@ -52,16 +45,19 @@ class PipeFactory:
 
             case PipeType.NAMED:
                 if os.name == "posix":
-                    from tbc_video_export.process.wrapper.pipe.pipe_named_posix import (
-                        PipeNamedPosix,
-                    )
-
-                    return PipeNamedPosix(process_name, tbc_type)
+                    return import_module(
+                        "tbc_video_export.process.wrapper.pipe.pipe_named_posix"
+                    ).PipeNamedPosix(process_name, tbc_type)
 
                 if os.name == "nt":
                     if async_nt_pipes:
-                        return PipeNamedNTAsync()
-                    return PipeNamedNT(process_name, tbc_type)
+                        return import_module(
+                            "tbc_video_export.process.wrapper.pipe.pipe_named_nt_async"
+                        ).PipeNamedNTAsync(process_name, tbc_type)
+
+                    return import_module(
+                        "tbc_video_export.process.wrapper.pipe.pipe_named_nt"
+                    ).PipeNamedNT(process_name, tbc_type)
 
                 raise NotImplementedError(f"Named pipes not implemented for {os.name}")
 

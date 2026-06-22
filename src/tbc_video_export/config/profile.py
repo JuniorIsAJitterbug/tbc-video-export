@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common import exceptions
@@ -12,11 +13,15 @@ from tbc_video_export.common.utils import FlatList, ansi
 if TYPE_CHECKING:
     from tbc_video_export.config.json import (
         JsonProfile,
-        JsonSubProfile,
         JsonSubProfileAudio,
         JsonSubProfileFilter,
         JsonSubProfileVideo,
     )
+
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
 
 
 class Profile:
@@ -64,7 +69,8 @@ class Profile:
         """Set filter profiles."""
         self._filter_profiles = filter_profiles
 
-    def __str__(self) -> str:  # noqa: D105
+    @override
+    def __str__(self) -> str:
         data = f"--{self.name} {'(default)' if self.is_default else ''}\n"
 
         data += str(self.video_profile)
@@ -81,25 +87,26 @@ class Profile:
 class SubProfile:
     """Abstract class for subprofiles."""
 
-    def __init__(self, profile: JsonSubProfile):
-        self._profile = profile
+    def __init__(self, name: str, description: str):
+        self._name = name
+        self._description = description
 
     @property
     def name(self) -> str:
         """Return profile name."""
-        return self._profile["name"]
+        return self._name
 
     @property
     def description(self) -> str:
         """Return the profile description."""
-        return self._profile["description"]
+        return self._description
 
 
 class ProfileVideo(SubProfile):
     """Holds FFmpeg video profile."""
 
     def __init__(self, parent: JsonProfile, profile: JsonSubProfileVideo) -> None:
-        super().__init__(profile)
+        super().__init__(profile["name"], profile["description"])
         self._parent = parent
         self._profile = profile
         self._video_format = self._profile["video_format"]
@@ -168,7 +175,8 @@ class ProfileVideo(SubProfile):
 
         return None
 
-    def __str__(self) -> str:  # noqa: D105
+    @override
+    def __str__(self) -> str:
         data = (
             f"  --{ansi.bold(self.hardware_accel.value)} "
             if self.hardware_accel is not None
@@ -210,7 +218,7 @@ class ProfileAudio(SubProfile):
     """Holds FFmpeg audio profile."""
 
     def __init__(self, profile: JsonSubProfileAudio) -> None:
-        super().__init__(profile)
+        super().__init__(profile["name"], profile["description"])
         self._profile = profile
 
     @property
@@ -225,7 +233,8 @@ class ProfileAudio(SubProfile):
             FlatList(self._profile["opts"]) if "opts" in self._profile else FlatList()
         )
 
-    def __str__(self) -> str:  # noqa: D105
+    @override
+    def __str__(self) -> str:
         data = f"  {ansi.dim('Audio Codec:')}\t{self.codec}\n"
         if self.opts:
             data += f"  {ansi.dim('Audio Opts')}\t{self.opts}\n"
@@ -237,7 +246,7 @@ class ProfileFilter(SubProfile):
     """Holds FFmpeg filter profile."""
 
     def __init__(self, profile: JsonSubProfileFilter) -> None:
-        super().__init__(profile)
+        super().__init__(profile["name"], profile["description"])
         self._profile = profile
 
     @property

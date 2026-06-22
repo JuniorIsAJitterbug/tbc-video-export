@@ -109,19 +109,19 @@ def underlined(text: str) -> str:
 @cache
 def erase_from_cursor() -> str:
     """Return erase from cursor (to end of screen) escape code."""
-    return "\x1B[0J"
+    return "\x1b[0J"
 
 
 @cache
 def erase_line() -> str:
     """Return erase current line escape code."""
-    return "\x1B[0K"
+    return "\x1b[0K"
 
 
 @cache
 def erase_screen() -> str:
     """Return erase screen escape code."""
-    return "\x1B[2J"
+    return "\x1b[2J"
 
 
 # Cursor Controls
@@ -130,13 +130,13 @@ def erase_screen() -> str:
 @cache
 def move_to_home() -> str:
     """Return move to home (0, 0) escape code."""
-    return "\x1B[H"
+    return "\x1b[H"
 
 
 @cache
 def go_up_lines(count: int) -> str:
     """Return escape code to go up N lines."""
-    return f"\x1B[{count}A"
+    return f"\x1b[{count}A"
 
 
 # Screen Modes
@@ -145,56 +145,56 @@ def go_up_lines(count: int) -> str:
 @cache
 def enable_alternative_buffer() -> str:
     """Return enable alternative buffer escape code."""
-    return "\x1B[?1049h"
+    return "\x1b[?1049h"
 
 
 @cache
 def disable_alternative_buffer() -> str:
     """Return disable alternative buffer escape code."""
-    return "\x1B[?1049l"
+    return "\x1b[?1049l"
 
 
 @cache
 def show_cursor() -> str:
     """Return show cursor escape code."""
-    return "\x1B[?25h"
+    return "\x1b[?25h"
 
 
 @cache
 def hide_cursor() -> str:
     """Return hide cursor escape code."""
-    return "\x1B[?25l"
+    return "\x1b[?25l"
 
 
 # Color codes
 def _default_color() -> str:
     """Return default color escape code."""
-    return "\x1B[38;5;255m" if has_ansi_support() else ""  # white (255)
+    return "\x1b[38;5;255m" if has_ansi_support() else ""  # white (255)
 
 
 def _dim_color() -> str:
     """Return dim color escape code."""
-    return "\x1B[38;5;245m" if has_ansi_support() else ""  # grey (240)
+    return "\x1b[38;5;245m" if has_ansi_support() else ""  # grey (240)
 
 
 def _error_color() -> str:
     """Return error color escape code."""
-    return "\x1B[0;31m" if has_ansi_support() else ""  # red
+    return "\x1b[0;31m" if has_ansi_support() else ""  # red
 
 
 def _success_color() -> str:
     """Return success color escape code."""
-    return "\x1B[0;32m" if has_ansi_support() else ""  # green
+    return "\x1b[0;32m" if has_ansi_support() else ""  # green
 
 
 def _progress_color() -> str:
     """Return progress color escape code."""
-    return "\x1B[0;36m" if has_ansi_support() else ""  # cyan
+    return "\x1b[0;36m" if has_ansi_support() else ""  # cyan
 
 
 def _reset_color() -> str:
     """Return color reset escape code."""
-    return "\x1B[0;39m" if has_ansi_support() else ""
+    return "\x1b[0;39m" if has_ansi_support() else ""
 
 
 # Colors / Graphics Mode
@@ -202,39 +202,39 @@ def _reset_color() -> str:
 
 def _bold() -> str:
     """Return bold escape code."""
-    return "\x1B[1m" if has_ansi_support() else ""
+    return "\x1b[1m" if has_ansi_support() else ""
 
 
 def _reset_bold() -> str:
     """Return end bold escape code."""
-    return "\x1B[22m" if has_ansi_support() else ""
+    return "\x1b[22m" if has_ansi_support() else ""
 
 
 def _italic() -> str:
     """Return italic escape code."""
-    return "\x1B[23m" if has_ansi_support() else ""
+    return "\x1b[23m" if has_ansi_support() else ""
 
 
 def _reset_italic() -> str:
     """Return end italic escape code."""
-    return "\x1B[23m" if has_ansi_support() else ""
+    return "\x1b[23m" if has_ansi_support() else ""
 
 
 def _dim() -> str:
     """Return dim escape code."""
-    return "\x1B[2m" if has_ansi_support() else ""
+    return "\x1b[2m" if has_ansi_support() else ""
 
 
 def _reset_dim() -> str:
     """Return end dim escape code."""
-    return "\x1B[22m" if has_ansi_support() else ""
+    return "\x1b[22m" if has_ansi_support() else ""
 
 
 def _underlined() -> str:
     """Return underlined escape code."""
-    return "\x1B[4m" if has_ansi_support() else ""
+    return "\x1b[4m" if has_ansi_support() else ""
 
 
 def _reset_underlined() -> str:
     """Return end underlined escape code."""
-    return "\x1B[24m" if has_ansi_support() else ""
+    return "\x1b[24m" if has_ansi_support() else ""

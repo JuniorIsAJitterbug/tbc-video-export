@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import asyncio
+import sys
 from fractions import Fraction
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Generic
 
 from tbc_video_export.common import consts, exceptions
 from tbc_video_export.common.enums import (
@@ -16,20 +17,31 @@ from tbc_video_export.common.enums import (
     VideoFormatType,
 )
 from tbc_video_export.common.utils import FlatList, ansi
+from tbc_video_export.process.wrapper.pipe import (
+    Pipe,
+    PipeInputGeneric,
+    PipeOutputGeneric,
+)
 from tbc_video_export.process.wrapper.wrapper import Wrapper
 
 if TYPE_CHECKING:
     from tbc_video_export.config.profile import Profile, ProfileVideo
-    from tbc_video_export.process.wrapper.pipe import Pipe
     from tbc_video_export.process.wrapper.wrapper import WrapperConfig
     from tbc_video_export.program_state import ProgramState
 
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
 
-class WrapperFFmpeg(Wrapper):
+
+class WrapperFFmpeg(
+    Wrapper[tuple[Pipe, ...], None], Generic[PipeInputGeneric, PipeOutputGeneric]
+):
     """Wrapper for ffmpeg that generates commands for encoding."""
 
     def __init__(
-        self, state: ProgramState, config: WrapperConfig[tuple[Pipe], None]
+        self, state: ProgramState, config: WrapperConfig[tuple[Pipe, ...], None]
     ) -> None:
         self._additional_vopts: FlatList = FlatList()
         self._hwaccel_opts: FlatList = FlatList()
@@ -38,11 +50,13 @@ class WrapperFFmpeg(Wrapper):
         self._config = config
         self._parse_hwaccel()
 
-    def post_fn(self) -> None:  # noqa: D102
+    @override
+    def post_fn(self) -> None:
         pass
 
+    @override
     @property
-    def command(self) -> FlatList:  # noqa: D102
+    def command(self) -> FlatList:
         return FlatList(
             (
                 self.binary,
@@ -126,7 +140,7 @@ class WrapperFFmpeg(Wrapper):
                 if self._state.opts.hwaccel_device is not None:
                     raise exceptions.InvalidProfileError(
                         "Unable to set device for AMD AMF encoding due to FFmpeg "
-                        "limitiations."
+                        "limitations."
                     )
 
             case _:
@@ -178,8 +192,7 @@ class WrapperFFmpeg(Wrapper):
             inputs.append(str(self._state.file_helper.output_video_file_luma))
 
         # pipes
-        for i in self._config.input_pipes:
-            inputs.append(str(i.in_path))
+        inputs.extend(str(i.in_path) for i in self._config.input_pipes)
 
         input_opts.append(
             (
@@ -304,7 +317,7 @@ class WrapperFFmpeg(Wrapper):
 
         return video_filters, other_filters
 
-    def _get_filter_complex_opts(self) -> FlatList:  # noqa: C901, PLR0912
+    def _get_filter_complex_opts(self) -> FlatList:
         """Return opts for filter complex."""
         video_filters, other_filters = self._get_filters()
         video_filters_str = ",".join(video_filters)
@@ -605,16 +618,19 @@ class WrapperFFmpeg(Wrapper):
         """Return the formatted field order from opts."""
         return self._state.opts.field_order.name.lower()
 
+    @override
     @cached_property
-    def process_name(self) -> ProcessName:  # noqa: D102
+    def process_name(self) -> ProcessName:
         return ProcessName.FFMPEG
 
+    @override
     @cached_property
-    def supported_pipe_types(self) -> PipeType:  # noqa: D102
+    def supported_pipe_types(self) -> PipeType:
         return PipeType.NULL | PipeType.OS | PipeType.NAMED
 
+    @override
     @cached_property
-    def stdin(self) -> int | None:  # noqa: D102
+    def stdin(self) -> int | None:
         # if ffmpeg has a pipe with a handle, use it
         # we usually use named pipes that do not have handles
         return next(
@@ -626,8 +642,9 @@ class WrapperFFmpeg(Wrapper):
             None,
         )
 
+    @override
     @cached_property
-    def stdout(self) -> int | None:  # noqa: D102
+    def stdout(self) -> int | None:
         # if ffmpeg has a pipe with a handle, use it
         # we usually do not have any out pipes
         return next(
@@ -639,21 +656,25 @@ class WrapperFFmpeg(Wrapper):
             None,
         )
 
+    @override
     @cached_property
-    def stderr(self) -> int | None:  # noqa: D102
+    def stderr(self) -> int | None:
         return asyncio.subprocess.PIPE
 
+    @override
     @cached_property
-    def log_output(self) -> bool:  # noqa: D102
+    def log_output(self) -> bool:
         # we use built in FFmpeg logging via env
         return False
 
+    @override
     @cached_property
-    def log_stdout(self) -> bool:  # noqa: D102
+    def log_stdout(self) -> bool:
         return False
 
+    @override
     @cached_property
-    def env(self) -> dict[str, str] | None:  # noqa: D102
+    def env(self) -> dict[str, str] | None:
         if self._state.opts.log_process_output:
             file_name = self._state.file_helper.get_log_file(
                 self.process_name, TBCType.NONE
@@ -662,10 +683,12 @@ class WrapperFFmpeg(Wrapper):
             return {"FFREPORT": f"file='{file_name}'"}
         return None
 
+    @override
     @cached_property
-    def ignore_error(self) -> bool:  # noqa: D102
+    def ignore_error(self) -> bool:
         return False
 
+    @override
     @cached_property
-    def stop_on_last_alive(self) -> bool:  # noqa: D102
+    def stop_on_last_alive(self) -> bool:
         return False

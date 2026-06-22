@@ -6,7 +6,7 @@ labels: 'enhancement'
 assignees: ''
 ---
 
-### Is your proposal related to a problem?
+## Is your proposal related to a problem?
 
 <!--
   Provide a clear and concise description of what the problem is.
@@ -15,7 +15,7 @@ assignees: ''
 
 ### Is your proposal related to broadcasting standards?
 
-<!-- if so please detail the request with supporting documentaiton"
+<!-- if so please detail the request with supporting documentation"
 -->
 
 ### Describe the solution you'd like

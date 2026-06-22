@@ -3,15 +3,19 @@ from __future__ import annotations
 import asyncio
 import logging
 from contextlib import AsyncExitStack
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import partial
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Generic
 
 from tbc_video_export.common.enums import ExportMode, FlagHelper, ProcessName, TBCType
 from tbc_video_export.common.utils import ansi, strings
 from tbc_video_export.process.process import Process
 from tbc_video_export.process.progress_handler import ProgressHandler
 from tbc_video_export.process.wrapper import WrapperGroup
+from tbc_video_export.process.wrapper.pipe.pipe import (
+    PipeInputGeneric,
+    PipeOutputGeneric,
+)
 
 if TYPE_CHECKING:
     from typing import Any
@@ -20,7 +24,7 @@ if TYPE_CHECKING:
     from tbc_video_export.program_state import ProgramState
 
 
-class ProcessHandler:
+class ProcessHandler(Generic[PipeInputGeneric, PipeOutputGeneric]):
     """Handles the creation and running of processes."""
 
     def __init__(self, state: ProgramState) -> None:
@@ -28,11 +32,15 @@ class ProcessHandler:
 
         self._tasks: set[asyncio.Task[None]] = set()
         self._proc_tasks: set[asyncio.Task[ProcessState]] = set()
-        self._procs: dict[WrapperGroup, list[Process]] = {}
+        self._procs: dict[
+            WrapperGroup, list[Process[PipeInputGeneric, PipeOutputGeneric]]
+        ] = {}
 
-        self._progress_handler: ProgressHandler | None = None
+        self._progress_handler: (
+            ProgressHandler[PipeInputGeneric, PipeOutputGeneric] | None
+        ) = None
 
-        self._start_time = datetime.now()
+        self._start_time = datetime.now(timezone.utc)
         self._has_run = False
 
         self._stop_event = asyncio.Event()
@@ -41,7 +49,7 @@ class ProcessHandler:
 
     @property
     def completed_successfully(self) -> bool:
-        """Return True if the handler has run and all processes finished without error."""
+        """Return True if handler has run and all processes finished without error."""
         return (
             self._has_run
             and not self._proc_error_event.is_set()
@@ -193,7 +201,9 @@ class ProcessHandler:
                         await self._exit_all()
                         return
 
-    async def _proc_killer(self, procs: list[Process]) -> None:
+    async def _proc_killer(
+        self, procs: list[Process[PipeInputGeneric, PipeOutputGeneric]]
+    ) -> None:
         """Proc killing task.
 
         This watches proc states and kills if the only remaining procs are flagged with
@@ -210,7 +220,7 @@ class ProcessHandler:
             running = [proc for proc in procs if proc.state.running]
             has_run_count = sum(1 for proc in procs if proc.state.has_run)
 
-            if not len(running):
+            if not running:
                 break
 
             if not has_run_count:
@@ -248,8 +258,8 @@ class ProcessHandler:
                 )
 
                 logging.getLogger("console").info(
-                    ansi.dim(f"{wrapper.process_name} {tbc_type_str}\n")
-                    + f"{env_variables}{wrapper.command}\n"
+                    f"{ansi.dim(f'{wrapper.process_name} {tbc_type_str}')}\n"
+                    f"{env_variables}{wrapper.command}\n"
                 )
 
                 # proc the post-fn command to show changes on the output
@@ -259,7 +269,7 @@ class ProcessHandler:
         """Print completion message based on success/failure."""
         message_suffix = (
             f" at {strings.current_timestamp()[:-4]} "
-            f"after {str(datetime.now() - self._start_time)[:-3]}"
+            f"after {str(datetime.now(timezone.utc) - self._start_time)[:-3]}"
         )
 
         # add concealments if they were returned

@@ -3,20 +3,24 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Generic
 
 from tbc_video_export.common import consts
 from tbc_video_export.common.enums import ProcessName
 from tbc_video_export.common.utils import ansi, log, strings
+from tbc_video_export.process.wrapper.pipe.pipe import (
+    PipeInputGeneric,
+    PipeOutputGeneric,
+)
 
 if TYPE_CHECKING:
     from tbc_video_export.process.parser.parser import Parser
     from tbc_video_export.process.process import Process
     from tbc_video_export.process.process_state import ProcessState
-    from tbc_video_export.program_state import ProgramState as ProgramState
+    from tbc_video_export.program_state import ProgramState
 
 
-class ProgressHandler:
+class ProgressHandler(Generic[PipeInputGeneric, PipeOutputGeneric]):
     """Handle the progress output.
 
     This requires ANSI escape code support in the terminal.
@@ -25,7 +29,7 @@ class ProgressHandler:
     def __init__(
         self,
         state: ProgramState,
-        procs: list[Process],
+        procs: list[Process[PipeInputGeneric, PipeOutputGeneric]],
         stop_event: asyncio.Event,
     ) -> None:
         self._state = state
@@ -139,7 +143,7 @@ class ProgressHandler:
                     )
 
                     fixed_log_lines.append(
-                        f"{formatted_line[:max_line_length - 3]}...\n"
+                        f"{formatted_line[: max_line_length - 3]}...\n"
                         if len(formatted_line) > max_line_length
                         else f"{formatted_line}\n"
                     )
@@ -147,7 +151,7 @@ class ProgressHandler:
             return "\n" + "".join(fixed_log_lines) + "\n"
         return ""
 
-    def _progress(self, process: Process) -> str:
+    def _progress(self, process: Process[PipeInputGeneric, PipeOutputGeneric]) -> str:
         """Get formatted progress string."""
         return (
             (
@@ -194,8 +198,10 @@ class ProgressHandler:
             case _:
                 return f"{' ' * self._col_w['status']}"
 
-    def _formatted_process(self, process: Process) -> str:
-        """Get formatted processs string."""
+    def _formatted_process(
+        self, process: Process[PipeInputGeneric, PipeOutputGeneric]
+    ) -> str:
+        """Get formatted process string."""
         value = f"{process.wrapper.process_name:<{self._col_w['proc_name']}s}"
 
         value += (

@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING
 from tbc_video_export.common.enums import (
     ChromaDecoder,
     FieldOrder,
-    VideoSystem,
     TBCType,
+    VideoSystem,
 )
 
 if TYPE_CHECKING:

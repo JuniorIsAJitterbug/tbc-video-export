@@ -78,7 +78,7 @@ class FileHelper:
 
     @property
     def ffmetadata_file(self) -> Path:
-        """Returns absolute path fo metadata file."""
+        """Returns absolute path to metadata file."""
         return self.get_output_file_from_ext("ffmetadata")
 
     @property

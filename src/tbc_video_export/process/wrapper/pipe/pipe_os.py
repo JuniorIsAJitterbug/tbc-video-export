@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import sys
 from contextlib import suppress
 from functools import cached_property
 from typing import TYPE_CHECKING
@@ -13,6 +14,11 @@ if TYPE_CHECKING:
     from pathlib import Path
     from types import TracebackType
 
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
+
 
 class PipeOS(Pipe):
     """OS pipe for stdin/stdout helper."""
@@ -20,12 +26,14 @@ class PipeOS(Pipe):
     _stdin: int | None = None
     _stdout: int | None = None
 
+    @override
     async def __aenter__(self) -> Pipe:
         """Enter OS pipe context."""
         logging.getLogger("console").debug("Creating os.pipe")
         self._stdin, self._stdout = os.pipe()
         return self
 
+    @override
     async def __aexit__(
         self,
         exc_type: type[BaseException] | None,
@@ -35,26 +43,32 @@ class PipeOS(Pipe):
         """Exit OS pipe context."""
         self.close()
 
+    @override
     @cached_property
-    def pipe_type(self) -> PipeType:  # noqa: D102
+    def pipe_type(self) -> PipeType:
         return PipeType.OS
 
+    @override
     @cached_property
-    def in_path(self) -> Path | str:  # noqa: D102
+    def in_path(self) -> Path | str:
         return "-"
 
+    @override
     @cached_property
-    def out_path(self) -> Path | str:  # noqa: D102
+    def out_path(self) -> Path | str:
         return "-"
 
+    @override
     @property
-    def in_handle(self) -> int | None:  # noqa: D102
+    def in_handle(self) -> int | None:
         return self._stdin
 
+    @override
     @property
-    def out_handle(self) -> int | None:  # noqa: D102
+    def out_handle(self) -> int | None:
         return self._stdout
 
+    @override
     def close(self) -> None:
         """Close the OS pipe."""
         logging.getLogger("console").debug("Closing pipe os.pipe")

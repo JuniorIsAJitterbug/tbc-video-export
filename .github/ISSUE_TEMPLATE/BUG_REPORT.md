@@ -6,7 +6,7 @@ labels: ['bug']
 assignees: 'JuniorIsAJitterbug'
 ---
 
-### Checklist
+## Checklist
 
 <!--
 ✅ Please make sure that you have completed the following steps before submitting the bug report:
@@ -15,7 +15,6 @@ assignees: 'JuniorIsAJitterbug'
 - [ ] I have searched the issues page for any duplicate issues open or closed and confirmed that this bug has not been reported before.
 - [ ] I have tested the issue with the current build.
 - [ ] I have attached log files, uploaded sample data, and commands used so that the issue can be easily reproduced by the developers.
-
 
 ### Bug Description
 
@@ -52,7 +51,7 @@ Include information on your environment.
 -->
 
 - Decode version: [e.g., 1.2.3]
-- Operating System: [e.g., Windows 10, macOS Big Sur, Linux Ubuntu]
+- Operating System: [e.g., Windows 11 26H1, macOS 26, Ubuntu 26.06]
 - Hardware Used: [e.g., Ryzen 7 7950x, 16GB DDDR5-4400mhz, SSD NVME Gen 3 etc]
 
 ### Additional Information

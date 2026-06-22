@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from contextlib import suppress
+from contextlib import nullcontext, suppress
 from dataclasses import fields
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
 import pytest
-from pymediainfo import MediaInfo  # pyright: ignore[reportMissingTypeStubs]
+from pymediainfo import MediaInfo
 
 from tbc_video_export import main
 from tests.conftest import (
@@ -28,7 +28,7 @@ class TestOutput:
     and validate the output using mediainfo.
     """
 
-    codec_values: dict[str, dict[str, Any]] = {
+    codec_values: ClassVar[dict[str, dict[str, Any]]] = {
         "ffv1": {
             "format": "FFV1",
             "format_settings__gop": "N=1",
@@ -115,7 +115,7 @@ class TestOutput:
         },
     }
 
-    codec_ffv1: dict[str, Any] = {
+    codec_ffv1: ClassVar[dict[str, Any]] = {
         "format": "FFV1",
         "format_settings__gop": "N=1",
         "coder_type": "Range Coder",
@@ -123,7 +123,7 @@ class TestOutput:
         "errordetectiontype": "Per slice",
     }
 
-    pal_svideo_test_cases = [
+    pal_svideo_test_cases: ClassVar[list[OutputTestCase]] = [
         OutputTestCase(
             id="default",
             input_opts=["--quiet", "--overwrite"],
@@ -237,7 +237,7 @@ class TestOutput:
         ),
     ]
 
-    pal_composite_test_cases = [
+    pal_composite_test_cases: ClassVar[list[OutputTestCase]] = [
         OutputTestCase(
             id="default",
             input_opts=["--quiet", "--overwrite"],
@@ -349,7 +349,7 @@ class TestOutput:
         ),
     ]
 
-    pal_composite_ld_test_cases = [
+    pal_composite_ld_test_cases: ClassVar[list[OutputTestCase]] = [
         OutputTestCase(
             id="default",
             input_opts=["--quiet", "--overwrite"],
@@ -461,7 +461,7 @@ class TestOutput:
         ),
     ]
 
-    ntsc_svideo_test_cases = [
+    ntsc_svideo_test_cases: ClassVar[list[OutputTestCase]] = [
         OutputTestCase(
             id="default",
             input_opts=["--quiet", "--overwrite"],
@@ -573,7 +573,7 @@ class TestOutput:
         ),
     ]
 
-    ntsc_composite_test_cases = [
+    ntsc_composite_test_cases: ClassVar[list[OutputTestCase]] = [
         OutputTestCase(
             id="default",
             input_opts=["--quiet", "--overwrite"],
@@ -685,7 +685,7 @@ class TestOutput:
         ),
     ]
 
-    ntsc_composite_ld_test_cases = [
+    ntsc_composite_ld_test_cases: ClassVar[list[OutputTestCase]] = [
         OutputTestCase(
             id="default",
             input_opts=["--quiet", "--overwrite"],
@@ -797,7 +797,7 @@ class TestOutput:
         ),
     ]
 
-    palm_svideo_test_cases = [
+    palm_svideo_test_cases: ClassVar[list[OutputTestCase]] = [
         OutputTestCase(
             id="default pal-m svideo",
             input_opts=["--quiet", "--overwrite"],
@@ -868,7 +868,7 @@ class TestOutput:
                 bit_depth=10,
                 chroma_subsampling="4:2:2",
             ),
-            expected_exc=pytest.raises(AssertionError),
+            expected_exc=AssertionError,
         ),
         OutputTestCase(
             id="widescreen",
@@ -906,7 +906,7 @@ class TestOutput:
         ),
     ]
 
-    video_format_test_cases = [
+    video_format_test_cases: ClassVar[list[OutputTestCase]] = [
         OutputTestCase(
             id="yuv420p",
             input_opts=["--quiet", "--overwrite", "--yuv420", "--8bit"],
@@ -1056,7 +1056,7 @@ class TestOutput:
         ),
     ]
 
-    profile_test_cases = [
+    profile_test_cases: ClassVar[list[OutputTestCase]] = [
         OutputTestCase(
             id="prores_hq",
             input_opts=["--quiet", "--overwrite", "--prores_hq"],
@@ -1239,7 +1239,7 @@ class TestOutput:
         ),
     ]
 
-    audio_test_cases = [
+    audio_test_cases: ClassVar[list[OutputTestCase]] = [
         OutputTestCase(
             id="mux 1 audio track",
             input_opts=[
@@ -1329,9 +1329,9 @@ class TestOutput:
                 "--audio-track",
                 "tests/files/audio.flac",
                 "--audio-track-advanced",
-                '["tests/files/audio_192_24.wav", "test 1", "eng", 192000, "s24le", 2]',  # noqa: E501
+                '["tests/files/audio_192_24.wav", "test 1", "eng", 192000, "s24le", 2]',
                 "--audio-track-advanced",
-                '["tests/files/audio_48_16.wav", "test 2", "eng", 48000, "s16le", 6, "5.1"]',  # noqa: E501
+                '["tests/files/audio_48_16.wav", "test 2", "eng", 48000, "s16le", 6, "5.1"]',
             ],
             input_tbc="pal_svideo",
             output_file="pal_svideo.mkv",
@@ -1367,7 +1367,7 @@ class TestOutput:
         ),
     ]
 
-    metadata_test_cases = [
+    metadata_test_cases: ClassVar[list[OutputTestCase]] = [
         OutputTestCase(
             id="single metadata",
             input_opts=["--quiet", "--overwrite", "--metadata", "FOO", "BAR"],
@@ -1490,7 +1490,11 @@ class TestOutput:
 
     def run_output_validation(self, test_case: OutputTestCase) -> None:
         """Test output video files with mediainfo."""
-        with test_case.expected_exc:
+        with (
+            pytest.raises(test_case.expected_exc)
+            if test_case.expected_exc is not None
+            else nullcontext()
+        ):
             main([f"tests/files/{test_case.input_tbc}", *test_case.input_opts])
 
             output_file = Path(f"tests/files/{test_case.output_file}")
@@ -1519,7 +1523,7 @@ class TestOutput:
             for test_case in pal_svideo_test_cases
         ),
     )
-    def test_pal_svideo(self, test_case: OutputTestCase):  # noqa: D102
+    def test_pal_svideo(self, test_case: OutputTestCase):
         self.run_output_validation(test_case)
 
     @pytest.mark.parametrize(
@@ -1529,7 +1533,7 @@ class TestOutput:
             for test_case in pal_composite_test_cases
         ),
     )
-    def test_pal_composite(self, test_case: OutputTestCase):  # noqa: D102
+    def test_pal_composite(self, test_case: OutputTestCase):
         self.run_output_validation(test_case)
 
     @pytest.mark.parametrize(
@@ -1539,7 +1543,7 @@ class TestOutput:
             for test_case in pal_composite_ld_test_cases
         ),
     )
-    def test_pal_composite_ld(self, test_case: OutputTestCase):  # noqa: D102
+    def test_pal_composite_ld(self, test_case: OutputTestCase):
         self.run_output_validation(test_case)
 
     @pytest.mark.parametrize(
@@ -1549,7 +1553,7 @@ class TestOutput:
             for test_case in ntsc_svideo_test_cases
         ),
     )
-    def test_ntsc_svideo(self, test_case: OutputTestCase):  # noqa: D102
+    def test_ntsc_svideo(self, test_case: OutputTestCase):
         self.run_output_validation(test_case)
 
     @pytest.mark.parametrize(
@@ -1559,7 +1563,7 @@ class TestOutput:
             for test_case in ntsc_composite_test_cases
         ),
     )
-    def test_ntsc_composite(self, test_case: OutputTestCase):  # noqa: D102
+    def test_ntsc_composite(self, test_case: OutputTestCase):
         self.run_output_validation(test_case)
 
     @pytest.mark.parametrize(
@@ -1569,7 +1573,7 @@ class TestOutput:
             for test_case in ntsc_composite_ld_test_cases
         ),
     )
-    def test_ntsc_composite_ld(self, test_case: OutputTestCase):  # noqa: D102
+    def test_ntsc_composite_ld(self, test_case: OutputTestCase):
         self.run_output_validation(test_case)
 
     @pytest.mark.parametrize(
@@ -1579,7 +1583,7 @@ class TestOutput:
             for test_case in palm_svideo_test_cases
         ),
     )
-    def test_palm_svideo(self, test_case: OutputTestCase):  # noqa: D102
+    def test_palm_svideo(self, test_case: OutputTestCase):
         self.run_output_validation(test_case)
 
     @pytest.mark.parametrize(
@@ -1589,26 +1593,26 @@ class TestOutput:
             for test_case in video_format_test_cases
         ),
     )
-    def test_video_formats(self, test_case: OutputTestCase):  # noqa: D102
+    def test_video_formats(self, test_case: OutputTestCase):
         self.run_output_validation(test_case)
 
     @pytest.mark.parametrize(
         "test_case",
         (pytest.param(test_case, id=test_case.id) for test_case in profile_test_cases),
     )
-    def test_profiles(self, test_case: OutputTestCase):  # noqa: D102
+    def test_profiles(self, test_case: OutputTestCase):
         self.run_output_validation(test_case)
 
     @pytest.mark.parametrize(
         "test_case",
         (pytest.param(test_case, id=test_case.id) for test_case in audio_test_cases),
     )
-    def test_audio(self, test_case: OutputTestCase):  # noqa: D102
+    def test_audio(self, test_case: OutputTestCase):
         self.run_output_validation(test_case)
 
     @pytest.mark.parametrize(
         "test_case",
         (pytest.param(test_case, id=test_case.id) for test_case in metadata_test_cases),
     )
-    def test_metadata(self, test_case: OutputTestCase):  # noqa: D102
+    def test_metadata(self, test_case: OutputTestCase):
         self.run_output_validation(test_case)

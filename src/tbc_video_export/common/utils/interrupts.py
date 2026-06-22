@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import signal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Generic
+
+from tbc_video_export.process.wrapper.pipe.pipe import (
+    PipeInputGeneric,
+    PipeOutputGeneric,
+)
 
 if TYPE_CHECKING:
     from typing import Any
@@ -10,14 +15,16 @@ if TYPE_CHECKING:
     from tbc_video_export.process.process_handler import ProcessHandler
 
 
-class InterruptHandler:
+class InterruptHandler(Generic[PipeInputGeneric, PipeOutputGeneric]):
     """Interrupt handler context.
 
     Creates a context that creates a signal handler and releases it on exit.
     """
 
     def __init__(
-        self, process_handler: ProcessHandler, signal: signal.Signals = signal.SIGINT
+        self,
+        process_handler: ProcessHandler[PipeInputGeneric, PipeOutputGeneric],
+        signal: signal.Signals = signal.SIGINT,
     ):
         self._process_handler = process_handler
         self._signal = signal
@@ -28,7 +35,7 @@ class InterruptHandler:
     def __enter__(self):
         """Enter the interrupt context.
 
-        This creates a signal handler while in the conext.
+        This creates a signal handler in the context.
         """
         self._original_handler = signal.getsignal(self._signal)
         signal.signal(self._signal, self._signal_handler)

@@ -4,29 +4,34 @@ import ctypes
 import ctypes.wintypes
 import logging
 import os
-from collections.abc import Callable
+import sys
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 if TYPE_CHECKING:
     from types import TracebackType
     from typing import ClassVar
 
-assert os.name == "nt"
+assert os.name == "nt"  # noqa: S101
 
-import win32api  # noqa: E402
-import win32con  # noqa: E402
+import win32api  # noqa: E402 # pyrefly: ignore [missing-import]
+import win32con  # noqa: E402 # pyrefly: ignore [missing-import]
 
-GetLastError = cast(Callable[[], int], win32api.GetLastError)  # pyright: ignore [reportUnknownMemberType]
+GetLastError = win32api.GetLastError
 
 # stubs for nt fns
-kernel32 = ctypes.windll.kernel32
-CreateToolhelp32Snapshot = ctypes.windll.kernel32.CreateToolhelp32Snapshot
-Process32First = ctypes.windll.kernel32.Process32First
-Process32Next = ctypes.windll.kernel32.Process32Next
-CloseHandle = ctypes.windll.kernel32.CloseHandle
+kernel32 = ctypes.windll.kernel32  # pyrefly: ignore [missing-attribute]
+CreateToolhelp32Snapshot = ctypes.windll.kernel32.CreateToolhelp32Snapshot  # pyrefly: ignore [missing-attribute]
+Process32First = ctypes.windll.kernel32.Process32First  # pyrefly: ignore [missing-attribute]
+Process32Next = ctypes.windll.kernel32.Process32Next  # pyrefly: ignore [missing-attribute]
+CloseHandle = ctypes.windll.kernel32.CloseHandle  # pyrefly: ignore [missing-attribute]
 GetStdHandle = kernel32.GetStdHandle
 
 
@@ -36,7 +41,7 @@ class VirtualTerminal:
     def __init__(self) -> None:
         self._original_console_mode: ctypes.wintypes.DWORD | None = None
 
-    def __enter__(self) -> VirtualTerminal:
+    def __enter__(self) -> Self:
         """Enter Virtual Terminal context."""
         logging.getLogger("console").debug("Entering VirtualTerminal context")
 
@@ -70,7 +75,6 @@ class VirtualTerminal:
             input("Press any key to exit.")
 
 
-@staticmethod
 def _get_grandparent_name() -> str | None:
     """Get name of grandparent process."""
     ppid = os.getppid()
@@ -83,7 +87,6 @@ def _get_grandparent_name() -> str | None:
     return None
 
 
-@staticmethod
 def _get_pid_data(pid: int) -> _PidData | None:
     """Loops through procs and returns data for pid if found."""
     process_snapshot: ctypes.wintypes.HANDLE | None = None
@@ -116,20 +119,17 @@ def _get_pid_data(pid: int) -> _PidData | None:
             CloseHandle(process_snapshot)
 
 
-@staticmethod
 def _get_stdout_handle() -> int:
     """Return handle for STDOUT."""
     return GetStdHandle(consts.NT_STD_OUTPUT_HANDLE)
 
 
-@staticmethod
 def _set_console_mode(mode: int | ctypes.wintypes.DWORD) -> None:
     """Set the console mode."""
     if not kernel32.SetConsoleMode(_get_stdout_handle(), mode):
         logging.getLogger("console").debug(f"SetConsoleMode failed: {GetLastError()}")
 
 
-@staticmethod
 def _get_console_mode() -> ctypes.wintypes.DWORD | None:
     """Get the current console mode."""
     mode = ctypes.wintypes.DWORD()

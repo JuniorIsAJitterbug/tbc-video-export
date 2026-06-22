@@ -2,31 +2,39 @@ from __future__ import annotations
 
 import asyncio
 import os
+import sys
 from functools import cached_property
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common.enums import PipeType, ProcessName, TBCType
 from tbc_video_export.common.utils import FlatList
+from tbc_video_export.process.wrapper.pipe import Pipe
 from tbc_video_export.process.wrapper.wrapper import Wrapper
 
 if TYPE_CHECKING:
-    from tbc_video_export.process.wrapper.pipe import Pipe
     from tbc_video_export.process.wrapper.wrapper_config import WrapperConfig
     from tbc_video_export.program_state import ProgramState
 
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
 
-class WrapperLDDropoutCorrect(Wrapper):
+
+class WrapperLDDropoutCorrect(Wrapper[None, Pipe]):
     """Wrapper for ld-dropout-correct."""
 
     def __init__(self, state: ProgramState, config: WrapperConfig[None, Pipe]) -> None:
         super().__init__(state, config)
         self._config = config
 
-    def post_fn(self) -> None:  # noqa: D102
+    @override
+    def post_fn(self) -> None:
         pass
 
+    @override
     @property
-    def command(self) -> FlatList:  # noqa: D102
+    def command(self) -> FlatList:
         return FlatList(
             (
                 self.binary,
@@ -52,51 +60,60 @@ class WrapperLDDropoutCorrect(Wrapper):
 
         return None
 
+    @override
     @cached_property
-    def process_name(self) -> ProcessName:  # noqa: D102
+    def process_name(self) -> ProcessName:
         return ProcessName.LD_DROPOUT_CORRECT
 
+    @override
     @cached_property
-    def supported_pipe_types(self) -> PipeType:  # noqa: D102
+    def supported_pipe_types(self) -> PipeType:
         return PipeType.NULL | PipeType.OS
 
+    @override
     @cached_property
-    def stdin(self) -> int | None:  # noqa: D102
+    def stdin(self) -> int | None:
         return None
 
+    @override
     @cached_property
-    def stdout(self) -> int | None:  # noqa: D102
+    def stdout(self) -> int | None:
         return self._config.output_pipes.out_handle
 
+    @override
     @cached_property
-    def stderr(self) -> int | None:  # noqa: D102
+    def stderr(self) -> int | None:
         return asyncio.subprocess.PIPE
 
+    @override
     @cached_property
-    def log_output(self) -> bool:  # noqa: D102
+    def log_output(self) -> bool:
         return True
 
+    @override
     @cached_property
-    def log_stdout(self) -> bool:  # noqa: D102
+    def log_stdout(self) -> bool:
         return False
 
+    @override
     @cached_property
-    def env(self) -> dict[str, str] | None:  # noqa: D102
+    def env(self) -> dict[str, str] | None:
         return None
-    
+
     @cached_property
     def dropout_interfield_correction(self) -> bool:  # noqa: D102
-        # when `dropout_interfield_correction` set to NONE, disable, else
-        #   when tbc_type is LUMA or CHROMA and `dropout_interfield_correction`` matches, enable
-        #   when tbc_type is COMBINED or `dropout_interfield_correction` is COMBINED, enable
-        return self._state.opts.dropout_interfield_correction != TBCType.NONE and (
-            self._state.opts.dropout_interfield_correction == self.tbc_type
-            or self._state.opts.dropout_interfield_correction == TBCType.COMBINED
+        if self._state.opts.dropout_interfield_correction == TBCType.NONE:
+            return False
+
+        return (
+            self._state.opts.dropout_interfield_correction
+            in (self.tbc_type, TBCType.COMBINED)
             or self.tbc_type == TBCType.COMBINED
         )
 
+    @override
     @cached_property
-    def ignore_error(self) -> bool:  # noqa: D102
+    def ignore_error(self) -> bool:
         # ld-dropout-correct does not support -l or -s flags and will
         # be killed when other procs are finished.
         # This is unfortunate as we would have to use more
@@ -105,8 +122,9 @@ class WrapperLDDropoutCorrect(Wrapper):
         # and assume all returncodes are success.
         return True
 
+    @override
     @cached_property
-    def stop_on_last_alive(self) -> bool:  # noqa: D102
+    def stop_on_last_alive(self) -> bool:
         # On NT systems closing an os.pipe() does not kill the procs using
         # the pipe. The result of this is ld-dropout-correct continuing
         # to run after other procs have finished when using -l or -s.

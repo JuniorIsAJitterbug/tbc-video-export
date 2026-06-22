@@ -4,6 +4,7 @@ import asyncio
 import logging
 import os
 import queue
+import sys
 from dataclasses import dataclass
 from enum import Flag, auto
 from functools import cached_property
@@ -18,15 +19,20 @@ if TYPE_CHECKING:
     from pathlib import Path
     from types import TracebackType
 
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
 
-assert os.name == "nt"
 
-import pywintypes  # noqa: E402
-import win32event  # noqa: E402
-import win32file  # noqa: E402
-import win32pipe  # noqa: E402
-import win32security  # noqa: E402
-import winerror  # noqa: E402
+assert os.name == "nt"  # noqa: S101
+
+import pywintypes  # noqa: E402 # pyrefly: ignore [missing-import]
+import win32event  # noqa: E402 # pyrefly: ignore [missing-import]
+import win32file  # noqa: E402 # pyrefly: ignore [missing-import]
+import win32pipe  # noqa: E402 # pyrefly: ignore [missing-import]
+import win32security  # noqa: E402 # pyrefly: ignore [missing-import]
+import winerror  # noqa: E402 # pyrefly: ignore [missing-import]
 
 from tbc_video_export.common.utils import win32  # noqa: E402
 
@@ -51,6 +57,7 @@ class PipeNamedNTAsync(Pipe):
         )
         self._bridge_thread: asyncio.Future[None] | None = None
 
+    @override
     async def __aenter__(self) -> Pipe:
         """Enter async NT pipe context."""
         self._bridge_thread = asyncio.get_event_loop().run_in_executor(
@@ -59,6 +66,7 @@ class PipeNamedNTAsync(Pipe):
 
         return self
 
+    @override
     async def __aexit__(
         self,
         exc_type: type[BaseException] | None,
@@ -68,27 +76,33 @@ class PipeNamedNTAsync(Pipe):
         """Exit async NT pipe context."""
         self.close()
 
+    @override
     @cached_property
-    def pipe_type(self) -> PipeType:  # noqa: D102
+    def pipe_type(self) -> PipeType:
         return PipeType.NULL
 
+    @override
     @cached_property
-    def in_path(self) -> Path | str:  # noqa: D102
+    def in_path(self) -> Path | str:
         return self._pipe_name
 
+    @override
     @cached_property
-    def out_path(self) -> Path | str:  # noqa: D102
+    def out_path(self) -> Path | str:
         return self._pipe_name
 
+    @override
     @property
-    def in_handle(self) -> int | None:  # noqa: D102
+    def in_handle(self) -> int | None:
         return None
 
+    @override
     @property
-    def out_handle(self) -> int | None:  # noqa: D102
+    def out_handle(self) -> int | None:
         return None
 
-    def close(self) -> None:  # noqa: D102
+    @override
+    def close(self) -> None:
         self.pipe_bridge.disconnect_all()
 
 
@@ -173,7 +187,7 @@ class AsyncNamedPipeBridge:
     def _create(self, pipe_id: int) -> PipeInstance:
         """Create the pipe instance."""
         try:
-            handle = win32pipe.CreateNamedPipe(  # pyright: ignore [reportUnknownMemberType]
+            handle = win32pipe.CreateNamedPipe(
                 self._pipe_name,
                 win32pipe.PIPE_ACCESS_DUPLEX | win32file.FILE_FLAG_OVERLAPPED,
                 win32pipe.PIPE_READMODE_BYTE
@@ -209,7 +223,7 @@ class AsyncNamedPipeBridge:
 
     def _connect(self, pipe: PipeInstance) -> None:
         """Connect a pipe instance."""
-        result = win32pipe.ConnectNamedPipe(pipe.handle, pipe.ol)  # pyright: ignore [reportUnknownMemberType, reportUnknownVariableType]
+        result = win32pipe.ConnectNamedPipe(pipe.handle, pipe.ol)
         if isinstance(result, int):
             self._handle_connect_ret(pipe, result)
         else:
@@ -256,7 +270,7 @@ class AsyncNamedPipeBridge:
                 pipe.state = (
                     PipeState.WRITING
                     if not pipe.write_queue.empty()
-                    else PipeState.READING  # pyright: ignore [reportUnknownMemberType, reportUnknownArgumentType]
+                    else PipeState.READING
                 )
 
                 return True
@@ -343,9 +357,9 @@ class AsyncNamedPipeBridge:
             pipe.current_read_size += ol_result
 
             if pipe.read_data is None:
-                pipe.read_data = pipe.buffer[:ol_result]  # pyright: ignore [reportGeneralTypeIssues]
+                pipe.read_data = pipe.buffer[:ol_result]
             else:
-                pipe.read_data[pipe.current_read_size :] = pipe.buffer[:ol_result]  # pyright: ignore [reportGeneralTypeIssues, reportUnknownArgumentType]
+                pipe.read_data[pipe.current_read_size :] = pipe.buffer[:ol_result]
 
             # copy data to all connected peers
             for peer in (
@@ -355,7 +369,7 @@ class AsyncNamedPipeBridge:
                 and peer.pipe_id != pipe.pipe_id
             ):
                 # add read data to other pipe instance write queue
-                if isinstance(pipe.read_data, memoryview):  # pyright: ignore [reportUnknownMemberType]
+                if isinstance(pipe.read_data, memoryview):
                     peer.write_queue.put_nowait(pipe.read_data)
                     peer.pending_write_size = ol_result
                     peer.state = PipeState.WRITING
@@ -379,15 +393,15 @@ class AsyncNamedPipeBridge:
 
             # More data is available.
             case winerror.ERROR_MORE_DATA:
-                bytes_read = len(pipe.buffer)  # pyright: ignore [reportGeneralTypeIssues]
+                bytes_read = len(pipe.buffer)
 
                 # keep track of current read size for memoryview splicing
                 pipe.current_read_size += bytes_read
 
                 if pipe.read_data is None:
-                    pipe.read_data = pipe.buffer[:bytes_read]  # pyright: ignore [reportGeneralTypeIssues]
+                    pipe.read_data = pipe.buffer[:bytes_read]
                 else:
-                    pipe.read_data[pipe.current_read_size :] = pipe.buffer[:bytes_read]  # pyright: ignore [reportGeneralTypeIssues, reportUnknownArgumentType]
+                    pipe.read_data[pipe.current_read_size :] = pipe.buffer[:bytes_read]
 
                 # set pending and read more
                 pipe.state |= PipeState.PENDING
@@ -406,7 +420,7 @@ class AsyncNamedPipeBridge:
 
             result, bytes_written = win32file.WriteFile(
                 pipe.handle,
-                data,  # pyright: ignore [reportGeneralTypeIssues]
+                data,
                 pipe.ol,
             )
 
@@ -499,7 +513,7 @@ class AsyncNamedPipeBridge:
 
             case _ as e:
                 raise exceptions.PipeNTError(
-                    f"[{pipe.pipe_id}] An unknown error occured: {e}"
+                    f"[{pipe.pipe_id}] An unknown error occurred: {e}"
                 )
 
     def _process(self, pipe: PipeInstance) -> None:
@@ -527,7 +541,7 @@ class AsyncNamedPipeBridge:
             case _:
                 pipe.log("Shouldn't be here")
                 raise exceptions.PipeNTError(
-                    f"[{pipe.pipe_id}] An unknown error occured."
+                    f"[{pipe.pipe_id}] An unknown error occurred."
                 )
 
     def run(self):
@@ -562,7 +576,7 @@ class AsyncNamedPipeBridge:
             wait_idx = -1
 
             try:
-                wait_idx = win32event.WaitForMultipleObjects(  # pyright: ignore [reportUnknownMemberType, reportUnknownVariableType]
+                wait_idx = win32event.WaitForMultipleObjects(
                     [pipe.ol.hEvent for pipe in pipe_events], False, self._event_timeout
                 )
             except pywintypes.error:
@@ -574,7 +588,7 @@ class AsyncNamedPipeBridge:
                         logging.getLogger("console").debug(f"Unknown events error {e}")
                         return
 
-            assert isinstance(wait_idx, int)
+            assert isinstance(wait_idx, int)  # noqa: S101
 
             if wait_idx == winerror.WAIT_TIMEOUT:
                 continue

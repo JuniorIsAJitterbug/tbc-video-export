@@ -89,6 +89,7 @@ class TBCJsonHelper:
 
         Return starting timecode if no VITC data found.
         """
+        # ruff: disable[PLR2004]
         if (
             not self._json_data["fields"]
             or "vitc" not in self._json_data["fields"][0]
@@ -135,3 +136,4 @@ class TBCJsonHelper:
         sep = ";" if is_drop_frame else ":"
 
         return f"{hour:02d}:{minute:02d}:{second:02d}{sep}{frame:02d}"
+        # ruff: enable[PLR2004]

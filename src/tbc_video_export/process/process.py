@@ -4,27 +4,34 @@ import asyncio
 import logging
 import os
 from contextlib import suppress
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Generic
 
 from tbc_video_export.common import consts
 from tbc_video_export.common.enums import FlagHelper, ProcessStatus
 from tbc_video_export.common.utils import log
 from tbc_video_export.process.parser import Parser, ParserFactory
 from tbc_video_export.process.process_state import ProcessState
+from tbc_video_export.process.wrapper.pipe.pipe import (
+    PipeInputGeneric,
+    PipeOutputGeneric,
+)
 from tbc_video_export.process.wrapper.pipe.pipe_os import PipeOS
 
 if TYPE_CHECKING:
     from typing import Any
 
     from tbc_video_export.process.wrapper import Wrapper
-    from tbc_video_export.program_state import ProgramState as ProgramState
+    from tbc_video_export.program_state import ProgramState
 
 
-class Process:
+class Process(Generic[PipeInputGeneric, PipeOutputGeneric]):
     """Contains the subprocess, handler and state of a running process."""
 
     def __init__(
-        self, state: ProgramState, stop_event: asyncio.Event, wrapper: Wrapper
+        self,
+        state: ProgramState,
+        stop_event: asyncio.Event,
+        wrapper: Wrapper[PipeInputGeneric, PipeOutputGeneric],
     ) -> None:
         self._state = state
         self._stop_event = stop_event

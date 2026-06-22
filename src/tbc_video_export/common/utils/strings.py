@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 import string
-from datetime import datetime
+from datetime import datetime, timezone
 
 from tbc_video_export.common import consts
 from tbc_video_export.common.utils import ansi
@@ -10,12 +10,12 @@ from tbc_video_export.common.utils import ansi
 
 def random_characters(length: int) -> str:
     """Generate N random characters from ascii and digits."""
-    return "".join(random.choices(string.ascii_letters + string.digits, k=length))
+    return "".join(random.choices(string.ascii_letters + string.digits, k=length))  # noqa: S311
 
 
 def current_timestamp() -> str:
     """Return the current timestamp formatted."""
-    return formatted_timestamp(datetime.now())
+    return formatted_timestamp(datetime.now(timezone.utc))
 
 
 def formatted_timestamp(ts: datetime) -> str:

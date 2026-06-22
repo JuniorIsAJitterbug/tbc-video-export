@@ -19,44 +19,42 @@ class TestProfile:
     """Tests for config profile."""
 
     @pytest.fixture(autouse=True)
-    def set_module(self) -> None:  # noqa: D102
+    def set_module(self) -> None:
         self.module = "tbc_video_export.config"
 
-    def test_profile_counts(self) -> None:  # noqa: D102
+    def test_profile_counts(self) -> None:
         config = Config()
         assert len(config.profiles) >= 0
         assert len(config.audio_profiles) >= 0
         assert len(config.filter_profiles) >= 0
 
-    def test_invalid_config_profiles(self, mocker: MockFixture) -> None:  # noqa: D102
-        invalid_config: JsonConfig = {}  # type: ignore
+    def test_invalid_config_profiles(self, mocker: MockFixture) -> None:
+        invalid_config: JsonConfig = {}  # pyrefly: ignore [bad-typed-dict-key]
 
         mocker.patch(f"{self.module}.config.DEFAULT_CONFIG", invalid_config)
 
         with pytest.raises(exceptions.InvalidProfileError):
             Config()
 
-    def test_invalid_config_audio_profiles(  # noqa: D102
-        self, mocker: MockFixture
-    ) -> None:
-        invalid_config: JsonConfig = {"profiles": []}  # type: ignore
+    def test_invalid_config_audio_profiles(self, mocker: MockFixture) -> None:
+        invalid_config: JsonConfig = {"profiles": []}  # pyrefly: ignore [bad-typed-dict-key]
         mocker.patch(f"{self.module}.config.DEFAULT_CONFIG", invalid_config)
+
+        config = Config()
 
         with pytest.raises(exceptions.InvalidAudioProfileError):
-            config = Config()
             _ = config.audio_profiles
 
-    def test_invalid_config_filter_profiles(  # noqa: D102
-        self, mocker: MockFixture
-    ) -> None:
-        invalid_config: JsonConfig = {"profiles": []}  # type: ignore
+    def test_invalid_config_filter_profiles(self, mocker: MockFixture) -> None:
+        invalid_config: JsonConfig = {"profiles": []}  # pyrefly: ignore [bad-typed-dict-key]
         mocker.patch(f"{self.module}.config.DEFAULT_CONFIG", invalid_config)
 
+        config = Config()
+
         with pytest.raises(exceptions.InvalidFilterProfileError):
-            config = Config()
             _ = config.filter_profiles
 
-    def test_profile_names(self, mocker: MockFixture) -> None:  # noqa: D102
+    def test_profile_names(self, mocker: MockFixture) -> None:
         json_config: JsonConfig = {
             "profiles": [
                 {
@@ -85,7 +83,7 @@ class TestProfile:
         config = Config()
         assert config.get_profile_names() == ["test1", "test2"]
 
-    def test_default_profile(self, mocker: MockFixture) -> None:  # noqa: D102
+    def test_default_profile(self, mocker: MockFixture) -> None:
         json_config: JsonConfig = {
             "profiles": [
                 {
@@ -115,7 +113,7 @@ class TestProfile:
         config = Config()
         assert config.get_default_profile().name == "test2"
 
-    def test_single_video_profile(self, mocker: MockFixture) -> None:  # noqa: D102
+    def test_single_video_profile(self, mocker: MockFixture) -> None:
         json_config: JsonConfig = {
             "profiles": [
                 {
@@ -144,7 +142,7 @@ class TestProfile:
         video_profile = video_profiles[0]
         assert video_profile.name == "video_profile_test"
 
-    def test_multiple_video_profile(self, mocker: MockFixture) -> None:  # noqa: D102
+    def test_multiple_video_profile(self, mocker: MockFixture) -> None:
         json_config: JsonConfig = {
             "profiles": [
                 {
@@ -191,7 +189,7 @@ class TestProfile:
         video_profile = video_profiles[2]
         assert video_profile.name == "video_profile_test3"
 
-    def test_config_file_opt(self) -> None:  # noqa: D102
+    def test_config_file_opt(self) -> None:
         pre_opts, _ = opts_parser.parse_pre_opts(
             [
                 "--config-file",
@@ -202,12 +200,12 @@ class TestProfile:
         config = ProgramConfig(pre_opts.config_file)
         assert config.get_default_profile().name == "ffv1_test"
 
-        with pytest.raises(exceptions.InvalidProfileError):
-            pre_opts, _ = opts_parser.parse_pre_opts(
-                [
-                    "--config-file",
-                    "tests/files/invalid.json",
-                ]
-            )
+        pre_opts, _ = opts_parser.parse_pre_opts(
+            [
+                "--config-file",
+                "tests/files/invalid.json",
+            ]
+        )
 
+        with pytest.raises(exceptions.InvalidProfileError):
             config = ProgramConfig(pre_opts.config_file)

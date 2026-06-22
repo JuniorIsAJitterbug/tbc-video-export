@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from functools import cached_property
 from typing import TYPE_CHECKING
 
@@ -10,6 +11,11 @@ if TYPE_CHECKING:
     from pathlib import Path
     from types import TracebackType
 
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
+
 
 class PipeDummy(Pipe):
     """Dummy pipe, does nothing. Used for dry-runs."""
@@ -18,10 +24,12 @@ class PipeDummy(Pipe):
         self._stdin_str = stdin_str
         self._stdout_str = stdout_str
 
+    @override
     async def __aenter__(self) -> Pipe:
         """Enter dummy pipe context."""
         return self
 
+    @override
     async def __aexit__(
         self,
         exc_type: type[BaseException] | None,
@@ -30,25 +38,31 @@ class PipeDummy(Pipe):
     ) -> None | bool:
         """Exit dummy pipe context."""
 
+    @override
     @cached_property
-    def pipe_type(self) -> PipeType:  # noqa: D102
+    def pipe_type(self) -> PipeType:
         return PipeType.NULL
 
+    @override
     @cached_property
-    def in_path(self) -> Path | str:  # noqa: D102
+    def in_path(self) -> Path | str:
         return self._stdin_str
 
+    @override
     @cached_property
-    def out_path(self) -> Path | str:  # noqa: D102
+    def out_path(self) -> Path | str:
         return self._stdout_str
 
+    @override
     @property
-    def in_handle(self) -> int | None:  # noqa: D102
+    def in_handle(self) -> int | None:
         return None
 
+    @override
     @property
-    def out_handle(self) -> int | None:  # noqa: D102
+    def out_handle(self) -> int | None:
         return None
 
+    @override
     def close(self) -> None:
         """Does nothing."""
