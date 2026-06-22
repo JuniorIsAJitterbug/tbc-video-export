@@ -1,121 +1,187 @@
 [project]
 name = "tbc-video-export"
 description = "Tool for exporting S-Video and CVBS-type TBCs to video files."
-requires-python = ">=3.10"
 readme = "README.md"
+requires-python = ">=3.10"
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
 authors = [{ name = "Jitterbug", email = "jitterbug@posteo.co.uk" }]
 dynamic = ["version"]
 
 dependencies = [
-    "typing-extensions (>=4.10.0,<5.0.0); python_version <= '3.10'",
-    "pywin32 (>=306); sys_platform == 'win32'",
+  "pywin32 (>=306); sys_platform == 'win32'",
+  "typing-extensions (>=4.10.0,<5.0.0)",
 ]
 
 keywords = [
-    "vhs-decode",
-    "ld-decode",
-    "cvbs-decode",
-    "tbc",
-    "rf capture",
+  "cvbs-decode",
+  "ld-decode",
+  "rf capture",
+  "tbc",
+  "vhs-decode",
 ]
 
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Environment :: Console",
-    "Intended Audience :: End Users/Desktop",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
-    "Topic :: Multimedia :: Video",
-    "Topic :: Multimedia :: Video :: Conversion",
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: End Users/Desktop",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Multimedia :: Video",
+  "Topic :: Multimedia :: Video :: Conversion",
 ]
 
 [project.urls]
+Discord = "https://discord.gg/pVVrrxd"
+Documentation = "https://github.com/JuniorIsAJitterbug/tbc-video-export/wiki"
 Homepage = "https://github.com/JuniorIsAJitterbug/tbc-video-export"
 Issues = "https://github.com/JuniorIsAJitterbug/tbc-video-export/issues"
-Documentation = "https://github.com/JuniorIsAJitterbug/tbc-video-export/wiki"
-Discord = "https://discord.gg/pVVrrxd"
 
 [project.scripts]
 tbc-video-export = "tbc_video_export.__main__:main"
 
-[build-system]
-build-backend = "poetry_dynamic_versioning.backend"
-requires = [
-    "poetry-core>=1.0.0",
-    "poetry-dynamic-versioning>=1.0.0,<2.0.0",
-]
-
 [dependency-groups]
 dev = [
-    "pytest (>=8.1.1,<10.0.0)",
-    "pytest-mock (>=3.14.0,<4.0.0)",
-    "pymediainfo (>=6.1.0,<8.0.0)",
+  { include-group = "test" },
+]
+
+test = [
+  "pymediainfo (>=6.1.0,<8.0.0)",
+  "pytest-mock (>=3.14.0,<4.0.0)",
+  "pytest (>=8.1.1,<10.0.0)",
 ]
 
 build = [
-    "dunamai (>=1.19.0,<2.0.0)",
-    "python-appimage (>=1.0.0,<2.0.0); sys_platform == 'linux'",
-    "pyinstaller (>=6.3.0,<7.0.0); python_version <= '3.14' and (sys_platform == 'win32' or sys_platform == 'darwin')",
-    "pyinstaller-versionfile (>=2.1.1,<4.0.0); python_version <= '3.14' and sys_platform == 'win32'",
+  "dunamai (>=1.19.0,<2.0.0)",
+  "pyinstaller-versionfile (>=2.1.1,<4.0.0); python_version <= '3.14' and sys_platform == 'win32'",
+  "pyinstaller (>=6.3.0,<7.0.0); python_version <= '3.14' and (sys_platform == 'win32' or sys_platform == 'darwin')",
+  "python-appimage (>=1.0.0,<2.0.0); sys_platform == 'linux'",
 ]
 
-[tool.pyright]
-include = ["src/**/*.py"]
-exclude = ["tests/**/*.py"]
-venvPath = ".venv"
-typeCheckingMode = "strict"
+[build-system]
+requires = [
+  "hatchling",
+  "uv-dynamic-versioning",
+]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+# used by nix to generate config
+# unused by pinact directly
+[tool.nix.pinact]
+separator = "  # "
+version = 3
+
+[tool.nix.pinact.min_age]
+value = 7
+always = true
+
+[[tool.nix.pinact.rules]]
+# remove when https://github.com/NixOS/nix-installer-action/issues/11 resolved
+conditions = [{ expr = 'ActionName == "NixOS/nix-installer-action"' }]
+ignore = true
+
+# unused by yamlfmt directly
+[tool.nix.yamlfmt.formatter]
+eof_newline = true
+include_document_start = true
+pad_line_comments = 2
+retain_line_breaks = true
+trim_trailing_whitespace = true
+
+[tool.pyrefly]
+preset = "strict"
+python-version = "3.10"
+project-includes = ["src", "tests"]
+search-path = ["src", "tests", "."]
+
+[[tool.pyrefly.sub-config]]
+matches = "scripts/**"
+replace-imports-with-any = [
+  "dunamai",
+  "PyInstaller.*",
+  "pyinstaller_versionfile"
+]
+
+[tool.pytest]
+addopts = ["--import-mode=importlib"]
+testpaths = ["tests"]
 
 [tool.ruff]
-include = ["pyproject.toml", "src/**/*.py"]
-extend-exclude = ["/nix/store"]
+force-exclude = true
 target-version = "py310"
-select = [
-    "PL",     # Pylint
-    "I",      # isort
-    "F",      # Pyflakes
-    "D",      # pydocstyle
-    "C90",    # mccabe
-    "E",      # pycodestyle
-    "W",      # pycodestyle
-    "N",      # pep8-naming
-    "UP",     # pyupgrade
-    "SLF001", # private-member-access
-    "TC",     # flake8-type-checking
-    "ARG",    # flake8-unused-arguments
-    "PTH",    # flake8-use-pathlib
-    "A",      # flake8-builtins
-    "C4",     # flake8-comprehensions
-    "ISC",    # flake8-implicit-str-concat
-    "G",      # flake8-logging-format
-    "PIE",    # flake8-pie
-    "B",      # flake8-bugbear
-    "ICN",    # flake8-import-conventions
-    "BLE",    # flake8-blind-except
-    "TID",    # flake8-tidy-imports
-    "RSE",    # flake8-raise
-    "RET",    # flake8-return
-    "SIM",    # flake8-simplify
-    "PYI",    # flake8-pyi 
+
+include = [
+  "pyproject.toml",
+  "src/**/*.py",
+  "tests/**/*.py",
 ]
 
+extend-exclude = [
+  "pyinstaller/**/*.py",
+]
+
+[tool.ruff.lint]
+select = ["ALL"]
+
 ignore = [
-    "PLC0414", # useless-import-alias
-    "PLR2004", # magic-value-comparison
-    "PLC0415", # import-outside-top-level
-    "PYI034",  # non-self-return-type
-    "A005",    # stdlib-module-shadowing
-    "D100",    # undocumented-public-module
-    "D104",    # undocumented-public-package
-    "D107",    # undocumented-public-init
-    "G003",    # logging +
-    "G004",    # logging f-string
+  # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+  "COM812",  # flake8-commas: missing-trailing-comma
+  "COM819",  # flake8-commas: prohibited-trailing-comma
+  "ISC002",  # flake8-implicit-str-concat: multi-line-implicit-string-concatenation
+  "W191",    # pycodestyle: tab-indentation
+  "E111",    # pycodestyle: indentation-with-invalid-multiple
+  "E114",    # pycodestyle: indentation-with-invalid-multiple-comment
+  "E117",    # pycodestyle: over-indented
+  "D203",    # pydocstyle: incorrect-blank-line-before-class
+  "D206",    # pydocstyle: docstring-tab-indentation
+  "D300",    # pydocstyle: triple-single-quotes
+  "Q000",    # flake8-quotes: bad-quotes-inline-string
+  "Q001",    # flake8-quotes: bad-quotes-multiline-string
+  "Q002",    # flake8-quotes: bad-quotes-docstring
+  "Q003",    # flake8-quotes: avoidable-escaped-quote
+  "Q004",    # flake8-quotes: unnecessary-escaped-quote
+
+  # custom
+  "EM101",   # flake8-errmsg: raw-string-in-exception
+  "EM102",   # flake8-errmsg: f-string-in-exception
+  "LOG007",  # flake8-logging: exception-without-exc-info
+  "G004",    # flake8-logging-format: logging f-string
+  "D100",    # pydocstyle: undocumented-public-module
+  "D104",    # pydocstyle: undocumented-public-package
+  "D107",    # pydocstyle: undocumented-public-init
+  "TRY003",  # tryceratops: raise-vanilla-args
+
+  "AIR",     # Airflow
+  "ERA",     # eradicate
+  "FAST",    # FastAPI
+  "ANN",     # flake8-annotations
+  "FBT",     # flake8-boolean-trap
+  "COM",     # flake8-commas
+  "CPY",     # flake8-copyright
+  "DJ",      # flake8-django
+  "EXE",     # flake8-executable
+  "NPY",     # NumPy-specific rules
+  "PD",      # pandas-vet
+  "DOC",     # pydoclint
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+  "S101",            # flake8-bandit: assert
+  "ARG002",          # unused-method-argument
+  "D101",            # pydocstyle: undocumented-public-class
+  "D102",            # pydocstyle: undocumented-public-method
+  "D103",            # pydocstyle: undocumented-public-function
+  "E501",            # pydocstyle: line-too-long
+  "PLR2004",         # Pylint: magic-value-comparison
 ]
 
 [tool.ruff.lint.pydocstyle]
@@ -124,19 +190,32 @@ convention = "google"
 [tool.ruff.lint.isort]
 required-imports = ["from __future__ import annotations"]
 
-[tool.poetry]
-version = "0.0.0"
+[tool.rumdl.global]
+disable = ["MD013"]
+flavor = "github"
 
-[tool.poetry.requires-plugins]
-poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
+[tool.rumdl.per-file-ignores]
+"README.md" = ["MD033"]
 
-[tool.poetry-dynamic-versioning]
+[tool.tombi.files]
+exclude = ["uv.lock"]
+
+[tool.tombi.format.rules]
+trailing-comment-alignment = true
+
+[tool.typos.files]
+extend-exclude = ["tests/files"]
+
+[tool.uv]
+exclude-newer = "1 week"
+
+[tool.uv-dynamic-versioning]
 enable = true
 bump = true
 vcs = "git"
 style = "pep440"
 metadata = false
 
-[tool.poetry-dynamic-versioning.substitution]
+[tool.uv-dynamic-versioning.substitution]
 files = ["tbc_video_export/common/consts.py"]
 folders = [{ path = "src" }]

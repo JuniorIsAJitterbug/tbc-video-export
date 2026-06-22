@@ -2,6 +2,7 @@
 .direnv
 .vscode
 .pre-commit-config.yaml
+result
 
 *.mkv
 *.mov
