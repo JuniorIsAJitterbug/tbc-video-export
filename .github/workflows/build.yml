@@ -1,246 +1,89 @@
 ---
-name: "Publish to PyPI and release packages"
+name: Build
 on:
-  pull_request:
-  workflow_call:
   workflow_dispatch:
-  push:
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
+
 jobs:
-  # tests
-  build:
-    name: Run unit tests and build
-    runs-on: ubuntu-22.04
+  build-dists:
+    name: Build dists
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
-          fetch-depth: 0
-          fetch-tags: true
-      - uses: nixbuild/nix-quick-install-action@v26
-      - name: Install
-        run: >-
-          nix develop --impure --accept-flake-config .# --command poetry install #magic___^_^___line
-      - name: Run unit tests
-        run: >-
-          nix develop --impure --accept-flake-config .# --command poetry run python -m pytest #magic___^_^___line
+          fetch-depth: 1
+          fetch-tags: false
+          persist-credentials: false
+
+      - name: Install Nix
+        uses: NixOS/nix-installer-action@6b8548fe06acfb0155a50ab5d561accb215764cc  # zizmor: ignore[ref-version-mismatch]
+        with:
+          extra-conf: |
+            experimental-features = flakes nix-command
+            accept-flake-config = true
+            auto-optimise-store = false # https://github.com/nix-community/cache-nix-action/issues/170
+
+      - name: Restore/save Nix cache
+        uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569  # v7.0.2
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix', '**/flake.lock', '**/uv.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          purge: true
+          purge-prefixes: nix-${{ runner.os }}-
+          purge-created: PT10S
+          purge-primary-key: never
+
       - name: Build
-        run: >-
-          nix develop --impure --accept-flake-config .# --command poetry build #magic___^_^___line
-      - name: Store the distribution packages
-        uses: actions/upload-artifact@v4
+        run: nix build .#dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: python-package-distributions
-          path: dist/
+          path: result/
           if-no-files-found: error
-  # builds
-  build-linux-appimage:
-    name: Build Linux AppImage package
-    runs-on: ubuntu-22.04
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
-    needs:
-      - build
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
-      - uses: nixbuild/nix-quick-install-action@v26
-      - name: Install
-        run: >-
-          nix develop --impure --accept-flake-config .# --command poetry install --with=appimage #magic___^_^___line
-      - name: Build AppImage
-        run: |
-          echo ${{ github.workspace }} > appimage/requirements.txt
 
-          nix develop \
-          --impure \
-          --accept-flake-config \
-          .# \
-          --command \
-          poetry run python-appimage build app -p 3.10 appimage/
-
-          mv tbc-video-export-x86_64.AppImage tbc-video-export.AppImage
-      # AppImages require libfuse to run
-      - uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: fuse
-          version: 1.0
-      - name: Test AppImage
-        run: ./tbc-video-export.AppImage --version
-      - name: Store the AppImage binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-appimage
-          path: ./tbc-video-export.AppImage
-          if-no-files-found: error
-  build-windows-binary:
-    name: Build Windows binary with PyInstaller
+  build-windows:
+    name: Build Windows binary
     runs-on: windows-latest
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
-    needs:
-      - build
+
+    permissions:
+      actions: write
+      contents: read
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           fetch-depth: 0
           fetch-tags: true
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-      - name: Setup Environment
-        run: |
-          pip install poetry
+          persist-credentials: false
 
-          New-Item -ItemType Directory -Path .\build
-      - name: Setup dependencies
-        run: |
-          poetry install --with=pyinstaller
-      - name: Create PyInstaller binary
-        run: |
-          poetry run poetry-dynamic-versioning
-          poetry run python .\pyinstaller\build_windows.py
+      - name: Install python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
+        with:
+          python-version: "3.14"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39  # v8.2.0
+
+      - name: Build
+        run: uv run --script .\scripts\build_windows.py
+
       - name: Test binary
         run: .\dist\tbc-video-export.exe --version
-      - name: Store the Windows binary
-        uses: actions/upload-artifact@v4
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: windows-binary
           path: .\dist\tbc-video-export.exe
           if-no-files-found: error
-  build-macos-binary:
-    name: Build macOS binary with PyInstaller
-    runs-on: macos-13
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
-    needs:
-      - build
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"  # use 3.11+ for universal2
-      - name: Install utilities
-        run: brew install create-dmg
-      - name: Setup python environment
-        run: |
-          pip install poetry
-      - name: Setup dependencies
-        run: |
-          poetry install --with=pyinstaller
-      - name: Create PyInstaller binary
-        run: |
-          poetry run poetry-dynamic-versioning
-          poetry run python pyinstaller/build_macos.py
-      - name: Test binary
-        run: dist/tbc-video-export --version
-      - name: Build DMG file
-        run: >-
-          create-dmg --volname "tbc-video-export" --volicon "assets/icon.icns" --window-pos 200 128 --window-size 600 300 --icon-size 100 --icon "tbc-video-export.app" 172 120 --app-drop-link 425 128 --skip-jenkins --hide-extension "tbc-video-export.app" "dist/tbc-video-export.dmg" "dist/tbc-video-export.app" #magic___^_^___line
-      - name: Store the macOS binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-binary
-          path: dist/tbc-video-export.dmg
-          if-no-files-found: error
-  # release
-  github-release:
-    name: Create GitHub Release
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs:
-      - build
-      - build-linux-appimage
-      - build-windows-binary
-      - build-macos-binary
-    permissions:
-      contents: write  # IMPORTANT: mandatory for making GitHub Releases
-      id-token: write  # IMPORTANT: mandatory for sigstore
-    steps:
-      - name: Download all the artifacts
-        uses: actions/download-artifact@v4
-      - name: Sign the dists with Sigstore
-        uses: sigstore/gh-action-sigstore-python@v3.0.0
-        with:
-          inputs: >-
-            ./python-package-distributions/*.tar.gz ./python-package-distributions/*.whl #magic___^_^___line
-      - name: Create GitHub Release
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: >-
-          gh release create '${{ github.ref_name }}' --repo '${{ github.repository }}' --title '${{ github.ref_name }}' --notes ""
-      - name: Upload artifacts to GitHub Release
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          # python distribution
-          gh release upload \
-          '${{ github.ref_name }}' \
-          ./python-package-distributions/** \
-          --repo '${{ github.repository }}'
-
-          # linux appimage binary
-          gh release upload \
-          '${{ github.ref_name }}' \
-          './linux-appimage/tbc-video-export.AppImage#tbc-video-export-${{ github.ref_name }}-amd64.AppImage' \
-          --repo '${{ github.repository }}'
-
-          # windows binary
-          gh release upload \
-          '${{ github.ref_name }}' \
-          './windows-binary/tbc-video-export.exe#tbc-video-export-${{ github.ref_name }}-amd64.exe' \
-          --repo '${{ github.repository }}'
-
-          # macos binary
-          gh release upload \
-          '${{ github.ref_name }}' \
-          './macos-binary/tbc-video-export.dmg#tbc-video-export-${{ github.ref_name }}-multiarch.dmg' \
-          --repo '${{ github.repository }}'
-  # pypi
-  #  publish-to-testpypi:
-  #    name: Publish to TestPyPI
-  #    runs-on: ubuntu-latest
-  #
-  #    if: github.ref == 'refs/heads/master'
-  #    needs:
-  #      - build
-  #
-  #    environment:
-  #      name: testpypi
-  #      url: https://test.pypi.org/p/tbc-video-export
-  #
-  #    permissions:
-  #      id-token: write # IMPORTANT: mandatory for trusted publishing
-  #
-  #    steps:
-  #      - name: Download all the dists
-  #        uses: actions/download-artifact@v4
-  #        with:
-  #          name: python-package-distributions
-  #          path: dist/
-  #      - name: Publish distribution TestPyPI
-  #        uses: pypa/gh-action-pypi-publish@release/v1
-  #        with:
-  #          repository-url: https://test.pypi.org/legacy/
-  publish-to-pypi:
-    name: Publish to PyPI
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs:
-      - github-release
-    environment:
-      name: pypi
-      url: https://pypi.org/p/tbc-video-export
-    permissions:
-      id-token: write  # IMPORTANT: mandatory for trusted publishing
-    steps:
-      - name: Download all the dists
-        uses: actions/download-artifact@v4
-        with:
-          name: python-package-distributions
-          path: dist/
-      - name: Publish distribution package to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1

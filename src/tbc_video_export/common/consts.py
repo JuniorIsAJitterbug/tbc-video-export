@@ -1,35 +1,38 @@
 from __future__ import annotations
 
-import importlib.metadata
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common.enums import VideoFormatType
-from tbc_video_export.common.utils.metadata import get_url_from_metadata
+from tbc_video_export.common.utils import metadata
 
 if TYPE_CHECKING:
     from typing import Final
 
-_metadata = importlib.metadata.metadata("tbc-video-export")
-
-# substituted by poetry-dynamic-versioning when doing pyinstaller builds
+# substituted by uv-dynamic-versioning when doing pyinstaller builds
 __version__ = "0.0.0"
 
-APPLICATION_NAME: Final = _metadata["Name"]
-PROJECT_VERSION: Final = _metadata["Version"] if __version__ == "0.0.0" else __version__
+APPLICATION_NAME: Final = metadata.get_value_from_metadata("Name")
+PROJECT_VERSION: Final = (
+    metadata.get_value_from_metadata("Version")
+    if __version__ == "0.0.0"
+    else __version__
+)
 PROJECT_CREDITS: Final = (
     "Credits:\n"
     "  Jitterbug\tDevelopment (https://github.com/JuniorIsAJitterbug)\n"
     "  Harry Munday\tProject Management (https://github.com/harrypm)\n"
 )
-PROJECT_SUMMARY: Final = f"{_metadata['Summary']}\n\n{PROJECT_CREDITS}"
-PROJECT_URL: Final = get_url_from_metadata("Home-Page")
-PROJECT_URL_ISSUES: Final = get_url_from_metadata("Issues")
-PROJECT_URL_WIKI: Final = get_url_from_metadata("Wiki")
-PROJECT_URL_DISCORD: Final = get_url_from_metadata("Discord")
+PROJECT_SUMMARY: Final = metadata.get_value_from_metadata("Summary")
+PROJECT_DESCRIPTION: Final = f"{PROJECT_SUMMARY}\n\n{PROJECT_CREDITS}"
+PROJECT_URL: Final = metadata.get_url_from_metadata("Home-Page")
+PROJECT_URL_ISSUES: Final = metadata.get_url_from_metadata("Issues")
+PROJECT_URL_WIKI: Final = metadata.get_url_from_metadata("Wiki")
+PROJECT_URL_DISCORD: Final = metadata.get_url_from_metadata("Discord")
 PROJECT_URL_WIKI_COMMANDLIST: Final = f"{PROJECT_URL_WIKI}/Command-List"
 PROJECT_URL_WIKI_PROFILES: Final = f"{PROJECT_URL_WIKI}/FFmpeg-Profiles"
+PROJECT_LICENSE: Final = metadata.get_value_from_metadata("License-Expression")
 
 
 CURRENT_TIMESTAMP: Final = datetime.now(timezone.utc).strftime("%y-%m-%d_%H%M%S%f")[:-3]

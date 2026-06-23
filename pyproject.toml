@@ -56,13 +56,6 @@ test = [
   "pytest (>=8.1.1,<10.0.0)",
 ]
 
-build = [
-  "dunamai (>=1.19.0,<2.0.0)",
-  "pyinstaller-versionfile (>=2.1.1,<4.0.0); python_version <= '3.14' and sys_platform == 'win32'",
-  "pyinstaller (>=6.3.0,<7.0.0); python_version <= '3.14' and (sys_platform == 'win32' or sys_platform == 'darwin')",
-  "python-appimage (>=1.0.0,<2.0.0); sys_platform == 'linux'",
-]
-
 [build-system]
 requires = [
   "hatchling",
@@ -174,14 +167,17 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"scripts/**/*.py" = [
+  "T201"               # flake8-print: print
+]
 "tests/**/*.py" = [
-  "S101",            # flake8-bandit: assert
-  "ARG002",          # unused-method-argument
-  "D101",            # pydocstyle: undocumented-public-class
-  "D102",            # pydocstyle: undocumented-public-method
-  "D103",            # pydocstyle: undocumented-public-function
-  "E501",            # pydocstyle: line-too-long
-  "PLR2004",         # Pylint: magic-value-comparison
+  "S101",              # flake8-bandit: assert
+  "ARG002",            # unused-method-argument
+  "D101",              # pydocstyle: undocumented-public-class
+  "D102",              # pydocstyle: undocumented-public-method
+  "D103",              # pydocstyle: undocumented-public-function
+  "E501",              # pydocstyle: line-too-long
+  "PLR2004",           # Pylint: magic-value-comparison
 ]
 
 [tool.ruff.lint.pydocstyle]
@@ -190,7 +186,7 @@ convention = "google"
 [tool.ruff.lint.isort]
 required-imports = ["from __future__ import annotations"]
 
-[tool.rumdl.global]
+[tool.rumdl]
 disable = ["MD013"]
 flavor = "github"
 

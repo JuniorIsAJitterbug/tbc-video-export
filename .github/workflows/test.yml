@@ -1,0 +1,52 @@
+---
+name: Test
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          fetch-depth: 1
+          fetch-tags: false
+          persist-credentials: false
+
+      - name: Install Nix
+        uses: NixOS/nix-installer-action@6b8548fe06acfb0155a50ab5d561accb215764cc  # zizmor: ignore[ref-version-mismatch]
+        with:
+          extra-conf: |
+            experimental-features = flakes nix-command
+            accept-flake-config = true
+            auto-optimise-store = false # https://github.com/nix-community/cache-nix-action/issues/170
+
+      - name: Restore/save Nix cache
+        uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569  # v7.0.2
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix', '**/flake.lock', '**/uv.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          purge: true
+          purge-prefixes: nix-${{ runner.os }}-
+          purge-created: PT10S
+          purge-primary-key: never
+
+      - name: Run linters
+        run: nix run .#lint
+
+      - name: Run tests
+        run: nix flake check
