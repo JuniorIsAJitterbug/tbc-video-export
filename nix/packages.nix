@@ -20,6 +20,28 @@ in
   packages = {
     inherit tbc-video-export;
     default = tbc-video-export;
+
+    dist =
+      let
+        mkDistSet =
+          uvBuildType:
+          (pySet.tbc-video-export.overrideAttrs (prev: {
+            outputs = [
+              "dist"
+              "out"
+            ];
+            env = (prev.env or { }) // {
+              inherit uvBuildType;
+            };
+          })).dist;
+      in
+      pkgs.symlinkJoin {
+        name = "tbc-video-export-dist";
+        paths = [
+          (mkDistSet "sdist")
+          (mkDistSet "wheel")
+        ];
+      };
   };
 
   apps = {
