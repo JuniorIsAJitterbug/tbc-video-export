@@ -97,7 +97,7 @@ class TestTBCJson:
         ("[1,4,0,0,0,0,0,0]", "NTSC", "00:00:00;01"),
     ]
 
-    @pytest.mark.parametrize(("vitc_data", "system", "expected"), vitc_data)
+    @pytest.mark.parametrize(("vitc_data", "system", "expected"), tuple(vitc_data))
     def test_vitc(self, vitc_data: str, system: str, expected: str) -> None:
         json_data = (
             '{"videoParameters":{"system":"'

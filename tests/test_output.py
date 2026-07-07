@@ -1518,7 +1518,7 @@ class TestOutput:
 
     @pytest.mark.parametrize(
         "test_case",
-        (
+        tuple(
             pytest.param(test_case, id=test_case.id)
             for test_case in pal_svideo_test_cases
         ),
@@ -1528,7 +1528,7 @@ class TestOutput:
 
     @pytest.mark.parametrize(
         "test_case",
-        (
+        tuple(
             pytest.param(test_case, id=test_case.id)
             for test_case in pal_composite_test_cases
         ),
@@ -1538,7 +1538,7 @@ class TestOutput:
 
     @pytest.mark.parametrize(
         "test_case",
-        (
+        tuple(
             pytest.param(test_case, id=test_case.id)
             for test_case in pal_composite_ld_test_cases
         ),
@@ -1548,7 +1548,7 @@ class TestOutput:
 
     @pytest.mark.parametrize(
         "test_case",
-        (
+        tuple(
             pytest.param(test_case, id=test_case.id)
             for test_case in ntsc_svideo_test_cases
         ),
@@ -1558,7 +1558,7 @@ class TestOutput:
 
     @pytest.mark.parametrize(
         "test_case",
-        (
+        tuple(
             pytest.param(test_case, id=test_case.id)
             for test_case in ntsc_composite_test_cases
         ),
@@ -1568,7 +1568,7 @@ class TestOutput:
 
     @pytest.mark.parametrize(
         "test_case",
-        (
+        tuple(
             pytest.param(test_case, id=test_case.id)
             for test_case in ntsc_composite_ld_test_cases
         ),
@@ -1578,7 +1578,7 @@ class TestOutput:
 
     @pytest.mark.parametrize(
         "test_case",
-        (
+        tuple(
             pytest.param(test_case, id=test_case.id)
             for test_case in palm_svideo_test_cases
         ),
@@ -1588,7 +1588,7 @@ class TestOutput:
 
     @pytest.mark.parametrize(
         "test_case",
-        (
+        tuple(
             pytest.param(test_case, id=test_case.id)
             for test_case in video_format_test_cases
         ),
@@ -1598,21 +1598,28 @@ class TestOutput:
 
     @pytest.mark.parametrize(
         "test_case",
-        (pytest.param(test_case, id=test_case.id) for test_case in profile_test_cases),
+        tuple(
+            pytest.param(test_case, id=test_case.id) for test_case in profile_test_cases
+        ),
     )
     def test_profiles(self, test_case: OutputTestCase):
         self.run_output_validation(test_case)
 
     @pytest.mark.parametrize(
         "test_case",
-        (pytest.param(test_case, id=test_case.id) for test_case in audio_test_cases),
+        tuple(
+            pytest.param(test_case, id=test_case.id) for test_case in audio_test_cases
+        ),
     )
     def test_audio(self, test_case: OutputTestCase):
         self.run_output_validation(test_case)
 
     @pytest.mark.parametrize(
         "test_case",
-        (pytest.param(test_case, id=test_case.id) for test_case in metadata_test_cases),
+        tuple(
+            pytest.param(test_case, id=test_case.id)
+            for test_case in metadata_test_cases
+        ),
     )
     def test_metadata(self, test_case: OutputTestCase):
         self.run_output_validation(test_case)

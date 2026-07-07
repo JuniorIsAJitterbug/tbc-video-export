@@ -73,7 +73,7 @@ class TestTBCJson:
 
     @pytest.mark.parametrize(
         "test_case",
-        (pytest.param(test_case, id=test_case.id) for test_case in test_cases),
+        tuple(pytest.param(test_case, id=test_case.id) for test_case in test_cases),
     )
     def test_paths(
         self,
@@ -152,8 +152,8 @@ class TestTBCJson:
         TBCType.LUMA,
     ]
 
-    @pytest.mark.parametrize("proc", procs)
-    @pytest.mark.parametrize("tbc_type", tbc_types)
+    @pytest.mark.parametrize("proc", tuple(procs))
+    @pytest.mark.parametrize("tbc_type", tuple(tbc_types))
     def test_log_files(
         self,
         program_state: Callable[[list[str], Path], ProgramState],
@@ -169,7 +169,7 @@ class TestTBCJson:
             f"__timestamp___{helper.input_name.stem}_{proc}_{tbc_type}.log"
         )
 
-    @pytest.mark.parametrize("proc", procs)
+    @pytest.mark.parametrize("proc", tuple(procs))
     def test_tools(
         self,
         program_state: Callable[[list[str], Path], ProgramState],

@@ -133,7 +133,7 @@ class TestWrappersProcessVBI:
 
     @pytest.mark.parametrize(
         "test_case",
-        (pytest.param(test_case, id=test_case.id) for test_case in test_cases),
+        tuple(pytest.param(test_case, id=test_case.id) for test_case in test_cases),
     )
     def test_process_vbi_opts(
         self,
@@ -275,7 +275,7 @@ class TestWrappersDropoutCorrect:
 
     @pytest.mark.parametrize(
         "test_case",
-        (pytest.param(test_case, id=test_case.id) for test_case in test_cases),
+        tuple(pytest.param(test_case, id=test_case.id) for test_case in test_cases),
     )
     def test_dropout_correct_opts(
         self,
@@ -716,7 +716,7 @@ class TestWrappersChromaDecoder:
 
     @pytest.mark.parametrize(
         "test_case",
-        (pytest.param(test_case, id=test_case.id) for test_case in test_cases),
+        tuple(pytest.param(test_case, id=test_case.id) for test_case in test_cases),
     )
     def test_chroma_decoder_opts(
         self,

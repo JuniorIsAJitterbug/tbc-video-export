@@ -583,7 +583,7 @@ class TestWrappersFFmpeg:
 
     @pytest.mark.parametrize(
         "test_case",
-        (pytest.param(test_case, id=test_case.id) for test_case in test_cases),
+        tuple(pytest.param(test_case, id=test_case.id) for test_case in test_cases),
     )
     def test_ffmpeg_opts(
         self,
