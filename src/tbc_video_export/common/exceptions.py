@@ -103,6 +103,10 @@ class InvalidFilterProfileError(InvalidProfileError):
     """Filter profile errors."""
 
 
+class MissingAudioTrackError(Exception):
+    """Missing audio track error."""
+
+
 class InvalidOptsError(Exception):
     """Invalid program opts."""
 

@@ -129,7 +129,6 @@ class ProcessName(Flag):
     NONE = auto()
     LD_PROCESS_VBI = auto()
     LD_EXPORT_METADATA = auto()
-    LD_PROCESS_EFM = auto()
     LD_DROPOUT_CORRECT = auto()
     LD_CHROMA_DECODER = auto()
     FFMPEG = auto()

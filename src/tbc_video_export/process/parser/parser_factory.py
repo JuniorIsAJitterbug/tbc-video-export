@@ -13,7 +13,6 @@ from tbc_video_export.process.parser.parser_ld_dropout_correct import (
 from tbc_video_export.process.parser.parser_ld_export_metadata import (
     ParserLDExportMetadata,
 )
-from tbc_video_export.process.parser.parser_ld_process_efm import ParserLDProcessEFM
 from tbc_video_export.process.parser.parser_ld_process_vbi import ParserLDProcessVBI
 
 if TYPE_CHECKING:
@@ -41,9 +40,6 @@ class ParserFactory:
 
             case ProcessName.LD_EXPORT_METADATA:
                 return ParserLDExportMetadata(process_name)
-
-            case ProcessName.LD_PROCESS_EFM:
-                return ParserLDProcessEFM(process_name)
 
             case _:
                 raise NotImplementedError(

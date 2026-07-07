@@ -256,11 +256,6 @@ class FileHelper:
                 ProcessName.LD_PROCESS_VBI
             )
 
-        if self._opts.process_efm:
-            tools[ProcessName.LD_PROCESS_EFM] = self._get_tbc_tool_path(
-                ProcessName.LD_PROCESS_EFM
-            )
-
         if self._opts.export_metadata:
             tools[ProcessName.LD_EXPORT_METADATA] = self._get_tbc_tool_path(
                 ProcessName.LD_EXPORT_METADATA

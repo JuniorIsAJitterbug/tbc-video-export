@@ -34,7 +34,6 @@ class TestTBCJson:
             output_video_file=Path("out_file.mkv"),
             output_video_file_luma=Path("out_file.luma.mkv"),
             is_ld=False,
-            efm_file=None,
             ffmetadata_file=Path("out_file.ffmetadata"),
             cc_file=Path("out_file.scc"),
             tbc_types=TBCType.LUMA | TBCType.CHROMA,
@@ -49,7 +48,6 @@ class TestTBCJson:
             output_video_file=Path("out_file.mkv"),
             output_video_file_luma=Path("out_file.luma.mkv"),
             is_ld=False,
-            efm_file=None,
             ffmetadata_file=Path("out_file.ffmetadata"),
             cc_file=Path("out_file.scc"),
             tbc_types=TBCType.COMBINED,
@@ -64,7 +62,6 @@ class TestTBCJson:
             output_video_file=Path("out_file.mkv"),
             output_video_file_luma=Path("out_file.luma.mkv"),
             is_ld=True,
-            efm_file=Path("tests/files/pal_composite_ld.efm"),
             ffmetadata_file=Path("out_file.ffmetadata"),
             cc_file=Path("out_file.scc"),
             tbc_types=TBCType.COMBINED,
@@ -90,7 +87,6 @@ class TestTBCJson:
         assert test_case.output_video_file == helper.output_video_file
         assert test_case.output_video_file_luma == helper.output_video_file_luma
         assert test_case.is_ld == helper.is_combined_ld
-        assert test_case.efm_file == helper.efm_file
         assert test_case.ffmetadata_file == helper.ffmetadata_file
         assert test_case.cc_file == helper.cc_file
         assert test_case.tbc_types == helper.tbc_types
@@ -142,7 +138,6 @@ class TestTBCJson:
         ProcessName.LD_CHROMA_DECODER,
         ProcessName.LD_DROPOUT_CORRECT,
         ProcessName.LD_EXPORT_METADATA,
-        ProcessName.LD_PROCESS_EFM,
         ProcessName.LD_PROCESS_VBI,
     ]
 
@@ -177,7 +172,6 @@ class TestTBCJson:
     ) -> None:
         state = program_state(
             [
-                "--process-efm",
                 "--process-vbi",
                 "--export-metadata",
             ],
@@ -191,7 +185,6 @@ class TestTBCJson:
         ProcessName.LD_CHROMA_DECODER,
         ProcessName.LD_DROPOUT_CORRECT,
         ProcessName.LD_EXPORT_METADATA,
-        ProcessName.LD_PROCESS_EFM,
         ProcessName.LD_PROCESS_VBI,
     ]
 
@@ -205,7 +198,6 @@ class TestTBCJson:
         with NamedTemporaryFile() as file:
             state = program_state(
                 [
-                    "--process-efm",
                     "--process-vbi",
                     "--export-metadata",
                     "--tbc-tools-appimage",
@@ -228,7 +220,6 @@ class TestTBCJson:
     ) -> None:
         state = program_state(
             [
-                "--process-efm",
                 "--process-vbi",
                 "--export-metadata",
             ],
@@ -250,7 +241,6 @@ class TestTBCJson:
         with NamedTemporaryFile(suffix=".mkv") as file:
             state = program_state(
                 [
-                    "--process-efm",
                     "--process-vbi",
                     "--export-metadata",
                 ],
@@ -268,7 +258,6 @@ class TestTBCJson:
         with NamedTemporaryFile(suffix=".luma.mkv") as file:
             state = program_state(
                 [
-                    "--process-efm",
                     "--process-vbi",
                     "--export-metadata",
                     "--two-step",

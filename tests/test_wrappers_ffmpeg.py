@@ -8,7 +8,6 @@ import pytest
 
 from tbc_video_export.common import exceptions
 from tbc_video_export.common.enums import ExportMode, TBCType
-from tbc_video_export.common.utils import ansi
 from tbc_video_export.common.video_system import video_system_pal
 from tests.conftest import WrapperTestCase, get_path_str
 
@@ -646,7 +645,7 @@ class TestWrappersFFmpeg:
         assert ffmpeg_wrapper.env is not None
         assert "FFREPORT" in ffmpeg_wrapper.env
 
-    def test_ffmpeg_export_messages(
+    def test_ffmpeg_missing_audio_track(
         self,
         force_ansi_support_on: None,
         program_state: Callable[[list[str], str, str | None], ProgramState],
@@ -660,13 +659,5 @@ class TestWrappersFFmpeg:
             "tests/files/pal_svideo.tbc",
             "out_file",
         )
-        _ = ffmpeg_wrapper_chroma(state, TBCType.CHROMA, ExportMode.CHROMA_MERGE)
-
-        assert (
-            ansi.error_color(
-                f"FFmpeg track {Path('tests/files/invalid').absolute()} "
-                f"does not currently exist."
-            )
-            in m.message
-            for m in state.export.messages
-        )
+        with pytest.RaisesExc(exceptions.MissingAudioTrackError):
+            _ = ffmpeg_wrapper_chroma(state, TBCType.CHROMA, ExportMode.CHROMA_MERGE)

@@ -88,11 +88,6 @@ class Opts(argparse.Namespace):
     process_vbi_keep_going: bool
     process_vbi_threads: int | None
 
-    # process-efm
-    process_efm: bool
-    process_efm_keep_going: bool
-    process_efm_dts: bool
-
     # export-metadata
     export_metadata: bool
     export_metadata_keep_going: bool

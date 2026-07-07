@@ -29,7 +29,6 @@ from tbc_video_export.process.wrapper.wrapper_ld_dropout_correct import (
 from tbc_video_export.process.wrapper.wrapper_ld_export_metadata import (
     WrapperLDExportMetadata,
 )
-from tbc_video_export.process.wrapper.wrapper_ld_process_efm import WrapperLDProcessEFM
 from tbc_video_export.process.wrapper.wrapper_ld_process_vbi import WrapperLDProcessVBI
 
 if TYPE_CHECKING:
@@ -87,9 +86,6 @@ class WrapperGroup:
 
         if ProcessName.LD_PROCESS_VBI in self._process_names:
             self.wrappers.append(WrapperLDProcessVBI(self._state, wrapper_config))
-
-        if ProcessName.LD_PROCESS_EFM in self._process_names:
-            self.wrappers.append(WrapperLDProcessEFM(self._state, wrapper_config))
 
         if ProcessName.LD_EXPORT_METADATA in self._process_names:
             self.wrappers.append(WrapperLDExportMetadata(self._state, wrapper_config))

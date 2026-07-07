@@ -61,7 +61,6 @@ class FileHelperTestCase:
     output_video_file: Path
     output_video_file_luma: Path
     is_ld: bool
-    efm_file: Path | None
     ffmetadata_file: Path
     cc_file: Path
     tbc_types: TBCType

@@ -107,12 +107,9 @@ class ProcessHandler(Generic[PipeInputGeneric, PipeOutputGeneric]):
         procs = ProcessName.NONE
 
         # group 2 (standalone)
-        # run export metadata & process efm
+        # run export metadata
         if self._state.opts.export_metadata:
             procs |= ProcessName.LD_EXPORT_METADATA
-
-        if self._state.opts.process_efm:
-            procs |= ProcessName.LD_PROCESS_EFM
 
         if procs != ProcessName.NONE:
             self._procs[create_group(export_mode, TBCType.NONE, procs)] = []
