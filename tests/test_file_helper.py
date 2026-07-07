@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from re import escape
 from tempfile import NamedTemporaryFile
@@ -198,6 +199,9 @@ class TestTBCJson:
         self,
         program_state: Callable[[list[str], Path], ProgramState],
     ) -> None:
+        if sys.platform != "linux":
+            pytest.skip("Linux only")
+
         with NamedTemporaryFile() as file:
             state = program_state(
                 [

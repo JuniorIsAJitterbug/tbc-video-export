@@ -29,7 +29,13 @@ class TestVerbosityOpts:
 
     @pytest.fixture
     def test_quiet_mode(self) -> None:
-        _, opts = self.parse_opts([str(self.path), "pal_svideo", "-q"])
+        _, opts = self.parse_opts(
+            [
+                str(self.path),
+                "pal_svideo",
+                "-q",
+            ]
+        )
         self.files = FileHelper(opts, self.config)
         log.set_verbosity(opts)
 
@@ -40,7 +46,13 @@ class TestVerbosityOpts:
 
     def test_debug_mode(self) -> None:
         _, opts = self.parse_opts(
-            [str(self.path), "pal_svideo", "-d", "--no-progress", "--no-debug-log"]
+            [
+                str(self.path),
+                "pal_svideo",
+                "-d",
+                "--no-progress",
+                "--no-debug-log",
+            ]
         )
         self.files = FileHelper(opts, self.config)
         log.set_verbosity(opts)
@@ -51,7 +63,11 @@ class TestVerbosityOpts:
 
     def test_show_process_output(self) -> None:
         _, opts = self.parse_opts(
-            [str(self.path), "pal_svideo", "--show-process-output"]
+            [
+                str(self.path),
+                "pal_svideo",
+                "--show-process-output",
+            ]
         )
         self.files = FileHelper(opts, self.config)
         log.set_verbosity(opts)

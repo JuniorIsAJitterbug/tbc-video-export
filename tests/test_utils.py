@@ -88,32 +88,37 @@ class TestUtils:
             ]
 
     def test_ansi_codes(self, force_ansi_support_on: None) -> None:
-        assert ansi.default_color("test") == "\x1b[38;5;255mtest\x1b[0;39m"
-        assert ansi.error_color("test") == "\x1b[0;31mtest\x1b[0;39m"
-        assert ansi.success_color("test") == "\x1b[0;32mtest\x1b[0;39m"
-        assert ansi.progress_color("test") == "\x1b[0;36mtest\x1b[0;39m"
-        assert ansi.dim("test") == "\x1b[38;5;245mtest\x1b[0;39m"
+        with mock.patch("os.isatty", return_value=True):
+            assert ansi.has_ansi_support()
+            assert ansi.default_color("test") == "\x1b[38;5;255mtest\x1b[0;39m"
+            assert ansi.error_color("test") == "\x1b[0;31mtest\x1b[0;39m"
+            assert ansi.success_color("test") == "\x1b[0;32mtest\x1b[0;39m"
+            assert ansi.progress_color("test") == "\x1b[0;36mtest\x1b[0;39m"
+            assert ansi.dim("test") == "\x1b[38;5;245mtest\x1b[0;39m"
 
-        assert ansi.bold("test") == "\x1b[1mtest\x1b[22m"
-        assert ansi.italic("test") == "\x1b[23mtest\x1b[23m"
-        assert ansi.dim_style("test") == "\x1b[2mtest\x1b[22m"
-        assert ansi.underlined("test") == "\x1b[4mtest\x1b[24m"
+            assert ansi.bold("test") == "\x1b[1mtest\x1b[22m"
+            assert ansi.italic("test") == "\x1b[23mtest\x1b[23m"
+            assert ansi.dim_style("test") == "\x1b[2mtest\x1b[22m"
+            assert ansi.underlined("test") == "\x1b[4mtest\x1b[24m"
 
-        assert ansi.enable_alternative_buffer() == "\x1b[?1049h"
-        assert ansi.disable_alternative_buffer() == "\x1b[?1049l"
-        assert ansi.erase_from_cursor() == "\x1b[0J"
-        assert ansi.erase_line() == "\x1b[0K"
-        assert ansi.erase_screen() == "\x1b[2J"
+            assert ansi.enable_alternative_buffer() == "\x1b[?1049h"
+            assert ansi.disable_alternative_buffer() == "\x1b[?1049l"
+            assert ansi.erase_from_cursor() == "\x1b[0J"
+            assert ansi.erase_line() == "\x1b[0K"
+            assert ansi.erase_screen() == "\x1b[2J"
 
-        assert ansi.move_to_home() == "\x1b[H"
-        assert ansi.go_up_lines(3) == "\x1b[3A"
-        assert ansi.go_up_lines(9) == "\x1b[9A"
-        assert ansi.show_cursor() == "\x1b[?25h"
-        assert ansi.hide_cursor() == "\x1b[?25l"
+            assert ansi.move_to_home() == "\x1b[H"
+            assert ansi.go_up_lines(3) == "\x1b[3A"
+            assert ansi.go_up_lines(9) == "\x1b[9A"
+            assert ansi.show_cursor() == "\x1b[?25h"
+            assert ansi.hide_cursor() == "\x1b[?25l"
 
     def test_ansi_off(self, force_ansi_support_off: None) -> None:
+        ansi.has_ansi_support.cache_clear()
         ansi.default_color.cache_clear()
-        assert ansi.default_color("test") == "test"
+
+        with mock.patch("os.isatty", return_value=False):
+            assert ansi.default_color("test") == "test"
 
     def test_flatlist(self) -> None:
         data = FlatList()

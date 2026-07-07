@@ -217,12 +217,8 @@ def program_state():
     def _inner(test_opts: list[str], path: Path, out_file: str | None = "out_file"):
         config = ProgramConfig()
 
-        in_opts = [str(path)]
-
-        if out_file is not None:
-            in_opts += [out_file]
-
-        parser, opts = opts_parser.parse_opts(config, in_opts + test_opts)
+        in_opts = [str(path), *test_opts] + ([out_file] if out_file is not None else [])
+        parser, opts = opts_parser.parse_opts(config, in_opts)
         files = FileHelper(opts, config)
         state = ProgramState(opts, config, files)
         opt_validators.validate_opts(state, parser, opts)
