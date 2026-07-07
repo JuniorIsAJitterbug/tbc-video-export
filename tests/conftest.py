@@ -192,6 +192,10 @@ def get_path(path: str):
     return Path.joinpath(Path(__file__).parent, "files", path).absolute()
 
 
+def get_path_str(path: str):
+    return str(get_path(path))
+
+
 @pytest.fixture
 def force_ansi_support_on(mocker: MockFixture):
     mocker.patch(

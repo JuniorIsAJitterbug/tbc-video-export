@@ -37,8 +37,9 @@ class TestTBCJson:
         ):
             _ = TBCJsonHelper(Path(file.name))
 
-        tbc_json = TBCJsonHelper(Path("tests/files/pal_svideo.tbc.json"))
-        assert str(tbc_json.file_name) == "tests/files/pal_svideo.tbc.json"
+        json_path = Path("tests/files/pal_svideo.tbc.json")
+        tbc_json = TBCJsonHelper(json_path)
+        assert tbc_json.file_name == json_path
 
     def test_video_system(self) -> None:
         json_data = '{"videoParameters":{"system":"PAL"}}'

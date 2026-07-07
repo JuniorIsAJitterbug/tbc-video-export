@@ -2,14 +2,13 @@ from __future__ import annotations
 
 import os
 from contextlib import nullcontext
-from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 import pytest
 
 from tbc_video_export.common import exceptions
 from tbc_video_export.common.enums import TBCType
-from tests.conftest import WrapperTestCase, get_path
+from tests.conftest import WrapperTestCase, get_path, get_path_str
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -32,31 +31,31 @@ class TestWrappersProcessVBI:
     test_cases: ClassVar[list[WrapperTestCase]] = [
         WrapperTestCase(
             id="default ld-process-vbi opts",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--process-vbi"],
             expected_opts=[
-                {"--input-json", f"{get_path('pal_svideo')}.tbc.json"},
-                {"--output-json", f"{get_path('pal_svideo')}.vbi.json"},
-                {f"{get_path('pal_svideo')}.tbc"},
+                {"--input-json", get_path_str("pal_svideo.tbc.json")},
+                {"--output-json", get_path_str("pal_svideo.vbi.json")},
+                {get_path_str("pal_svideo.tbc")},
             ],
         ),
         WrapperTestCase(
             id="set input json",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=[
                 "--process-vbi",
                 "--input-tbc-json",
-                str(get_path("ntsc_svideo.tbc.json")),
+                get_path_str("ntsc_svideo.tbc.json"),
             ],
             expected_opts=[
-                {"--input-json", f"{get_path('ntsc_svideo')}.tbc.json"},
-                {"--output-json", f"{get_path('pal_svideo')}.vbi.json"},
-                {f"{get_path('pal_svideo')}.tbc"},
+                {"--input-json", get_path_str("ntsc_svideo.tbc.json")},
+                {"--output-json", get_path_str("pal_svideo.vbi.json")},
+                {get_path_str("pal_svideo.tbc")},
             ],
         ),
         WrapperTestCase(
             id="set threads (global)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=[
                 "--process-vbi",
                 "--threads",
@@ -66,7 +65,7 @@ class TestWrappersProcessVBI:
         ),
         WrapperTestCase(
             id="set threads (specific)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=[
                 "--process-vbi",
                 "--process-vbi-threads",
@@ -76,7 +75,7 @@ class TestWrappersProcessVBI:
         ),
         WrapperTestCase(
             id="set threads (override)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=[
                 "--process-vbi",
                 "--threads",
@@ -88,7 +87,7 @@ class TestWrappersProcessVBI:
         ),
         WrapperTestCase(
             id="set threads (global disable)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=[
                 "--process-vbi",
                 "--threads",
@@ -98,7 +97,7 @@ class TestWrappersProcessVBI:
         ),
         WrapperTestCase(
             id="set threads (local disable)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=[
                 "--process-vbi",
                 "--process-vbi-threads",
@@ -108,7 +107,7 @@ class TestWrappersProcessVBI:
         ),
         WrapperTestCase(
             id="set threads (global set, local disable)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=[
                 "--process-vbi",
                 "--threads",
@@ -120,7 +119,7 @@ class TestWrappersProcessVBI:
         ),
         WrapperTestCase(
             id="set threads (global disable, local set)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=[
                 "--process-vbi",
                 "--threads",
@@ -172,35 +171,27 @@ class TestWrappersProcessVBI:
             [ProgramState, TBCType], WrapperLDProcessVBI
         ],
     ) -> None:
-        state = program_state(["--process-vbi"], f"{get_path('pal_svideo')}.tbc")
+        state = program_state(["--process-vbi"], get_path_str("pal_svideo.tbc"))
         process_vbi_wrapper = ldtools_process_vbi_wrapper(state, TBCType.LUMA)
 
-        assert state.file_helper.tbc_json.file_name == Path(
-            f"{get_path('pal_svideo')}.tbc.json"
-        )
+        assert state.file_helper.tbc_json.file_name == get_path("pal_svideo.tbc.json")
 
         process_vbi_wrapper.post_fn()
-        assert state.file_helper.tbc_json.file_name == Path(
-            f"{get_path('pal_svideo')}.vbi.json"
-        )
+        assert state.file_helper.tbc_json.file_name == get_path("pal_svideo.vbi.json")
 
         state = program_state(
             [
                 "--process-vbi",
                 "--dry-run",
             ],
-            f"{get_path('pal_svideo')}.tbc",
+            get_path_str("pal_svideo.tbc"),
         )
         process_vbi_wrapper = ldtools_process_vbi_wrapper(state, TBCType.LUMA)
 
-        assert state.file_helper.tbc_json.file_name == Path(
-            f"{get_path('pal_svideo')}.tbc.json"
-        )
+        assert state.file_helper.tbc_json.file_name == get_path("pal_svideo.tbc.json")
 
         process_vbi_wrapper.post_fn()
-        assert state.file_helper.tbc_json.file_name == Path(
-            f"{get_path('pal_svideo')}.vbi.json"
-        )
+        assert state.file_helper.tbc_json.file_name == get_path("pal_svideo.vbi.json")
 
 
 class TestWrappersDropoutCorrect:
@@ -209,11 +200,11 @@ class TestWrappersDropoutCorrect:
     test_cases: ClassVar[list[WrapperTestCase]] = [
         WrapperTestCase(
             id="default ld-dropout-correct luma opts",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=[],
             expected_opts=[
-                {"-i", f"{get_path('pal_svideo')}.tbc"},
-                {"--input-json", f"{get_path('pal_svideo')}.tbc.json"},
+                {"-i", get_path_str("pal_svideo.tbc")},
+                {"--input-json", get_path_str("pal_svideo.tbc.json")},
                 {"--output-json", os.devnull},
                 {"PIPE_OUT"},
             ],
@@ -221,11 +212,11 @@ class TestWrappersDropoutCorrect:
         ),
         WrapperTestCase(
             id="default ld-dropout-correct chroma opts",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=[],
             expected_opts=[
-                {"-i", f"{get_path('pal_svideo')}_chroma.tbc"},
-                {"--input-json", f"{get_path('pal_svideo')}.tbc.json"},
+                {"-i", get_path_str("pal_svideo_chroma.tbc")},
+                {"--input-json", get_path_str("pal_svideo.tbc.json")},
                 {"--output-json", os.devnull},
                 {"PIPE_OUT"},
             ],
@@ -233,49 +224,49 @@ class TestWrappersDropoutCorrect:
         ),
         WrapperTestCase(
             id="set threads (global)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--threads", "100"],
             expected_opts=[{"-t", "100"}],
             tbc_type=TBCType.LUMA,
         ),
         WrapperTestCase(
             id="set threads (specific)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--dropout-correct-threads", "100"],
             expected_opts=[{"-t", "100"}],
             tbc_type=TBCType.LUMA,
         ),
         WrapperTestCase(
             id="set threads (override)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--threads", "200", "--dropout-correct-threads", "100"],
             expected_opts=[{"-t", "100"}],
             tbc_type=TBCType.LUMA,
         ),
         WrapperTestCase(
             id="set threads (global disable)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--threads", "0"],
             unexpected_opts=[{"-t"}],
             tbc_type=TBCType.LUMA,
         ),
         WrapperTestCase(
             id="set threads (local disable)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--dropout-correct-threads", "0"],
             unexpected_opts=[{"-t"}],
             tbc_type=TBCType.LUMA,
         ),
         WrapperTestCase(
             id="set threads (global set, local disable)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--threads", "100", "--dropout-correct-threads", "0"],
             unexpected_opts=[{"-t"}],
             tbc_type=TBCType.LUMA,
         ),
         WrapperTestCase(
             id="set threads (global disable, local set)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--threads", "0", "--dropout-correct-threads", "100"],
             expected_opts=[{"-t", "100"}],
             tbc_type=TBCType.LUMA,
@@ -325,49 +316,49 @@ class TestWrappersChromaDecoder:
         # PAL
         WrapperTestCase(
             id="pal svideo luma opts",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=[],
             expected_opts=[
                 {"--chroma-gain", "0"},
                 {"-f", "mono"},
-                {"--input-json", f"{get_path('pal_svideo')}.tbc.json"},
+                {"--input-json", get_path_str("pal_svideo.tbc.json")},
                 {"PIPE_IN", "PIPE_OUT"},
             ],
             tbc_type=TBCType.LUMA,
         ),
         WrapperTestCase(
             id="pal svideo chroma opts",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=[],
             expected_opts=[
                 {"--luma-nr", "0"},
                 {"-f", "pal2d"},
-                {"--input-json", f"{get_path('pal_svideo')}.tbc.json"},
+                {"--input-json", get_path_str("pal_svideo.tbc.json")},
                 {"PIPE_IN", "PIPE_OUT"},
             ],
             tbc_type=TBCType.CHROMA,
         ),
         WrapperTestCase(
             id="pal composite opts",
-            input_tbc=f"{get_path('pal_composite')}.tbc",
+            input_tbc=get_path_str("pal_composite.tbc"),
             input_opts=[],
             expected_opts=[
                 {"-f", "transform3d"},
-                {"--input-json", f"{get_path('pal_composite')}.tbc.json"},
+                {"--input-json", get_path_str("pal_composite.tbc.json")},
                 {"PIPE_IN", "PIPE_OUT"},
             ],
             tbc_type=TBCType.COMBINED,
         ),
         WrapperTestCase(
             id="pal invalid decoder (exception)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--chroma-decoder", "ntsc2d"],
             expected_opts=[],
             expected_exc=exceptions.InvalidChromaDecoderError,
         ),
         WrapperTestCase(
             id="pal letterbox",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--letterbox"],
             expected_opts=[
                 {"--ffll", "2"},
@@ -378,7 +369,7 @@ class TestWrappersChromaDecoder:
         ),
         WrapperTestCase(
             id="pal vbi",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--vbi"],
             expected_opts=[
                 {"--ffll", "12"},
@@ -390,45 +381,45 @@ class TestWrappersChromaDecoder:
         # PAL-M
         WrapperTestCase(
             id="pal-m svideo luma opts",
-            input_tbc=f"{get_path('palm_svideo')}.tbc",
+            input_tbc=get_path_str("palm_svideo.tbc"),
             input_opts=[],
             expected_opts=[
                 {"--chroma-gain", "0"},
                 {"-f", "mono"},
-                {"--input-json", f"{get_path('palm_svideo')}.tbc.json"},
+                {"--input-json", get_path_str("palm_svideo.tbc.json")},
                 {"PIPE_IN", "PIPE_OUT"},
             ],
             tbc_type=TBCType.LUMA,
         ),
         WrapperTestCase(
             id="pal-m svideo chroma opts",
-            input_tbc=f"{get_path('palm_svideo')}.tbc",
+            input_tbc=get_path_str("palm_svideo.tbc"),
             input_opts=[],
             expected_opts=[
                 {"--luma-nr", "0"},
                 {"-f", "pal2d"},
-                {"--input-json", f"{get_path('palm_svideo')}.tbc.json"},
+                {"--input-json", get_path_str("palm_svideo.tbc.json")},
                 {"PIPE_IN", "PIPE_OUT"},
             ],
             tbc_type=TBCType.CHROMA,
         ),
         WrapperTestCase(
             id="pal-m invalid decoder (exception)",
-            input_tbc=f"{get_path('palm_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--chroma-decoder", "ntsc2d"],
             expected_opts=[],
             expected_exc=exceptions.InvalidChromaDecoderError,
         ),
         WrapperTestCase(
             id="pal-m letterbox (exception)",
-            input_tbc=f"{get_path('palm_svideo')}.tbc",
+            input_tbc=get_path_str("palm_svideo.tbc"),
             input_opts=["--letterbox"],
             expected_opts=[],
             expected_exc=exceptions.SampleRequiredError,
         ),
         WrapperTestCase(
             id="pal-m vbi",
-            input_tbc=f"{get_path('palm_svideo')}.tbc",
+            input_tbc=get_path_str("palm_svideo.tbc"),
             input_opts=["--vbi"],
             expected_opts=[
                 {"--ffll", "16"},
@@ -441,60 +432,60 @@ class TestWrappersChromaDecoder:
         # NTSC
         WrapperTestCase(
             id="ntsc svideo luma opts",
-            input_tbc=f"{get_path('ntsc_svideo')}.tbc",
+            input_tbc=get_path_str("ntsc_svideo.tbc"),
             input_opts=[],
             expected_opts=[
                 {"--chroma-gain", "0"},
                 {"-f", "mono"},
-                {"--input-json", f"{get_path('ntsc_svideo')}.tbc.json"},
+                {"--input-json", get_path_str("ntsc_svideo.tbc.json")},
                 {"PIPE_IN", "PIPE_OUT"},
             ],
             tbc_type=TBCType.LUMA,
         ),
         WrapperTestCase(
             id="ntsc svideo chroma opts",
-            input_tbc=f"{get_path('ntsc_svideo')}.tbc",
+            input_tbc=get_path_str("ntsc_svideo.tbc"),
             input_opts=[],
             expected_opts=[
                 {"--luma-nr", "0"},
                 {"-f", "ntsc2d"},
-                {"--input-json", f"{get_path('ntsc_svideo')}.tbc.json"},
+                {"--input-json", get_path_str("ntsc_svideo.tbc.json")},
                 {"PIPE_IN", "PIPE_OUT"},
             ],
             tbc_type=TBCType.CHROMA,
         ),
         WrapperTestCase(
             id="ntsc composite opts",
-            input_tbc=f"{get_path('ntsc_composite')}.tbc",
+            input_tbc=get_path_str("ntsc_composite.tbc"),
             input_opts=[],
             expected_opts=[
                 {"-f", "ntsc3d"},
-                {"--input-json", f"{get_path('ntsc_composite')}.tbc.json"},
+                {"--input-json", get_path_str("ntsc_composite.tbc.json")},
                 {"PIPE_IN", "PIPE_OUT"},
             ],
             tbc_type=TBCType.COMBINED,
         ),
         WrapperTestCase(
             id="ntsc composite (ld) opts",
-            input_tbc=f"{get_path('ntsc_composite_ld')}.tbc",
+            input_tbc=get_path_str("ntsc_composite_ld.tbc"),
             input_opts=[],
             expected_opts=[
                 {"-f", "ntsc2d"},
-                {"--input-json", f"{get_path('ntsc_composite_ld')}.tbc.json"},
+                {"--input-json", get_path_str("ntsc_composite_ld.tbc.json")},
                 {"PIPE_IN", "PIPE_OUT"},
             ],
             tbc_type=TBCType.COMBINED,
         ),
         WrapperTestCase(
             id="ntsc invalid decoder (exception)",
-            input_tbc=f"{get_path('ntsc_svideo')}.tbc",
+            input_tbc=get_path_str("ntsc_svideo.tbc"),
             input_opts=["--chroma-decoder", "transform2d"],
             expected_opts=[],
             expected_exc=exceptions.InvalidChromaDecoderError,
         ),
         WrapperTestCase(
             id="ntsc letterbox",
-            input_tbc=f"{get_path('ntsc_svideo')}.tbc",
+            input_tbc=get_path_str("ntsc_svideo.tbc"),
             input_opts=["--letterbox"],
             expected_opts=[
                 {"--ffll", "61"},
@@ -505,7 +496,7 @@ class TestWrappersChromaDecoder:
         ),
         WrapperTestCase(
             id="ntsc vbi",
-            input_tbc=f"{get_path('ntsc_svideo')}.tbc",
+            input_tbc=get_path_str("ntsc_svideo.tbc"),
             input_opts=["--vbi"],
             expected_opts=[
                 {"--ffll", "16"},
@@ -518,7 +509,7 @@ class TestWrappersChromaDecoder:
         # general
         WrapperTestCase(
             id="luma nr with transform2d (luma)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             tbc_type=TBCType.LUMA,
             input_opts=[
                 "--luma-nr",
@@ -530,7 +521,7 @@ class TestWrappersChromaDecoder:
         ),
         WrapperTestCase(
             id="luma nr with mono (chroma)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             tbc_type=TBCType.CHROMA,
             input_opts=[
                 "--luma-nr",
@@ -542,7 +533,7 @@ class TestWrappersChromaDecoder:
         ),
         WrapperTestCase(
             id="luma nr with mono (luma)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             tbc_type=TBCType.LUMA,
             input_opts=[
                 "--luma-nr",
@@ -553,7 +544,7 @@ class TestWrappersChromaDecoder:
         ),
         WrapperTestCase(
             id="luma nr with mono (chroma)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             tbc_type=TBCType.CHROMA,
             input_opts=[
                 "--luma-nr",
@@ -564,7 +555,7 @@ class TestWrappersChromaDecoder:
         ),
         WrapperTestCase(
             id="luma nr (composite)",
-            input_tbc=f"{get_path('pal_composite')}.tbc",
+            input_tbc=get_path_str("pal_composite.tbc"),
             tbc_type=TBCType.COMBINED,
             input_opts=[
                 "--luma-nr",
@@ -574,7 +565,7 @@ class TestWrappersChromaDecoder:
         ),
         WrapperTestCase(
             id="chroma nr (luma)",
-            input_tbc=f"{get_path('ntsc_svideo')}.tbc",
+            input_tbc=get_path_str("ntsc_svideo.tbc"),
             tbc_type=TBCType.LUMA,
             input_opts=[
                 "--chroma-nr",
@@ -584,7 +575,7 @@ class TestWrappersChromaDecoder:
         ),
         WrapperTestCase(
             id="chroma nr (chroma)",
-            input_tbc=f"{get_path('ntsc_svideo')}.tbc",
+            input_tbc=get_path_str("ntsc_svideo.tbc"),
             tbc_type=TBCType.CHROMA,
             input_opts=[
                 "--chroma-nr",
@@ -594,7 +585,7 @@ class TestWrappersChromaDecoder:
         ),
         WrapperTestCase(
             id="chroma nr (composite)",
-            input_tbc=f"{get_path('ntsc_composite')}.tbc",
+            input_tbc=get_path_str("ntsc_composite.tbc"),
             tbc_type=TBCType.COMBINED,
             input_opts=[
                 "--chroma-nr",
@@ -604,7 +595,7 @@ class TestWrappersChromaDecoder:
         ),
         WrapperTestCase(
             id="chroma nr non-pal (exception)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             tbc_type=TBCType.COMBINED,
             input_opts=[
                 "--chroma-nr",
@@ -614,7 +605,7 @@ class TestWrappersChromaDecoder:
         ),
         WrapperTestCase(
             id="chroma gain (luma)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             tbc_type=TBCType.LUMA,
             input_opts=[
                 "--chroma-gain",
@@ -624,7 +615,7 @@ class TestWrappersChromaDecoder:
         ),
         WrapperTestCase(
             id="chroma gain (chroma)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             tbc_type=TBCType.CHROMA,
             input_opts=[
                 "--chroma-gain",
@@ -634,7 +625,7 @@ class TestWrappersChromaDecoder:
         ),
         WrapperTestCase(
             id="chroma gain (composite)",
-            input_tbc=f"{get_path('pal_composite')}.tbc",
+            input_tbc=get_path_str("pal_composite.tbc"),
             tbc_type=TBCType.COMBINED,
             input_opts=[
                 "--chroma-gain",
@@ -644,7 +635,7 @@ class TestWrappersChromaDecoder:
         ),
         WrapperTestCase(
             id="chroma phase (luma)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             tbc_type=TBCType.LUMA,
             input_opts=[
                 "--chroma-phase",
@@ -654,7 +645,7 @@ class TestWrappersChromaDecoder:
         ),
         WrapperTestCase(
             id="chroma phase (chroma)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             tbc_type=TBCType.CHROMA,
             input_opts=[
                 "--chroma-phase",
@@ -664,7 +655,7 @@ class TestWrappersChromaDecoder:
         ),
         WrapperTestCase(
             id="chroma phase (composite)",
-            input_tbc=f"{get_path('pal_composite')}.tbc",
+            input_tbc=get_path_str("pal_composite.tbc"),
             tbc_type=TBCType.COMBINED,
             input_opts=[
                 "--chroma-phase",
@@ -674,49 +665,49 @@ class TestWrappersChromaDecoder:
         ),
         WrapperTestCase(
             id="set threads (global)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--threads", "100"],
             expected_opts=[{"-t", "100"}],
             tbc_type=TBCType.LUMA,
         ),
         WrapperTestCase(
             id="set threads (specific)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--decoder-threads", "100"],
             expected_opts=[{"-t", "100"}],
             tbc_type=TBCType.LUMA,
         ),
         WrapperTestCase(
             id="set threads (override)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--threads", "200", "--decoder-threads", "100"],
             expected_opts=[{"-t", "100"}],
             tbc_type=TBCType.LUMA,
         ),
         WrapperTestCase(
             id="set threads (global disable)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--threads", "0"],
             unexpected_opts=[{"-t"}],
             tbc_type=TBCType.LUMA,
         ),
         WrapperTestCase(
             id="set threads (local disable)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--decoder-threads", "0"],
             unexpected_opts=[{"-t"}],
             tbc_type=TBCType.LUMA,
         ),
         WrapperTestCase(
             id="set threads (global set, local disable)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--threads", "100", "--decoder-threads", "0"],
             unexpected_opts=[{"-t"}],
             tbc_type=TBCType.LUMA,
         ),
         WrapperTestCase(
             id="set threads (global disable, local set)",
-            input_tbc=f"{get_path('pal_svideo')}.tbc",
+            input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--threads", "0", "--decoder-threads", "100"],
             expected_opts=[{"-t", "100"}],
             tbc_type=TBCType.LUMA,
