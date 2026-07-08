@@ -23,6 +23,7 @@ class ParserMetadataExport(Parser):
     This tool is silent unless there is a problem.
     """
 
+    @override
     def __init__(self, process_type: ToolType) -> None:
         super().__init__(process_type)
 

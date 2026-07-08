@@ -24,6 +24,7 @@ class ParserDropoutCorrect(Parser):
     tracked_value_name: str
     tracked_value_total: int
 
+    @override
     def __init__(self, process_type: ToolType) -> None:
         super().__init__(process_type)
 

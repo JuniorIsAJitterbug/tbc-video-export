@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common.enums import (
@@ -16,6 +17,11 @@ if TYPE_CHECKING:
 
     from tbc_video_export.config import Config
 
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
+
 
 class TypeVideoSystem:
     """Return ChromaDecoder value if it exists."""
@@ -23,7 +29,8 @@ class TypeVideoSystem:
     def __init__(self, parser: argparse.ArgumentParser) -> None:
         self._parser = parser
 
-    def __call__(self, value: str) -> VideoSystem:  # noqa: D102
+    @override
+    def __call__(self, value: str) -> VideoSystem:
         try:
             return VideoSystem[value.replace("-", "_").upper()]
         except KeyError:
@@ -39,7 +46,8 @@ class TypeFieldOrder:
     def __init__(self, parser: argparse.ArgumentParser) -> None:
         self._parser = parser
 
-    def __call__(self, value: str) -> FieldOrder:  # noqa: D102
+    @override
+    def __call__(self, value: str) -> FieldOrder:
         try:
             return FieldOrder[value.upper()]
         except KeyError:
@@ -55,7 +63,8 @@ class TypeAdditionalFilter:
     def __init__(self, config: Config) -> None:
         self._config = config
 
-    def __call__(self, value: str) -> str:  # noqa: D102
+    @override
+    def __call__(self, value: str) -> str:
         # add to config
         self._config.add_additional_filter(value)
         return value
@@ -67,7 +76,8 @@ class TypeDropoutInterfieldCorrection:
     def __init__(self, parser: argparse.ArgumentParser) -> None:
         self._parser = parser
 
-    def __call__(self, value: str) -> TBCType:  # noqa: D102
+    @override
+    def __call__(self, value: str) -> TBCType:
         try:
             return TBCType[value.upper()]
         except KeyError:
@@ -83,7 +93,8 @@ class TypeChromaDecoder:
     def __init__(self, parser: argparse.ArgumentParser) -> None:
         self._parser = parser
 
-    def __call__(self, value: str) -> ChromaDecoder:  # noqa: D102
+    @override
+    def __call__(self, value: str) -> ChromaDecoder:
         try:
             return ChromaDecoder[value.upper()]
         except KeyError:
@@ -99,7 +110,8 @@ class TypeToolset:
     def __init__(self, parser: argparse.ArgumentParser) -> None:
         self._parser = parser
 
-    def __call__(self, value: str) -> ToolsetType:  # noqa: D102
+    @override
+    def __call__(self, value: str) -> ToolsetType:
         try:
             return ToolsetType[value.replace("-", "_").upper()]
         except KeyError:
@@ -115,7 +127,8 @@ class TypeMetadataType:
     def __init__(self, parser: argparse.ArgumentParser) -> None:
         self._parser = parser
 
-    def __call__(self, value: str) -> MetadataType:  # noqa: D102
+    @override
+    def __call__(self, value: str) -> MetadataType:
         try:
             return MetadataType[value.upper()]
         except KeyError:

@@ -22,6 +22,7 @@ else:
 class WrapperMetadataExport(Wrapper[None, None]):
     """Wrapper for the metadata-export process."""
 
+    @override
     def __init__(self, state: ProgramState, config: WrapperConfig[None, None]) -> None:
         super().__init__(state, config)
         self._config = config

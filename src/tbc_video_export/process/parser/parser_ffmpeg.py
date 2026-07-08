@@ -24,6 +24,7 @@ class ParserFFmpeg(Parser):
     tracked_value_name: str
     current_fps: float
 
+    @override
     def __init__(self, process_type: ToolType) -> None:
         super().__init__(process_type)
 

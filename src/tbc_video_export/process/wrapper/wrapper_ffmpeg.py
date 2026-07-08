@@ -40,6 +40,7 @@ class WrapperFFmpeg(
 ):
     """Wrapper for the ffmpeg process."""
 
+    @override
     def __init__(
         self, state: ProgramState, config: WrapperConfig[tuple[Pipe, ...], None]
     ) -> None:

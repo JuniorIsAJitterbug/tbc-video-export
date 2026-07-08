@@ -24,6 +24,7 @@ else:
 class WrapperDropoutCorrect(Wrapper[None, Pipe]):
     """Wrapper for the dropout-correct process."""
 
+    @override
     def __init__(self, state: ProgramState, config: WrapperConfig[None, Pipe]) -> None:
         super().__init__(state, config)
         self._config = config

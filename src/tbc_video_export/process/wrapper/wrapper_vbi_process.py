@@ -23,6 +23,7 @@ else:
 class WrapperVBIProcess(Wrapper[None, None]):
     """Wrapper for the vbi-process process."""
 
+    @override
     def __init__(self, state: ProgramState, config: WrapperConfig[None, None]) -> None:
         self._tbc_json_vbi = Path(f"{state.file_helper.input_name}.vbi.json")
 

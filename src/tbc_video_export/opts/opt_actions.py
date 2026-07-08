@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import sys
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts
@@ -21,6 +22,11 @@ if TYPE_CHECKING:
 
     from tbc_video_export.config import Config
 
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
+
 
 class ActionDumpConfig(argparse.Action):
     """Dump configuration and exit action."""
@@ -29,12 +35,13 @@ class ActionDumpConfig(argparse.Action):
         self._config = config
         super().__init__(nargs=nargs, **kwargs)
 
-    def __call__(  # noqa: D102
+    @override
+    def __call__(
         self,
         parser: argparse.ArgumentParser,
-        namespace: argparse.Namespace,  # noqa: ARG002
-        values: str | Sequence[Any] | None,  # noqa: ARG002
-        option_string: str | None = None,  # noqa: ARG002
+        namespace: argparse.Namespace,
+        values: str | Sequence[Any] | None,
+        option_string: str | None = None,
         *_: Any,
     ) -> None:
         self._config.dump_default_config(consts.EXPORT_CONFIG_FILE_NAME)
@@ -47,13 +54,14 @@ class ActionSetVerbosity(argparse.Action):
     def __init__(self, nargs: int = 0, **kwargs: Any) -> None:
         super().__init__(nargs=nargs, **kwargs)
 
-    def __call__(  # noqa: D102
+    @override
+    def __call__(
         self,
-        parser: argparse.ArgumentParser,  # noqa: ARG002
+        parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
-        values: str | Sequence[Any] | None,  # noqa: ARG002
+        values: str | Sequence[Any] | None,
         option_string: str | None = None,
-        **kwargs: Any,  # noqa: ARG002
+        **kwargs: Any,
     ) -> None:
         if option_string in ["--quiet", "-q"]:
             namespace.quiet = True
@@ -81,13 +89,14 @@ class ActionListProfiles(argparse.Action):
         self._profiles_filters = config.filter_profiles
         super().__init__(nargs=nargs, **kwargs)
 
-    def __call__(  # noqa: D102
+    @override
+    def __call__(
         self,
         parser: argparse.ArgumentParser,
-        namespace: argparse.Namespace,  # noqa: ARG002
-        values: str | Sequence[Any] | None,  # noqa: ARG002
-        option_string: str | None = None,  # noqa: ARG002
-        **kwargs: Any,  # noqa: ARG002
+        namespace: argparse.Namespace,
+        values: str | Sequence[Any] | None,
+        option_string: str | None = None,
+        **kwargs: Any,
     ) -> None:
         self._print_profiles()
         parser.exit()
@@ -127,13 +136,14 @@ class ActionSetVideoHardwareAccelType(argparse.Action):
     def __init__(self, nargs: int = 0, **kwargs: Any) -> None:
         super().__init__(nargs=nargs, **kwargs)
 
-    def __call__(  # noqa: D102
+    @override
+    def __call__(
         self,
-        parser: argparse.ArgumentParser,  # noqa: ARG002
+        parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
-        values: str | Sequence[Any] | None,  # noqa: ARG002
+        values: str | Sequence[Any] | None,
         option_string: str | None = None,
-        **kwargs: Any,  # noqa: ARG002
+        **kwargs: Any,
     ) -> None:
         # no need to check errors here, as option_string can only be
         # VideoBitDepthType values
@@ -146,13 +156,14 @@ class ActionSetVideoBitDepthType(argparse.Action):
     def __init__(self, nargs: int = 0, **kwargs: Any) -> None:
         super().__init__(nargs=nargs, **kwargs)
 
-    def __call__(  # noqa: D102
+    @override
+    def __call__(
         self,
-        parser: argparse.ArgumentParser,  # noqa: ARG002
+        parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
-        values: str | Sequence[Any] | None,  # noqa: ARG002
+        values: str | Sequence[Any] | None,
         option_string: str | None = None,
-        **kwargs: Any,  # noqa: ARG002
+        **kwargs: Any,
     ) -> None:
         # no need to check errors here, as option_string can only be
         # VideoBitDepthType values
@@ -173,13 +184,14 @@ class ActionSetVideoFormatType(argparse.Action):
     def __init__(self, nargs: int = 0, **kwargs: Any) -> None:
         super().__init__(nargs=nargs, **kwargs)
 
-    def __call__(  # noqa: D102
+    @override
+    def __call__(
         self,
-        parser: argparse.ArgumentParser,  # noqa: ARG002
+        parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
-        values: str | Sequence[Any] | None,  # noqa: ARG002
+        values: str | Sequence[Any] | None,
         option_string: str | None = None,
-        **kwargs: Any,  # noqa: ARG002
+        **kwargs: Any,
     ) -> None:
         for format_type in VideoFormatType:
             if format_type.name.lower() == str(option_string)[2:].lower():
@@ -192,13 +204,14 @@ class ActionSetProfile(argparse.Action):
     def __init__(self, nargs: int = 0, **kwargs: Any) -> None:
         super().__init__(nargs=nargs, **kwargs)
 
-    def __call__(  # noqa: D102
+    @override
+    def __call__(
         self,
-        parser: argparse.ArgumentParser,  # noqa: ARG002
+        parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
-        values: str | Sequence[Any] | None,  # noqa: ARG002
+        values: str | Sequence[Any] | None,
         option_string: str | None = None,
-        **kwargs: Any,  # noqa: ARG002
+        **kwargs: Any,
     ) -> None:
         # no need to check errors here, as option_string can only be
         # valid profile names
@@ -211,13 +224,14 @@ class ActionSetAudioOverride(argparse.Action):
     def __init__(self, nargs: int = 0, **kwargs: Any) -> None:
         super().__init__(nargs=nargs, **kwargs)
 
-    def __call__(  # noqa: D102
+    @override
+    def __call__(
         self,
-        parser: argparse.ArgumentParser,  # noqa: ARG002
+        parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
-        values: str | Sequence[Any] | None,  # noqa: ARG002
+        values: str | Sequence[Any] | None,
         option_string: str | None = None,
-        **kwargs: Any,  # noqa: ARG002
+        **kwargs: Any,
     ) -> None:
         namespace.audio_profile = str(option_string)[2:].lower()
 
@@ -231,13 +245,14 @@ class ActionListToolsets(argparse.Action):
     def __init__(self, nargs: int = 0, **kwargs: Any) -> None:
         super().__init__(nargs=nargs, **kwargs)
 
-    def __call__(  # noqa: D102
+    @override
+    def __call__(
         self,
         parser: argparse.ArgumentParser,
-        namespace: argparse.Namespace,  # noqa: ARG002
-        values: str | Sequence[Any] | None,  # noqa: ARG002
-        option_string: str | None = None,  # noqa: ARG002
-        **kwargs: Any,  # noqa: ARG002
+        namespace: argparse.Namespace,
+        values: str | Sequence[Any] | None,
+        option_string: str | None = None,
+        **kwargs: Any,
     ) -> None:
         logger = logging.getLogger("console")
         out_string = ansi.underlined("Toolsets") + "\n\n"

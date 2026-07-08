@@ -30,6 +30,7 @@ else:
 class WrapperChromaDecode(Wrapper[Pipe, Pipe]):
     """Wrapper for the chroma-decode process."""
 
+    @override
     def __init__(self, state: ProgramState, config: WrapperConfig[Pipe, Pipe]) -> None:
         super().__init__(state, config)
         self._config = config
