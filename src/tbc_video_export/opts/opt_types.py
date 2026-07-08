@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING
 from tbc_video_export.common.enums import (
     ChromaDecoder,
     FieldOrder,
+    MetadataType,
     TBCType,
+    ToolsetType,
     VideoSystem,
 )
 
@@ -87,5 +89,37 @@ class TypeChromaDecoder:
         except KeyError:
             self._parser.error(
                 f"argument --chroma-decoder: invalid ChromaDecoder value: '{value}', "
+                f"check --help for available options."
+            )
+
+
+class TypeToolset:
+    """Return Toolset value if it exists."""
+
+    def __init__(self, parser: argparse.ArgumentParser) -> None:
+        self._parser = parser
+
+    def __call__(self, value: str) -> ToolsetType:  # noqa: D102
+        try:
+            return ToolsetType[value.replace("-", "_").upper()]
+        except KeyError:
+            self._parser.error(
+                f"argument --toolset: invalid Toolset value: '{value}', "
+                f"check --help for available options."
+            )
+
+
+class TypeMetadataType:
+    """Return MetadataType value if it exists."""
+
+    def __init__(self, parser: argparse.ArgumentParser) -> None:
+        self._parser = parser
+
+    def __call__(self, value: str) -> MetadataType:  # noqa: D102
+        try:
+            return MetadataType[value.upper()]
+        except KeyError:
+            self._parser.error(
+                f"argument --metadata-type: invalid MetadataType value: '{value}', "
                 f"check --help for available options."
             )

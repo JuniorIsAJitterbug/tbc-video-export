@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, ClassVar
 import pytest
 
 from tbc_video_export.common import exceptions
-from tbc_video_export.common.enums import ProcessName, TBCType, VideoSystem
+from tbc_video_export.common.enums import TBCType, ToolType, VideoSystem
 from tbc_video_export.common.file_helper import FileHelper
 
 from .conftest import FileHelperTestCase
@@ -133,12 +133,12 @@ class TestTBCJson:
         ):
             _ = program_state([], Path("tests/files/invalid"))
 
-    procs: ClassVar[list[ProcessName]] = [
-        ProcessName.FFMPEG,
-        ProcessName.LD_CHROMA_DECODER,
-        ProcessName.LD_DROPOUT_CORRECT,
-        ProcessName.LD_EXPORT_METADATA,
-        ProcessName.LD_PROCESS_VBI,
+    tools: ClassVar[list[ToolType]] = [
+        ToolType.CHROMA_DECODE,
+        ToolType.DROPOUT_CORRECT,
+        ToolType.FFMPEG,
+        ToolType.METADATA_EXPORT,
+        ToolType.VBI_PROCESS,
     ]
 
     tbc_types: ClassVar[list[TBCType]] = [
@@ -147,12 +147,12 @@ class TestTBCJson:
         TBCType.LUMA,
     ]
 
-    @pytest.mark.parametrize("proc", tuple(procs))
+    @pytest.mark.parametrize("tool", tuple(tools))
     @pytest.mark.parametrize("tbc_type", tuple(tbc_types))
     def test_log_files(
         self,
         program_state: Callable[[list[str], Path], ProgramState],
-        proc: ProcessName,
+        tool: ToolType,
         tbc_type: TBCType,
     ) -> None:
         state = program_state([], Path("tests/files/pal_svideo.tbc"))
@@ -160,15 +160,15 @@ class TestTBCJson:
 
         timestamp = "__timestamp__"
 
-        assert helper.get_log_file(proc, tbc_type, timestamp) == Path(
-            f"__timestamp___{helper.input_name.stem}_{proc}_{tbc_type}.log"
+        assert helper.get_log_file(tool, tbc_type, timestamp) == Path(
+            f"__timestamp___{helper.input_name.stem}_{tool}_{tbc_type}.log"
         )
 
-    @pytest.mark.parametrize("proc", tuple(procs))
+    @pytest.mark.parametrize("tool", tuple(tools))
     def test_tools(
         self,
         program_state: Callable[[list[str], Path], ProgramState],
-        proc: ProcessName,
+        tool: ToolType,
     ) -> None:
         state = program_state(
             [
@@ -179,13 +179,13 @@ class TestTBCJson:
         )
         helper = FileHelper(state.opts, state.config)
 
-        assert helper.tools[proc] == Path(str(proc))
+        assert helper.tools[tool] == Path(str(tool))
 
-    appimage_tbc_tools_procs: ClassVar[list[ProcessName]] = [
-        ProcessName.LD_CHROMA_DECODER,
-        ProcessName.LD_DROPOUT_CORRECT,
-        ProcessName.LD_EXPORT_METADATA,
-        ProcessName.LD_PROCESS_VBI,
+    appimage_tbc_tools_procs: ClassVar[list[ToolType]] = [
+        ToolType.CHROMA_DECODE,
+        ToolType.DROPOUT_CORRECT,
+        ToolType.METADATA_EXPORT,
+        ToolType.VBI_PROCESS,
     ]
 
     def test_tools_appimage(

@@ -9,8 +9,8 @@ from tbc_video_export.common import exceptions
 from tbc_video_export.common.enums import (
     ChromaDecoder,
     PipeType,
-    ProcessName,
     TBCType,
+    ToolType,
     VideoSystem,
 )
 from tbc_video_export.common.utils import FlatList
@@ -27,8 +27,8 @@ else:
     from typing_extensions import override
 
 
-class WrapperLDChromaDecoder(Wrapper[Pipe, Pipe]):
-    """Wrapper for ld-tools-decoder."""
+class WrapperChromaDecode(Wrapper[Pipe, Pipe]):
+    """Wrapper for the chroma-decode process."""
 
     def __init__(self, state: ProgramState, config: WrapperConfig[Pipe, Pipe]) -> None:
         super().__init__(state, config)
@@ -218,8 +218,8 @@ class WrapperLDChromaDecoder(Wrapper[Pipe, Pipe]):
 
     @override
     @cached_property
-    def process_name(self) -> ProcessName:
-        return ProcessName.LD_CHROMA_DECODER
+    def tool_type(self) -> ToolType:
+        return ToolType.CHROMA_DECODE
 
     @override
     @cached_property

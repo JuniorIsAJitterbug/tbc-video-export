@@ -2,15 +2,15 @@ from __future__ import annotations
 
 import logging
 from functools import partial
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from tbc_video_export.common import exceptions
 from tbc_video_export.common.enums import (
     ExportMode,
     FlagHelper,
     PipeType,
-    ProcessName,
     TBCType,
+    ToolType,
 )
 from tbc_video_export.process.wrapper import WrapperConfig
 from tbc_video_export.process.wrapper.pipe import (
@@ -19,19 +19,20 @@ from tbc_video_export.process.wrapper.pipe import (
     PipeFactory,
     PipeFactoryConfig,
 )
+from tbc_video_export.process.wrapper.wrapper_chroma_decode import (
+    WrapperChromaDecode,
+)
+from tbc_video_export.process.wrapper.wrapper_dropout_correct import (
+    WrapperDropoutCorrect,
+)
 from tbc_video_export.process.wrapper.wrapper_ffmpeg import WrapperFFmpeg
-from tbc_video_export.process.wrapper.wrapper_ld_chroma_decoder import (
-    WrapperLDChromaDecoder,
+from tbc_video_export.process.wrapper.wrapper_metadata_export import (
+    WrapperMetadataExport,
 )
-from tbc_video_export.process.wrapper.wrapper_ld_dropout_correct import (
-    WrapperLDDropoutCorrect,
-)
-from tbc_video_export.process.wrapper.wrapper_ld_export_metadata import (
-    WrapperLDExportMetadata,
-)
-from tbc_video_export.process.wrapper.wrapper_ld_process_vbi import WrapperLDProcessVBI
+from tbc_video_export.process.wrapper.wrapper_vbi_process import WrapperVBIProcess
 
 if TYPE_CHECKING:
+    from tbc_video_export.process.wrapper.wrapper import Wrapper
     from tbc_video_export.program_state import ProgramState
 
 
@@ -47,14 +48,14 @@ class WrapperGroup:
         state: ProgramState,
         export_mode: ExportMode,
         tbc_types: TBCType,
-        process_names: ProcessName,
+        tool_types: ToolType,
     ) -> None:
         self._state = state
         self._export_mode = export_mode
         self._tbc_types = tbc_types
-        self._process_names = process_names
+        self._tool_types = tool_types
 
-        self.wrappers = []
+        self.wrappers: list[Wrapper[Any, Any]] = []
         self.consumable_pipes: list[ConsumablePipe] = []
 
         self._create_pipe_config = partial(
@@ -64,7 +65,7 @@ class WrapperGroup:
         )
 
         logging.getLogger("console").debug(
-            f"Creating wrappers for {FlagHelper.get_flags_str(process_names, '+')}"
+            f"Creating wrappers for {FlagHelper.get_flags_str(tool_types, '+')}"
         )
 
         self._create_standalone_wrappers()
@@ -84,11 +85,11 @@ class WrapperGroup:
             self._export_mode, TBCType.NONE, None, None
         )
 
-        if ProcessName.LD_PROCESS_VBI in self._process_names:
-            self.wrappers.append(WrapperLDProcessVBI(self._state, wrapper_config))
+        if ToolType.VBI_PROCESS in self._tool_types:
+            self.wrappers.append(WrapperVBIProcess(self._state, wrapper_config))
 
-        if ProcessName.LD_EXPORT_METADATA in self._process_names:
-            self.wrappers.append(WrapperLDExportMetadata(self._state, wrapper_config))
+        if ToolType.METADATA_EXPORT in self._tool_types:
+            self.wrappers.append(WrapperMetadataExport(self._state, wrapper_config))
 
     def _create_decoder_wrappers(self) -> None:
         """Create decoder wrappers.
@@ -102,23 +103,21 @@ class WrapperGroup:
         for tbc_type in FlagHelper.get_flags(self._tbc_types):
             create_pipe_config = partial(self._create_pipe_config, tbc_type=tbc_type)
 
-            if ProcessName.LD_DROPOUT_CORRECT in self._process_names:
+            if ToolType.DROPOUT_CORRECT in self._tool_types:
                 # create dropout correction -> decoder pipe
                 self.consumable_pipes.append(
                     ConsumablePipe(
                         tbc_type,
-                        ProcessName.LD_CHROMA_DECODER,
+                        ToolType.CHROMA_DECODE,
                         pipe := PipeFactory.create(
-                            create_pipe_config(
-                                PipeType.OS, ProcessName.LD_DROPOUT_CORRECT
-                            )
+                            create_pipe_config(PipeType.OS, ToolType.DROPOUT_CORRECT)
                         ),
                     )
                 )
 
                 # create dropout correct wrapper
                 self.wrappers.append(
-                    WrapperLDDropoutCorrect(
+                    WrapperDropoutCorrect(
                         self._state,
                         WrapperConfig[None, Pipe](
                             self._export_mode, tbc_type, None, pipe
@@ -126,16 +125,14 @@ class WrapperGroup:
                     )
                 )
 
-            if ProcessName.LD_CHROMA_DECODER in self._process_names:
-                if not self._get_pipes_for_consumer(
-                    ProcessName.LD_CHROMA_DECODER, tbc_type
-                ):
+            if ToolType.CHROMA_DECODE in self._tool_types:
+                if not self._get_pipes_for_consumer(ToolType.CHROMA_DECODE, tbc_type):
                     # if no pipes have been created for chroma-decoder, create a
                     # dummy pipe with the tbc file name
                     self.consumable_pipes.append(
                         ConsumablePipe(
                             tbc_type,
-                            ProcessName.LD_CHROMA_DECODER,
+                            ToolType.CHROMA_DECODE,
                             PipeFactory.create_dummy_pipe(
                                 self._state.file_helper.tbcs[tbc_type]
                             ),
@@ -146,13 +143,13 @@ class WrapperGroup:
                 self.consumable_pipes.append(
                     ConsumablePipe(
                         tbc_type,
-                        ProcessName.FFMPEG,
+                        ToolType.FFMPEG,
                         pipe := PipeFactory.create(
                             create_pipe_config(
                                 PipeType.OS
                                 if self._state.opts.two_step
                                 else PipeType.NAMED,
-                                ProcessName.LD_CHROMA_DECODER,
+                                ToolType.CHROMA_DECODE,
                             )
                         ),
                     )
@@ -160,13 +157,13 @@ class WrapperGroup:
 
                 # create decoder wrapper
                 self.wrappers.append(
-                    WrapperLDChromaDecoder(
+                    WrapperChromaDecode(
                         self._state,
                         WrapperConfig[Pipe, Pipe](
                             self._export_mode,
                             tbc_type,
                             self._get_pipe_for_consumer(
-                                ProcessName.LD_CHROMA_DECODER, tbc_type
+                                ToolType.CHROMA_DECODE, tbc_type
                             ),
                             pipe,
                         ),
@@ -175,14 +172,14 @@ class WrapperGroup:
 
     def _create_ffmpeg_wrapper(self) -> None:
         """Create wrapper for ffmpeg process."""
-        if ProcessName.FFMPEG in self._process_names:
+        if ToolType.FFMPEG in self._tool_types:
             # check if any pipes created for ffmpeg, if not create
             # a dummy pipe  using the tbc file name
-            if not self._get_pipes_for_consumer(ProcessName.FFMPEG, self._tbc_types):
+            if not self._get_pipes_for_consumer(ToolType.FFMPEG, self._tbc_types):
                 self.consumable_pipes.append(
                     ConsumablePipe(
                         self._tbc_types,
-                        ProcessName.FFMPEG,
+                        ToolType.FFMPEG,
                         PipeFactory.create_dummy_pipe(self._state.file_helper.tbc_luma),
                     )
                 )
@@ -194,16 +191,14 @@ class WrapperGroup:
                     WrapperConfig[tuple[Pipe, ...], None](
                         self._export_mode,
                         self._tbc_types,
-                        self._get_pipes_for_consumer(
-                            ProcessName.FFMPEG, self._tbc_types
-                        ),
+                        self._get_pipes_for_consumer(ToolType.FFMPEG, self._tbc_types),
                         None,
                     ),
                 )
             )
 
     def _get_pipes_for_consumer(
-        self, consumer_name: ProcessName, tbc_types: TBCType
+        self, consumer_name: ToolType, tbc_types: TBCType
     ) -> tuple[Pipe, ...]:
         """Get pipes created for a consumer/wrapper."""
         pipes = tuple(
@@ -220,7 +215,7 @@ class WrapperGroup:
         return pipes
 
     def _get_pipe_for_consumer(
-        self, consumer_name: ProcessName, tbc_types: TBCType
+        self, consumer_name: ToolType, tbc_types: TBCType
     ) -> Pipe:
         """Get single pipe created for a consumer/wrapper."""
         return next(iter(self._get_pipes_for_consumer(consumer_name, tbc_types)))

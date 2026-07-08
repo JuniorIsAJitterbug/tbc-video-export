@@ -6,8 +6,8 @@ from tbc_video_export.common.enums import ChromaDecoder, TBCType
 from tbc_video_export.opts import opt_types
 
 
-def add_ldtool_opts(parent: argparse.ArgumentParser) -> None:
-    """Add ldtool opts to the parent argparser."""
+def add_tool_opts(parent: argparse.ArgumentParser) -> None:
+    """Add tool opts to the parent argparser."""
     # decoder
     decoder_opts = parent.add_argument_group("decoder")
 

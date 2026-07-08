@@ -41,10 +41,10 @@ class Process(Generic[PipeInputGeneric, PipeOutputGeneric]):
         self._process: asyncio.subprocess.Process | None = None
         self._tasks: set[asyncio.Task[Any]] = set()
 
-        self._output_parser = ParserFactory.create(wrapper.process_name)
+        self._output_parser = ParserFactory.create(wrapper.tool_type)
 
         self._logger_name = (
-            f"{self.wrapper.process_name}_"
+            f"{self.wrapper.tool_type}_"
             f"{FlagHelper.get_flags_str(self.wrapper.tbc_type, '_')}"
         )
 
@@ -57,7 +57,7 @@ class Process(Generic[PipeInputGeneric, PipeOutputGeneric]):
                 enable_console=self._state.opts.show_process_output,
                 filename=str(
                     self._state.file_helper.get_log_file(
-                        self.wrapper.process_name, self.wrapper.tbc_type
+                        self.wrapper.tool_type, self.wrapper.tbc_type
                     )
                 )
                 if self._state.opts.log_process_output and self.wrapper.log_output
@@ -107,7 +107,7 @@ class Process(Generic[PipeInputGeneric, PipeOutputGeneric]):
     async def stop(self) -> None:
         """Kill the subprocess and set the process state."""
         logging.getLogger("console").debug(
-            f"{self.wrapper.process_name} "
+            f"{self.wrapper.tool_type} "
             f"({FlagHelper.get_flags_str(self.wrapper.tbc_type)}) Killing process"
         )
 
@@ -119,7 +119,7 @@ class Process(Generic[PipeInputGeneric, PipeOutputGeneric]):
         await asyncio.wait(self._tasks)
 
         logging.getLogger("console").debug(
-            f"{self.wrapper.process_name} "
+            f"{self.wrapper.tool_type} "
             f"({FlagHelper.get_flags_str(self.wrapper.tbc_type)}) Killing tasks"
         )
 
@@ -132,7 +132,7 @@ class Process(Generic[PipeInputGeneric, PipeOutputGeneric]):
                 self._process_state.errored = True
 
         logging.getLogger("console").debug(
-            f"{self.wrapper.process_name} "
+            f"{self.wrapper.tool_type} "
             f"({FlagHelper.get_flags_str(self.wrapper.tbc_type)}) "
             f"stopped with status: {self._process_state.status}"
         )

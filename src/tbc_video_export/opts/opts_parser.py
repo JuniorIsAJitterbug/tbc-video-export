@@ -6,16 +6,19 @@ from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts
 from tbc_video_export.common.enums import (
+    MetadataType,
+    ToolsetType,
     VideoBitDepthType,
     VideoFormatType,
     VideoSystem,
 )
+from tbc_video_export.common.toolsets import toolsets
 from tbc_video_export.opts import (
     opt_actions,
     opt_types,
     opts_ffmpeg,
-    opts_ldtools,
     opts_profile,
+    opts_tools,
 )
 from tbc_video_export.opts.opts import Opts
 
@@ -90,6 +93,31 @@ def parse_opts(
     )
 
     general_opts.add_argument(
+        "--toolset",
+        type=opt_types.TypeToolset(parser),
+        default=ToolsetType.LEGACY_TOOLS,
+        choices=list(ToolsetType),
+        metavar="toolset_name",
+        help=(
+            "Set the toolset you are using.\n"
+            "  - Use --list-toolsets for supported toolset details."
+            "\n\n"
+            "Available options:\n"
+            + "\n".join(
+                f"  {t!s}{' (default)' if toolsets[t].default else ''}"
+                for t in ToolsetType
+            )
+            + "\n\n"
+        ),
+    )
+
+    general_opts.add_argument(
+        "--list-toolsets",
+        action=opt_actions.ActionListToolsets,
+        help=("List supported toolsets.\n\n"),
+    )
+
+    general_opts.add_argument(
         "--tbc-tools-appimage",
         type=str,
         metavar="appimage file",
@@ -126,6 +154,21 @@ def parse_opts(
             "Force a video system format. (default: from input.tbc.json)"
             "\n\n"
             "Available formats:\n  " + "\n  ".join(str(e) for e in VideoSystem) + "\n\n"
+        ),
+    )
+
+    general_opts.add_argument(
+        "--metadata-type",
+        type=opt_types.TypeMetadataType(parser),
+        choices=list(MetadataType),
+        metavar="type",
+        help=(
+            "Set the metadata type to use.\n"
+            "  - See the --toolset help section for compatibility and defaults."
+            "\n\n"
+            "Available options:\n"
+            + "\n".join(f"  {t!s}" for t in MetadataType)
+            + "\n\n"
         ),
     )
 
@@ -230,7 +273,7 @@ def parse_opts(
         ),
     )
 
-    opts_ldtools.add_ldtool_opts(parser)
+    opts_tools.add_tool_opts(parser)
 
     # luma
     luma_opts = parser.add_argument_group("luma")

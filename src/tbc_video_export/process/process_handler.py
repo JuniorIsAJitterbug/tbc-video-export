@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from functools import partial
 from typing import TYPE_CHECKING, Generic
 
-from tbc_video_export.common.enums import ExportMode, FlagHelper, ProcessName, TBCType
+from tbc_video_export.common.enums import ExportMode, FlagHelper, TBCType, ToolType
 from tbc_video_export.common.utils import ansi, strings
 from tbc_video_export.process.process import Process
 from tbc_video_export.process.progress_handler import ProgressHandler
@@ -91,7 +91,7 @@ class ProcessHandler(Generic[PipeInputGeneric, PipeOutputGeneric]):
 
     def _create_wrapper_groups(self) -> None:
         """Create wrappers and runs processes based off export mode."""
-        procs: ProcessName = ProcessName.NONE
+        procs: ToolType = ToolType.NONE
         export_mode = self._state.current_export_mode
         tbc_types = self._state.tbc_types
 
@@ -100,31 +100,31 @@ class ProcessHandler(Generic[PipeInputGeneric, PipeOutputGeneric]):
         # group 1 (vbi)
         # run process vbi
         if self._state.opts.process_vbi:
-            procs |= ProcessName.LD_PROCESS_VBI
+            procs |= ToolType.VBI_PROCESS
 
             self._procs[create_group(export_mode, TBCType.NONE, procs)] = []
 
-        procs = ProcessName.NONE
+        procs = ToolType.NONE
 
         # group 2 (standalone)
         # run export metadata
         if self._state.opts.export_metadata:
-            procs |= ProcessName.LD_EXPORT_METADATA
+            procs |= ToolType.METADATA_EXPORT
 
-        if procs != ProcessName.NONE:
+        if procs != ToolType.NONE:
             self._procs[create_group(export_mode, TBCType.NONE, procs)] = []
 
-        procs = ProcessName.NONE
+        procs = ToolType.NONE
 
         # group 3 (decoding/encoding)
         if export_mode != ExportMode.LUMA_4FSC:
             if not self._state.opts.no_dropout_correct:
-                procs |= ProcessName.LD_DROPOUT_CORRECT
+                procs |= ToolType.DROPOUT_CORRECT
 
-            procs |= ProcessName.LD_CHROMA_DECODER
+            procs |= ToolType.CHROMA_DECODE
 
         # we always want ffmpeg
-        procs |= ProcessName.FFMPEG
+        procs |= ToolType.FFMPEG
 
         # check for luma only
         if export_mode == ExportMode.LUMA:
@@ -228,7 +228,7 @@ class ProcessHandler(Generic[PipeInputGeneric, PipeOutputGeneric]):
             ):
                 for proc in running:
                     logging.getLogger("console").debug(
-                        f"Killing {proc.wrapper.process_name}:{proc.wrapper.tbc_type} "
+                        f"Killing {proc.wrapper.tool_type}:{proc.wrapper.tbc_type} "
                         f"as all other procs have ended"
                     )
                     await proc.stop()
@@ -255,7 +255,7 @@ class ProcessHandler(Generic[PipeInputGeneric, PipeOutputGeneric]):
                 )
 
                 logging.getLogger("console").info(
-                    f"{ansi.dim(f'{wrapper.process_name} {tbc_type_str}')}\n"
+                    f"{ansi.dim(f'{wrapper.tool_type!s} {tbc_type_str}')}\n"
                     f"{env_variables}{wrapper.command}\n"
                 )
 
@@ -290,8 +290,6 @@ class ProcessHandler(Generic[PipeInputGeneric, PipeOutputGeneric]):
         # exit running procs
         for proc in [proc for procs in self._procs.values() for proc in procs]:
             if proc.state.running:
-                logging.getLogger("console").debug(
-                    f"Stopping {proc.wrapper.process_name}"
-                )
+                logging.getLogger("console").debug(f"Stopping {proc.wrapper.tool_type}")
 
                 await proc.stop()

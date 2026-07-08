@@ -6,7 +6,7 @@ import sys
 from functools import cached_property
 from typing import TYPE_CHECKING
 
-from tbc_video_export.common.enums import PipeType, ProcessName, TBCType
+from tbc_video_export.common.enums import PipeType, TBCType, ToolType
 from tbc_video_export.common.utils import FlatList
 from tbc_video_export.process.wrapper.pipe import Pipe
 from tbc_video_export.process.wrapper.wrapper import Wrapper
@@ -21,8 +21,8 @@ else:
     from typing_extensions import override
 
 
-class WrapperLDDropoutCorrect(Wrapper[None, Pipe]):
-    """Wrapper for ld-dropout-correct."""
+class WrapperDropoutCorrect(Wrapper[None, Pipe]):
+    """Wrapper for the dropout-correct process."""
 
     def __init__(self, state: ProgramState, config: WrapperConfig[None, Pipe]) -> None:
         super().__init__(state, config)
@@ -62,8 +62,8 @@ class WrapperLDDropoutCorrect(Wrapper[None, Pipe]):
 
     @override
     @cached_property
-    def process_name(self) -> ProcessName:
-        return ProcessName.LD_DROPOUT_CORRECT
+    def tool_type(self) -> ToolType:
+        return ToolType.DROPOUT_CORRECT
 
     @override
     @cached_property

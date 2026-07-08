@@ -13,14 +13,14 @@ from tests.conftest import WrapperTestCase, get_path, get_path_str
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from tbc_video_export.process.wrapper.wrapper_ld_chroma_decoder import (
-        WrapperLDChromaDecoder,
+    from tbc_video_export.process.wrapper.wrapper_chroma_decode import (
+        WrapperChromaDecode,
     )
-    from tbc_video_export.process.wrapper.wrapper_ld_dropout_correct import (
-        WrapperLDDropoutCorrect,
+    from tbc_video_export.process.wrapper.wrapper_dropout_correct import (
+        WrapperDropoutCorrect,
     )
-    from tbc_video_export.process.wrapper.wrapper_ld_process_vbi import (
-        WrapperLDProcessVBI,
+    from tbc_video_export.process.wrapper.wrapper_vbi_process import (
+        WrapperVBIProcess,
     )
     from tbc_video_export.program_state import ProgramState
 
@@ -139,7 +139,7 @@ class TestWrappersProcessVBI:
         self,
         program_state: Callable[[list[str], str], ProgramState],
         ldtools_process_vbi_wrapper: Callable[
-            [ProgramState, TBCType], WrapperLDProcessVBI
+            [ProgramState, TBCType], WrapperVBIProcess
         ],
         test_case: WrapperTestCase,
     ) -> None:
@@ -168,7 +168,7 @@ class TestWrappersProcessVBI:
         self,
         program_state: Callable[[list[str], str], ProgramState],
         ldtools_process_vbi_wrapper: Callable[
-            [ProgramState, TBCType], WrapperLDProcessVBI
+            [ProgramState, TBCType], WrapperVBIProcess
         ],
     ) -> None:
         state = program_state(["--process-vbi"], get_path_str("pal_svideo.tbc"))
@@ -281,7 +281,7 @@ class TestWrappersDropoutCorrect:
         self,
         program_state: Callable[[list[str], str], ProgramState],
         ldtools_dropout_correct_wrapper: Callable[
-            [ProgramState, TBCType], WrapperLDDropoutCorrect
+            [ProgramState, TBCType], WrapperDropoutCorrect
         ],
         test_case: WrapperTestCase,
     ) -> None:
@@ -722,7 +722,7 @@ class TestWrappersChromaDecoder:
         self,
         program_state: Callable[[list[str], str], ProgramState],
         ldtools_chroma_decoder_wrapper: Callable[
-            [ProgramState, TBCType], WrapperLDChromaDecoder
+            [ProgramState, TBCType], WrapperChromaDecode
         ],
         test_case: WrapperTestCase,
     ) -> None:

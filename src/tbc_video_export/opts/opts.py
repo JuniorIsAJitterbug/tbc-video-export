@@ -11,7 +11,9 @@ if TYPE_CHECKING:
         ChromaDecoder,
         FieldOrder,
         HardwareAccelType,
+        MetadataType,
         TBCType,
+        ToolsetType,
         VideoFormatType,
         VideoSystem,
     )
@@ -27,10 +29,12 @@ class Opts(argparse.Namespace):
     input_file: str
     output_file: str | None
     threads: int
+    toolset: ToolsetType
     tbc_tools_appimage: str
     two_step: bool
     async_nt_pipes: bool
     video_system: VideoSystem | None
+    metadata_type: MetadataType
     input_tbc_json: str | None
     overwrite: bool
     dry_run: bool

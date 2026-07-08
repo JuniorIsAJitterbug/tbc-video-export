@@ -6,20 +6,20 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
-from tbc_video_export.common.enums import ExportMode, ProcessName, TBCType
+from tbc_video_export.common.enums import ExportMode, TBCType, ToolType
 from tbc_video_export.common.file_helper import FileHelper
 from tbc_video_export.config import Config as ProgramConfig
 from tbc_video_export.opts import opt_validators, opts_parser
 from tbc_video_export.process.wrapper import WrapperConfig
 from tbc_video_export.process.wrapper.pipe import Pipe, PipeFactory
+from tbc_video_export.process.wrapper.wrapper_chroma_decode import (
+    WrapperChromaDecode,
+)
+from tbc_video_export.process.wrapper.wrapper_dropout_correct import (
+    WrapperDropoutCorrect,
+)
 from tbc_video_export.process.wrapper.wrapper_ffmpeg import WrapperFFmpeg
-from tbc_video_export.process.wrapper.wrapper_ld_chroma_decoder import (
-    WrapperLDChromaDecoder,
-)
-from tbc_video_export.process.wrapper.wrapper_ld_dropout_correct import (
-    WrapperLDDropoutCorrect,
-)
-from tbc_video_export.process.wrapper.wrapper_ld_process_vbi import WrapperLDProcessVBI
+from tbc_video_export.process.wrapper.wrapper_vbi_process import WrapperVBIProcess
 from tbc_video_export.program_state import ProgramState
 
 if TYPE_CHECKING:
@@ -47,7 +47,7 @@ class WrapperGroupTestCase:
     input_opts: list[str]
     input_tbc: Path
     tbc_type: TBCType
-    wrapper_groups: list[list[ProcessName]]
+    wrapper_groups: list[list[ToolType]]
 
 
 @dataclass
@@ -230,7 +230,7 @@ def program_state():
 @pytest.fixture
 def ldtools_process_vbi_wrapper():
     def _init(state: ProgramState, tbc_type: TBCType):
-        return WrapperLDProcessVBI(
+        return WrapperVBIProcess(
             state,
             WrapperConfig[None, None](state.current_export_mode, tbc_type, None, None),
         )
@@ -243,7 +243,7 @@ def ldtools_dropout_correct_wrapper():
     def _init(state: ProgramState, tbc_type: TBCType):
         pipe = PipeFactory.create_dummy_pipe()
 
-        return WrapperLDDropoutCorrect(
+        return WrapperDropoutCorrect(
             state,
             WrapperConfig[None, Pipe](state.current_export_mode, tbc_type, None, pipe),
         )
@@ -256,7 +256,7 @@ def ldtools_chroma_decoder_wrapper():
     def _init(state: ProgramState, tbc_type: TBCType):
         pipe = PipeFactory.create_dummy_pipe()
 
-        return WrapperLDChromaDecoder(
+        return WrapperChromaDecode(
             state,
             WrapperConfig[Pipe, Pipe](state.current_export_mode, tbc_type, pipe, pipe),
         )

@@ -7,9 +7,11 @@ from typing import TYPE_CHECKING
 from tbc_video_export.common import consts
 from tbc_video_export.common.enums import (
     HardwareAccelType,
+    ToolsetType,
     VideoBitDepthType,
     VideoFormatType,
 )
+from tbc_video_export.common.toolsets import toolsets
 from tbc_video_export.common.utils import ansi
 from tbc_video_export.config.config import GetProfileFilter
 
@@ -218,3 +220,45 @@ class ActionSetAudioOverride(argparse.Action):
         **kwargs: Any,  # noqa: ARG002
     ) -> None:
         namespace.audio_profile = str(option_string)[2:].lower()
+
+
+class ActionListToolsets(argparse.Action):
+    """Custom action for listing toolsets.
+
+    This exits the application after use.
+    """
+
+    def __init__(self, nargs: int = 0, **kwargs: Any) -> None:
+        super().__init__(nargs=nargs, **kwargs)
+
+    def __call__(  # noqa: D102
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,  # noqa: ARG002
+        values: str | Sequence[Any] | None,  # noqa: ARG002
+        option_string: str | None = None,  # noqa: ARG002
+        **kwargs: Any,  # noqa: ARG002
+    ) -> None:
+        logger = logging.getLogger("console")
+        out_string = ansi.underlined("Toolsets") + "\n\n"
+        toolset_strings: list[str] = []
+
+        for toolset_type in ToolsetType:
+            details = toolsets[toolset_type]
+            toolset_strings.append(
+                ansi.bold(f"{toolset_type!s}{' (default)' if details.default else ''}")
+                + "\n\n"
+                + f"{ansi.dim('Metadata Types')}\n"
+                + "\n".join(
+                    f"{metadata_type!s}{' (default)' if metadata_type is details.default_metadata_type else ''}"  # noqa: E501
+                    for metadata_type in details.metadata_types
+                )
+                + "\n\n"
+                + f"{ansi.dim('Tools')}\n"
+                + "\n".join(f"  {tool_name!s}" for tool_name in details.tools.values())
+                + "\n"
+            )
+
+        out_string += "\n\n".join(toolset_strings)
+        logger.info(out_string)
+        parser.exit()

@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from pathlib import Path
     from types import TracebackType
 
-    from tbc_video_export.common.enums import ProcessName, TBCType
+    from tbc_video_export.common.enums import TBCType, ToolType
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -67,8 +67,8 @@ class PipeNamedNT(Pipe):
         file_handle: int | None = None
         ready_event = asyncio.Event()
 
-    def __init__(self, process_name: ProcessName, tbc_type: TBCType) -> None:
-        super().__init__(process_name, tbc_type)
+    def __init__(self, tool_type: ToolType, tbc_type: TBCType) -> None:
+        super().__init__(tool_type, tbc_type)
         self._bridge_thread: asyncio.Task[None] | None = None
         self._start_bridge_task: asyncio.Future[None] | None = None
 
@@ -109,7 +109,7 @@ class PipeNamedNT(Pipe):
     def in_path(self) -> Path | str:
         return (
             rf"\\.\pipe\{consts.APPLICATION_NAME}-{self._id}-"
-            rf"{self._process_name}-{self._tbc_type}-in"
+            rf"{self._tool_type}-{self._tbc_type}-in"
         )
 
     @override
@@ -117,7 +117,7 @@ class PipeNamedNT(Pipe):
     def out_path(self) -> Path | str:
         return (
             rf"\\.\pipe\{consts.APPLICATION_NAME}-{self._id}-"
-            rf"{self._process_name}-{self._tbc_type}-out"
+            rf"{self._tool_type}-{self._tbc_type}-out"
         )
 
     @override

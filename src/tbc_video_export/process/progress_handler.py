@@ -6,7 +6,7 @@ import os
 from typing import TYPE_CHECKING, Generic
 
 from tbc_video_export.common import consts
-from tbc_video_export.common.enums import ProcessName
+from tbc_video_export.common.enums import ToolType
 from tbc_video_export.common.utils import ansi, log, strings
 from tbc_video_export.process.wrapper.pipe.pipe import (
     PipeInputGeneric,
@@ -40,7 +40,7 @@ class ProgressHandler(Generic[PipeInputGeneric, PipeOutputGeneric]):
         self._col_w: dict[str, int] = {
             "sender": 22,
             "status": 2,
-            "proc_name": 19,
+            "proc_type": 19,
             "tbc_type": 11,
             "errors": 3,
             "fps": 4,
@@ -133,7 +133,7 @@ class ProgressHandler(Generic[PipeInputGeneric, PipeOutputGeneric]):
                 if message is not None:
                     sender = (
                         f"[{message.process}]"
-                        if message.process is not ProcessName.NONE
+                        if message.process is not ToolType.NONE
                         else f"[{consts.APPLICATION_NAME}]"
                     )
 
@@ -202,7 +202,7 @@ class ProgressHandler(Generic[PipeInputGeneric, PipeOutputGeneric]):
         self, process: Process[PipeInputGeneric, PipeOutputGeneric]
     ) -> str:
         """Get formatted process string."""
-        value = f"{process.wrapper.process_name:<{self._col_w['proc_name']}s}"
+        value = f"{process.wrapper.tool_type:<{self._col_w['proc_type']}s}"
 
         value += (
             f"{f'({process.wrapper.tbc_type})':<{self._col_w['tbc_type']}s}"

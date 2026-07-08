@@ -9,7 +9,7 @@ from tbc_video_export.process.parser.export_state import ExportStateSnapshot
 from tbc_video_export.process.parser.parser import Parser
 
 if TYPE_CHECKING:
-    from tbc_video_export.common.enums import ProcessName
+    from tbc_video_export.common.enums import ToolType
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -18,14 +18,14 @@ else:
 
 
 class ParserFFmpeg(Parser):
-    """Parser for FFmpeg process."""
+    """Parser for the FFmpeg process."""
 
     tracked_value: int
     tracked_value_name: str
     current_fps: float
 
-    def __init__(self, process_name: ProcessName) -> None:
-        super().__init__(process_name)
+    def __init__(self, process_type: ToolType) -> None:
+        super().__init__(process_type)
 
         self.tracked_value_name = "frame"
 

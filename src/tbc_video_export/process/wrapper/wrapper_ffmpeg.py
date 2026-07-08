@@ -12,8 +12,8 @@ from tbc_video_export.common.enums import (
     ExportMode,
     HardwareAccelType,
     PipeType,
-    ProcessName,
     TBCType,
+    ToolType,
     VideoFormatType,
 )
 from tbc_video_export.common.utils import FlatList
@@ -38,7 +38,7 @@ else:
 class WrapperFFmpeg(
     Wrapper[tuple[Pipe, ...], None], Generic[PipeInputGeneric, PipeOutputGeneric]
 ):
-    """Wrapper for ffmpeg that generates commands for encoding."""
+    """Wrapper for the ffmpeg process."""
 
     def __init__(
         self, state: ProgramState, config: WrapperConfig[tuple[Pipe, ...], None]
@@ -615,8 +615,8 @@ class WrapperFFmpeg(
 
     @override
     @cached_property
-    def process_name(self) -> ProcessName:
-        return ProcessName.FFMPEG
+    def tool_type(self) -> ToolType:
+        return ToolType.FFMPEG
 
     @override
     @cached_property
@@ -672,7 +672,7 @@ class WrapperFFmpeg(
     def env(self) -> dict[str, str] | None:
         if self._state.opts.log_process_output:
             file_name = self._state.file_helper.get_log_file(
-                self.process_name, TBCType.NONE
+                self.tool_type, TBCType.NONE
             )
 
             return {"FFREPORT": f"file='{file_name}'"}

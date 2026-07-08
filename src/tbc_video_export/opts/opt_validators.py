@@ -11,7 +11,9 @@ from tbc_video_export.common import exceptions
 from tbc_video_export.common.enums import (
     ChromaDecoder,
     ExportMode,
+    MetadataType,
     TBCType,
+    ToolsetType,
     VideoSystem,
 )
 from tbc_video_export.common.utils import ansi
@@ -221,4 +223,15 @@ def _validate_decoder_opts(state: ProgramState, opts: Opts) -> None:
         raise exceptions.InvalidOptsError(
             "arguments --reverse: requires --no-dropout-correct, run dropout "
             "correction manually if required"
+        )
+
+
+def _validate_metadata_type_opts(opts: Opts) -> None:
+    """Validate metadata-type opts to ensure toolset compatibility."""
+    if (
+        opts.metadata_type is MetadataType.SQLITE
+        and opts.toolset is ToolsetType.LEGACY_TOOLS
+    ):
+        raise exceptions.ToolUnsupportedError(
+            f"Unable to use {opts.metadata_type!s} metadata with toolset {opts.toolset!s}."  # noqa: E501
         )

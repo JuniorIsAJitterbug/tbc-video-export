@@ -16,7 +16,7 @@ from tbc_video_export.process.wrapper.pipe.pipe import Pipe
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from tbc_video_export.common.enums import ProcessName, TBCType
+    from tbc_video_export.common.enums import TBCType, ToolType
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -33,8 +33,8 @@ class PipeNamedPosix(Pipe):
     # use a class variable as we only want a single temp dir created
     tmp_dir: str = ""
 
-    def __init__(self, process_name: ProcessName, tbc_type: TBCType) -> None:
-        super().__init__(process_name, tbc_type)
+    def __init__(self, tool_type: ToolType, tbc_type: TBCType) -> None:
+        super().__init__(tool_type, tbc_type)
 
         if not PipeNamedPosix.tmp_dir:
             try:
@@ -83,7 +83,7 @@ class PipeNamedPosix(Pipe):
     @cached_property
     def in_path(self) -> Path | str:
         return Path(PipeNamedPosix.tmp_dir).joinpath(
-            f"{self._process_name}-{self._tbc_type}"
+            f"{self._tool_type}-{self._tbc_type}"
         )
 
     @override

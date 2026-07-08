@@ -2,18 +2,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from tbc_video_export.common.enums import ProcessName
+from tbc_video_export.common.enums import ToolType
+from tbc_video_export.process.parser.parser_chroma_decode import (
+    ParserChromaDecode,
+)
+from tbc_video_export.process.parser.parser_dropout_correct import (
+    ParserDropoutCorrect,
+)
 from tbc_video_export.process.parser.parser_ffmpeg import ParserFFmpeg
-from tbc_video_export.process.parser.parser_ld_chroma_decoder import (
-    ParserLDChromaDecoder,
+from tbc_video_export.process.parser.parser_metadata_export import (
+    ParserMetadataExport,
 )
-from tbc_video_export.process.parser.parser_ld_dropout_correct import (
-    ParserLDDropoutCorrect,
-)
-from tbc_video_export.process.parser.parser_ld_export_metadata import (
-    ParserLDExportMetadata,
-)
-from tbc_video_export.process.parser.parser_ld_process_vbi import ParserLDProcessVBI
+from tbc_video_export.process.parser.parser_vbi_process import ParserVBIProcess
 
 if TYPE_CHECKING:
     from tbc_video_export.process.parser.parser import Parser
@@ -23,25 +23,25 @@ class ParserFactory:
     """Factory class for process parsing."""
 
     @classmethod
-    def create(cls, process_name: ProcessName) -> Parser:
-        """Create an output parser based on process name."""
-        match process_name:
-            case ProcessName.FFMPEG:
-                return ParserFFmpeg(process_name)
+    def create(cls, process_type: ToolType) -> Parser:
+        """Create an output parser based on process type."""
+        match process_type:
+            case ToolType.CHROMA_DECODE:
+                return ParserChromaDecode(process_type)
 
-            case ProcessName.LD_CHROMA_DECODER:
-                return ParserLDChromaDecoder(process_name)
+            case ToolType.DROPOUT_CORRECT:
+                return ParserDropoutCorrect(process_type)
 
-            case ProcessName.LD_DROPOUT_CORRECT:
-                return ParserLDDropoutCorrect(process_name)
+            case ToolType.FFMPEG:
+                return ParserFFmpeg(process_type)
 
-            case ProcessName.LD_PROCESS_VBI:
-                return ParserLDProcessVBI(process_name)
+            case ToolType.METADATA_EXPORT:
+                return ParserMetadataExport(process_type)
 
-            case ProcessName.LD_EXPORT_METADATA:
-                return ParserLDExportMetadata(process_name)
+            case ToolType.VBI_PROCESS:
+                return ParserVBIProcess(process_type)
 
             case _:
                 raise NotImplementedError(
-                    f"Parser for process {process_name} not implemented."
+                    f"Parser for process {process_type} not implemented."
                 )

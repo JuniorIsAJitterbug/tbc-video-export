@@ -123,20 +123,47 @@ class FieldOrder(Enum):
         return self.value
 
 
-class ProcessName(Flag):
-    """Process names for parsing messages."""
+class ToolsetType(Enum):
+    """Supported toolset types."""
+
+    LEGACY_TOOLS = "legacy"
+
+    @override
+    def __str__(self) -> str:
+        """Return enum value as string."""
+        return self.value
+
+
+class ToolType(Flag):
+    """Tool types."""
 
     NONE = auto()
-    LD_PROCESS_VBI = auto()
-    LD_EXPORT_METADATA = auto()
-    LD_DROPOUT_CORRECT = auto()
-    LD_CHROMA_DECODER = auto()
+    DROPOUT_CORRECT = auto()
+    CHROMA_DECODE = auto()
     FFMPEG = auto()
+    METADATA_EXPORT = auto()
+    VBI_PROCESS = auto()
 
     @override
     def __str__(self) -> str:
         """Return formatted enum name as string."""
         return str(self.name).replace("_", "-").lower()
+
+
+class ToolName(Enum):
+    """Tool names."""
+
+    NONE = auto()
+    FFMPEG = "ffmpeg"
+    LD_PROCESS_VBI = "ld-process-vbi"
+    LD_EXPORT_METADATA = "ld-export-metadata"
+    LD_DROPOUT_CORRECT = "ld-dropout-correct"
+    LD_CHROMA_DECODER = "ld-chroma-decoder"
+
+    @override
+    def __str__(self) -> str:
+        """Return formatted enum name as string."""
+        return self.value
 
 
 class ProcessStatus(Flag):
@@ -148,6 +175,18 @@ class ProcessStatus(Flag):
     ENDED = auto()
     SUCCESS = auto()
     ERROR = auto()
+
+
+class MetadataType(Enum):
+    """Supported metadata types."""
+
+    JSON = auto()
+    SQLITE = auto()
+
+    @override
+    def __str__(self) -> str:
+        """Return formatted enum name as string."""
+        return self.name.lower()
 
 
 class PipeType(Flag):

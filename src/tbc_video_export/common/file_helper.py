@@ -6,8 +6,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts, exceptions
-from tbc_video_export.common.enums import FlagHelper, ProcessName, TBCType
+from tbc_video_export.common.enums import FlagHelper, TBCType, ToolName, ToolType
 from tbc_video_export.common.tbc_json_helper import TBCJsonHelper
+from tbc_video_export.common.toolsets import get_tool_name
 from tbc_video_export.common.utils import files
 from tbc_video_export.config.config import GetProfileFilter
 
@@ -164,13 +165,13 @@ class FileHelper:
 
     def get_log_file(
         self,
-        process_name: ProcessName,
+        tool_type: ToolType,
         tbc_type: TBCType,
         timestamp: str = consts.CURRENT_TIMESTAMP,
     ):
-        """Return absolute path to log file for process/tbc type."""
+        """Return absolute path to log file for tool/tbc type."""
         return Path(self._output_path).joinpath(
-            f"{timestamp}_{self._input_file_name}_{process_name}"
+            f"{timestamp}_{self._input_file_name}_{tool_type}"
             f"_{FlagHelper.get_flags_str(tbc_type, '_')}.log"
         )
 
@@ -236,41 +237,39 @@ class FileHelper:
 
         return tbcs
 
-    def _get_tool_paths(self) -> dict[ProcessName, Path | list[Path | str]]:
+    def _get_tool_paths(self) -> dict[ToolType, Path | list[Path | str]]:
         """Get required tool paths from PATH or script path."""
-        tools: dict[ProcessName, Path | list[Path | str]] = {}
-        tools[ProcessName.FFMPEG] = self._get_tool_path(ProcessName.FFMPEG)
+        tools: dict[ToolType, Path | list[Path | str]] = {}
+        required_tools: list[ToolType] = [
+            ToolType.FFMPEG,
+        ]
 
         if not self._opts.no_dropout_correct and not self._opts.luma_4fsc:
-            tools[ProcessName.LD_DROPOUT_CORRECT] = self._get_tbc_tool_path(
-                ProcessName.LD_DROPOUT_CORRECT
-            )
+            required_tools.append(ToolType.DROPOUT_CORRECT)
 
         if not self._opts.luma_4fsc:
-            tools[ProcessName.LD_CHROMA_DECODER] = self._get_tbc_tool_path(
-                ProcessName.LD_CHROMA_DECODER
-            )
+            required_tools.append(ToolType.CHROMA_DECODE)
 
         if self._opts.process_vbi:
-            tools[ProcessName.LD_PROCESS_VBI] = self._get_tbc_tool_path(
-                ProcessName.LD_PROCESS_VBI
-            )
+            required_tools.append(ToolType.VBI_PROCESS)
 
         if self._opts.export_metadata:
-            tools[ProcessName.LD_EXPORT_METADATA] = self._get_tbc_tool_path(
-                ProcessName.LD_EXPORT_METADATA
-            )
+            required_tools.append(ToolType.METADATA_EXPORT)
+
+        for tool in required_tools:
+            name = get_tool_name(self._opts.toolset, tool)
+            tools[tool] = self._get_tool_path(name)
 
         return tools
 
-    def _get_tool_path(self, tool_name: ProcessName) -> Path:
+    def _get_tool_path(self, tool_name: ToolName) -> Path:
         if os.name == "nt":
             # append .exe on NT
             return files.find_binary(f"{tool_name}.exe")
 
         return files.find_binary(str(tool_name))
 
-    def _get_tbc_tool_path(self, tool_name: ProcessName) -> Path | list[Path | str]:
+    def _get_tbc_tool_path(self, tool_name: ToolName) -> Path | list[Path | str]:
         if self._opts.tbc_tools_appimage:
             # return list with appimage file and tool name
             return [files.find_binary(self._opts.tbc_tools_appimage), str(tool_name)]

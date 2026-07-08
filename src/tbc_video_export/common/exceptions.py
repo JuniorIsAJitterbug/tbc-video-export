@@ -79,6 +79,10 @@ class FileIOError(Exception):
     """General file i/o errors."""
 
 
+class ToolUnsupportedError(Exception):
+    """Unsupported tool for toolset."""
+
+
 class SampleRequiredError(Exception):
     """Unsupported option due to lack of sample error."""
 

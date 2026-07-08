@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
-from tbc_video_export.common.enums import ProcessName
+from tbc_video_export.common.enums import ToolType
 
 
 @dataclass
@@ -12,7 +12,7 @@ class ExportStateMessage:
 
     message: str
     timestamp: datetime
-    process: ProcessName
+    process: ToolType
 
 
 @dataclass
@@ -49,7 +49,7 @@ class ExportState:
         snapshots.
         """
         self.messages.append(
-            ExportStateMessage(message, datetime.now(timezone.utc), ProcessName.NONE)
+            ExportStateMessage(message, datetime.now(timezone.utc), ToolType.NONE)
         )
 
 

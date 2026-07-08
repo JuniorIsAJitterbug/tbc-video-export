@@ -14,7 +14,7 @@ from tbc_video_export.process.wrapper.pipe.pipe import (
 )
 
 if TYPE_CHECKING:
-    from tbc_video_export.common.enums import ProcessName, TBCType
+    from tbc_video_export.common.enums import TBCType, ToolType
     from tbc_video_export.process.wrapper.wrapper_config import WrapperConfig
     from tbc_video_export.program_state import ProgramState
 
@@ -37,7 +37,7 @@ class Wrapper(ABC, Generic[PipeInputGeneric, PipeOutputGeneric]):
     @property
     def binary(self) -> FlatList:
         """Return wrapped binary name."""
-        return FlatList(self._state.file_helper.tools[self.process_name])
+        return FlatList(self._state.file_helper.tools[self.tool_type])
 
     @cached_property
     def tbc_type(self) -> TBCType:
@@ -77,8 +77,8 @@ class Wrapper(ABC, Generic[PipeInputGeneric, PipeOutputGeneric]):
 
     @cached_property
     @abstractmethod
-    def process_name(self) -> ProcessName:
-        """Return process name."""
+    def tool_type(self) -> ToolType:
+        """Return tool type."""
 
     @cached_property
     @abstractmethod
@@ -139,5 +139,5 @@ class Wrapper(ABC, Generic[PipeInputGeneric, PipeOutputGeneric]):
                 pipes_str += str(pipe)
 
             raise exceptions.PipeError(
-                f"{self.process_name} unable to use pipe types.\n{pipes_str}"
+                f"{self.tool_type} unable to use pipe types.\n{pipes_str}"
             )

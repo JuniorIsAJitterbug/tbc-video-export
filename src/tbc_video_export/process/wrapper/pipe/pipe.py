@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from pathlib import Path
     from types import TracebackType
 
-    from tbc_video_export.common.enums import PipeType, ProcessName, TBCType
+    from tbc_video_export.common.enums import PipeType, TBCType, ToolType
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -22,12 +22,12 @@ else:
 class Pipe(ABC):
     """Abstract class for pipes."""
 
-    def __init__(self, process_name: ProcessName, tbc_type: TBCType) -> None:
-        self._process_name = process_name
+    def __init__(self, tool_type: ToolType, tbc_type: TBCType) -> None:
+        self._tool_type = tool_type
         self._tbc_type = tbc_type
 
         logging.getLogger("console").debug(
-            f"Pipe ({self.pipe_type}) created for {process_name} ({tbc_type})"
+            f"Pipe ({self.pipe_type}) created for {tool_type} ({tbc_type})"
         )
 
     @abstractmethod
@@ -89,7 +89,7 @@ class ConsumablePipe:
     """Class for grouping pipes together for processes."""
 
     tbc_type: TBCType
-    consumer: ProcessName
+    consumer: ToolType
     pipe: Pipe
 
 

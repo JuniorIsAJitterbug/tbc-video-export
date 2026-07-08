@@ -10,14 +10,14 @@ from tbc_video_export.process.parser.export_state import (
 )
 
 if TYPE_CHECKING:
-    from tbc_video_export.common.enums import ProcessName
+    from tbc_video_export.common.enums import ToolType
 
 
 class Parser(ABC):
     """Abstract class for process parsing."""
 
-    def __init__(self, process_name: ProcessName) -> None:
-        self._process_name = process_name
+    def __init__(self, process_type: ToolType) -> None:
+        self._process_type = process_type
         self._tracked_value_total = 0
         self._tracked_value_name = ""
         self._tracked_value = 0
@@ -91,10 +91,10 @@ class Parser(ABC):
         self._tracked_value = value
 
     @property
-    def process_name(self) -> ProcessName:
-        """Returns the process name."""
-        return self._process_name
+    def process_type(self) -> ToolType:
+        """Returns the process type."""
+        return self._process_type
 
     def _create_log_line(self, line: str) -> ExportStateMessage:
         """Return a log line object."""
-        return ExportStateMessage(line, datetime.now(timezone.utc), self.process_name)
+        return ExportStateMessage(line, datetime.now(timezone.utc), self.process_type)
