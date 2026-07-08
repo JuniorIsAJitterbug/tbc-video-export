@@ -127,6 +127,8 @@ class ToolsetType(Enum):
     """Supported toolset types."""
 
     LEGACY_TOOLS = "legacy"
+    LD_DECODE_TOOLS = "ld-decode-tools"
+    TBC_TOOLS = "tbc-tools"
 
     @override
     def __str__(self) -> str:
@@ -141,6 +143,7 @@ class ToolType(Flag):
     DROPOUT_CORRECT = auto()
     CHROMA_DECODE = auto()
     FFMPEG = auto()
+    METADATA_CONVERT = auto()
     METADATA_EXPORT = auto()
     VBI_PROCESS = auto()
 
@@ -155,10 +158,13 @@ class ToolName(Enum):
 
     NONE = auto()
     FFMPEG = "ffmpeg"
-    LD_PROCESS_VBI = "ld-process-vbi"
-    LD_EXPORT_METADATA = "ld-export-metadata"
-    LD_DROPOUT_CORRECT = "ld-dropout-correct"
     LD_CHROMA_DECODER = "ld-chroma-decoder"
+    LD_DROPOUT_CORRECT = "ld-dropout-correct"
+    LD_EXPORT_METADATA = "ld-export-metadata"
+    LD_JSON_CONVERTER = "ld-json-converter"
+    LD_PROCESS_VBI = "ld-process-vbi"
+    TBC_EXPORT_METADATA = "tbc-export-metadata"
+    TBC_METADATA_CONVERTER = "tbc-metadata-converter"
 
     @override
     def __str__(self) -> str:

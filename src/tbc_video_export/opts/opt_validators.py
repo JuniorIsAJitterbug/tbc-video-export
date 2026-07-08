@@ -229,6 +229,9 @@ def _validate_decoder_opts(state: ProgramState, opts: Opts) -> None:
 def _validate_metadata_type_opts(opts: Opts) -> None:
     """Validate metadata-type opts to ensure toolset compatibility."""
     if (
+        opts.metadata_type is MetadataType.JSON
+        and opts.toolset is ToolsetType.LD_DECODE_TOOLS
+    ) or (
         opts.metadata_type is MetadataType.SQLITE
         and opts.toolset is ToolsetType.LEGACY_TOOLS
     ):

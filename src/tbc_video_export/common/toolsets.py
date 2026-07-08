@@ -61,4 +61,35 @@ toolsets: Final[dict[ToolsetType, ToolsetData]] = {
             MetadataType.JSON,
         ],
     ),
+    ToolsetType.LD_DECODE_TOOLS: ToolsetData(
+        default=False,
+        default_metadata_type=MetadataType.SQLITE,
+        tools={
+            ToolType.CHROMA_DECODE: ToolName.LD_CHROMA_DECODER,
+            ToolType.DROPOUT_CORRECT: ToolName.LD_DROPOUT_CORRECT,
+            ToolType.FFMPEG: ToolName.FFMPEG,
+            ToolType.METADATA_CONVERT: ToolName.LD_JSON_CONVERTER,
+            ToolType.METADATA_EXPORT: ToolName.LD_EXPORT_METADATA,
+            ToolType.VBI_PROCESS: ToolName.LD_PROCESS_VBI,
+        },
+        metadata_types=[
+            MetadataType.SQLITE,
+        ],
+    ),
+    ToolsetType.TBC_TOOLS: ToolsetData(
+        default=False,
+        default_metadata_type=MetadataType.JSON,
+        tools={
+            ToolType.CHROMA_DECODE: ToolName.LD_CHROMA_DECODER,
+            ToolType.DROPOUT_CORRECT: ToolName.LD_DROPOUT_CORRECT,
+            ToolType.FFMPEG: ToolName.FFMPEG,
+            ToolType.METADATA_CONVERT: ToolName.TBC_METADATA_CONVERTER,
+            ToolType.METADATA_EXPORT: ToolName.TBC_EXPORT_METADATA,
+            ToolType.VBI_PROCESS: ToolName.LD_PROCESS_VBI,
+        },
+        metadata_types=[
+            MetadataType.JSON,
+            MetadataType.SQLITE,
+        ],
+    ),
 }
