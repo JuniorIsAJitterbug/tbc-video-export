@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import sys
 from functools import cached_property
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common.enums import PipeType
 from tbc_video_export.process.wrapper.pipe.pipe import Pipe
 
 if TYPE_CHECKING:
-    from pathlib import Path
     from types import TracebackType
 
 if sys.version_info >= (3, 12):
@@ -45,13 +45,13 @@ class PipeDummy(Pipe):
 
     @override
     @cached_property
-    def in_path(self) -> Path | str:
-        return self._stdin_str
+    def in_path(self) -> Path:
+        return Path(self._stdin_str)
 
     @override
     @cached_property
-    def out_path(self) -> Path | str:
-        return self._stdout_str
+    def out_path(self) -> Path:
+        return Path(self._stdout_str)
 
     @override
     @property

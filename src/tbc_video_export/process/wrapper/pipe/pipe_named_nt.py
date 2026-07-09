@@ -7,6 +7,7 @@ import sys
 from contextlib import suppress
 from dataclasses import dataclass
 from functools import cached_property
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts, exceptions
@@ -15,7 +16,6 @@ from tbc_video_export.common.utils import strings
 from tbc_video_export.process.wrapper.pipe.pipe import Pipe
 
 if TYPE_CHECKING:
-    from pathlib import Path
     from types import TracebackType
 
     from tbc_video_export.common.enums import TBCType, ToolType
@@ -106,16 +106,16 @@ class PipeNamedNT(Pipe):
 
     @override
     @cached_property
-    def in_path(self) -> Path | str:
-        return (
+    def in_path(self) -> Path:
+        return Path(
             rf"\\.\pipe\{consts.APPLICATION_NAME}-{self._id}-"
             rf"{self._tool_type}-{self._tbc_type}-in"
         )
 
     @override
     @cached_property
-    def out_path(self) -> Path | str:
-        return (
+    def out_path(self) -> Path:
+        return Path(
             rf"\\.\pipe\{consts.APPLICATION_NAME}-{self._id}-"
             rf"{self._tool_type}-{self._tbc_type}-out"
         )
@@ -133,8 +133,8 @@ class PipeNamedNT(Pipe):
     @override
     def close(self) -> None:
         """Close named pipe."""
-        self._close_pipe(str(self.in_path), win32file.GENERIC_READ)
-        self._close_pipe(str(self.out_path), win32file.GENERIC_WRITE)
+        self._close_pipe(f"{self.in_path!s}", win32file.GENERIC_READ)
+        self._close_pipe(f"{self.out_path!s}", win32file.GENERIC_WRITE)
 
     async def _start_pipe_bridge(self) -> None:
         """Start the pipe bridge.
@@ -219,7 +219,7 @@ class PipeNamedNT(Pipe):
         """Create named pipe."""
         try:
             pipe = win32pipe.CreateNamedPipe(
-                str(data.pipe_name),
+                f"{data.pipe_name!s}",
                 data.open_mode,
                 data.pipe_mode,
                 data.max_instances,

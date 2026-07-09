@@ -81,14 +81,14 @@ class PipeNamedPosix(Pipe):
 
     @override
     @cached_property
-    def in_path(self) -> Path | str:
+    def in_path(self) -> Path:
         return Path(PipeNamedPosix.tmp_dir).joinpath(
             f"{self._tool_type}-{self._tbc_type}"
         )
 
     @override
     @cached_property
-    def out_path(self) -> Path | str:
+    def out_path(self) -> Path:
         """Get pipe stdout string.
 
         POSIX systems use the same path for in/out.

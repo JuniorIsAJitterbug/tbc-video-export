@@ -8,6 +8,7 @@ import sys
 from dataclasses import dataclass
 from enum import Flag, auto
 from functools import cached_property
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts, exceptions
@@ -16,14 +17,12 @@ from tbc_video_export.common.utils import strings
 from tbc_video_export.process.wrapper.pipe.pipe import Pipe
 
 if TYPE_CHECKING:
-    from pathlib import Path
     from types import TracebackType
 
 if sys.version_info >= (3, 12):
     from typing import override
 else:
     from typing_extensions import override
-
 
 assert os.name == "nt"  # noqa: S101
 
@@ -83,13 +82,13 @@ class PipeNamedNTAsync(Pipe):
 
     @override
     @cached_property
-    def in_path(self) -> Path | str:
-        return self._pipe_name
+    def in_path(self) -> Path:
+        return Path(self._pipe_name)
 
     @override
     @cached_property
-    def out_path(self) -> Path | str:
-        return self._pipe_name
+    def out_path(self) -> Path:
+        return Path(self._pipe_name)
 
     @override
     @property

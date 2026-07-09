@@ -61,13 +61,13 @@ class Pipe(ABC):
 
     @cached_property
     @abstractmethod
-    def in_path(self) -> Path | str:
-        """Get pipe stdin string."""
+    def in_path(self) -> Path:
+        """Get pipe stdin path."""
 
     @cached_property
     @abstractmethod
-    def out_path(self) -> Path | str:
-        """Get pipe stdout string."""
+    def out_path(self) -> Path:
+        """Get pipe stdout path."""
 
     @property
     @abstractmethod
