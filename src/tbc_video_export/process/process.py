@@ -55,11 +55,7 @@ class Process(Generic[PipeInputGeneric, PipeOutputGeneric]):
             log.setup_logger(
                 self._logger_name,
                 enable_console=self._state.opts.show_process_output,
-                filename=str(
-                    self._state.file_helper.get_log_file(
-                        self.wrapper.tool_type, self.wrapper.tbc_type
-                    )
-                )
+                filename=f"{self._state.file_helper.get_log_file(self.wrapper.tool_type, self.wrapper.tbc_type)!s}"  # noqa: E501
                 if self._state.opts.log_process_output and self.wrapper.log_output
                 else None,
             )

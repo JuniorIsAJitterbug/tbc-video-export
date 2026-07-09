@@ -19,7 +19,7 @@ def get_url_from_metadata(name: str) -> str:
         (
             url.split(" ")[1]
             for url in _metadata.get_all("Project-URL", "unknown")
-            if str(url).startswith(name)
+            if f"{url}".startswith(name)
         ),
         f"{name}_url",
     )

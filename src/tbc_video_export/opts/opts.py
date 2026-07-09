@@ -133,7 +133,7 @@ class Opts(argparse.Namespace):
                 if value:
                     return target_opt_name
             else:
-                return (target_opt_name, str(value))
+                return (target_opt_name, f"{value!s}")
         return None
 
     def contains_active_line_opts(self) -> bool:

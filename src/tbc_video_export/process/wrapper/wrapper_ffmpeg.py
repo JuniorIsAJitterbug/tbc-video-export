@@ -152,7 +152,9 @@ class WrapperFFmpeg(
 
     def _get_thread_queue_size_opt(self) -> FlatList:
         """Return opts for thread queue size."""
-        return FlatList(("-thread_queue_size", str(self._state.opts.thread_queue_size)))
+        return FlatList(
+            ("-thread_queue_size", f"{self._state.opts.thread_queue_size!s}")
+        )
 
     def _get_input_opts(self) -> FlatList:
         """Return opts for all inputs."""
@@ -190,10 +192,10 @@ class WrapperFFmpeg(
 
         if self._is_two_step_merge_mode():
             # add the luma file as an input
-            inputs.append(str(self._state.file_helper.output_video_file_luma))
+            inputs.append(f"{self._state.file_helper.output_video_file_luma!s}")
 
         # pipes
-        inputs.extend(str(i.in_path) for i in self._config.input_pipes)
+        inputs.extend(f"{i.in_path!s}" for i in self._config.input_pipes)
 
         input_opts.append(
             (

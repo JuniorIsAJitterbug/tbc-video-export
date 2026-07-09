@@ -48,7 +48,7 @@ def create_version_file(file_dir: str | Path):  # noqa: D103
 
     try:
         create_versionfile(
-            output_file=str(file_path),
+            output_file=f"{file_path!s}",
             version=PROJECT_VERSION,
             product_name=consts.APPLICATION_NAME,
             original_filename=str(PATH_EXE),
@@ -65,14 +65,14 @@ def create_version_file(file_dir: str | Path):  # noqa: D103
 with tempfile.TemporaryDirectory() as appdir, create_version_file(appdir) as file_path:
     PyInstaller.__main__.run(
         [
-            str(PATH_ENTRY),
+            f"{PATH_ENTRY!s}",
             "--clean",
             "--collect-submodules",
             "application",
             "--icon",
-            str(PATH_ICON),
+            f"{PATH_ICON!s}",
             "--version-file",
-            str(file_path),
+            f"{file_path!s}",
             "--onefile",
             "--name",
             consts.APPLICATION_NAME,

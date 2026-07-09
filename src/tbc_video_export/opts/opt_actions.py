@@ -122,7 +122,7 @@ class ActionListProfiles(argparse.Action):
                 data += f"{vp}\n"
 
             if profile.audio_profile is not None:
-                data += str(profile.audio_profile)
+                data += f"{profile.audio_profile!s}"
 
             if profile.include_vbi:
                 data += f"  {ansi.dim('Include VBI')}\t{profile.include_vbi}\n"

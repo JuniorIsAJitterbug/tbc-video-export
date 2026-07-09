@@ -153,7 +153,9 @@ def parse_opts(
         help=(
             "Force a video system format. (default: from input.tbc.json)"
             "\n\n"
-            "Available formats:\n  " + "\n  ".join(str(e) for e in VideoSystem) + "\n\n"
+            "Available formats:\n  "
+            + "\n  ".join(f"{e!s}" for e in VideoSystem)
+            + "\n\n"
         ),
     )
 

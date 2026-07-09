@@ -132,7 +132,7 @@ class TestUtils:
         data.append(FlatList(["8", "9"]))
         data.append([10, 11, 12])
 
-        assert str(data) == "1 2 3 4 5 6 7 8 9 10 11 12"
+        assert f"{data!s}" == "1 2 3 4 5 6 7 8 9 10 11 12"
         assert data.data == [
             "1",
             "2",

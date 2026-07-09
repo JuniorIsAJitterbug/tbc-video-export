@@ -31,7 +31,7 @@ class TestVerbosityOpts:
     def test_quiet_mode(self) -> None:
         _, opts = self.parse_opts(
             [
-                str(self.path),
+                f"{self.path!s}",
                 "pal_svideo",
                 "-q",
             ]
@@ -47,7 +47,7 @@ class TestVerbosityOpts:
     def test_debug_mode(self) -> None:
         _, opts = self.parse_opts(
             [
-                str(self.path),
+                f"{self.path!s}",
                 "pal_svideo",
                 "-d",
                 "--no-progress",
@@ -64,7 +64,7 @@ class TestVerbosityOpts:
     def test_show_process_output(self) -> None:
         _, opts = self.parse_opts(
             [
-                str(self.path),
+                f"{self.path!s}",
                 "pal_svideo",
                 "--show-process-output",
             ]

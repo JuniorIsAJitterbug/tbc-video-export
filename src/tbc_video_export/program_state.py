@@ -245,9 +245,9 @@ class ProgramState:
         profile: list[str] = []
 
         if self.opts.two_step:
-            output_file.append(str(self.file_helper.output_video_file_luma))
+            output_file.append(f"{self.file_helper.output_video_file_luma!s}")
 
-        output_file.append(str(self.file_helper.output_video_file))
+        output_file.append(f"{self.file_helper.output_video_file!s}")
 
         profile.append(
             self.profile.name

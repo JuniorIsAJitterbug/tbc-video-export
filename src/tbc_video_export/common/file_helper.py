@@ -177,11 +177,11 @@ class FileHelper:
 
     def get_output_file_from_ext(self, extension: Path | str) -> Path:
         """Return absolute path to output file with extension."""
-        return Path(f"{self.output_name}.{extension}")
+        return self.output_name.with_suffix(f".{extension}")
 
     def get_input_file_from_ext(self, extension: Path | str) -> Path:
         """Return absolute path to input file with extension."""
-        return Path(f"{self.input_name}.{extension}")
+        return self.input_name.with_suffix(f".{extension}")
 
     def check_output_dir(self) -> None:
         """Check if output directory exists.

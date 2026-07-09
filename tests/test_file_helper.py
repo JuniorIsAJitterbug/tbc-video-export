@@ -182,7 +182,7 @@ class TestTBCJson:
         helper = FileHelper(state.opts, state.config)
         toolset = toolsets.toolsets[ToolsetType.LEGACY_TOOLS]
 
-        assert helper.tools[tool] == [Path(str(toolset.get_tool_name(tool)))]
+        assert helper.tools[tool] == [Path(f"{toolset.get_tool_name(tool)!s}")]
 
     def test_tools_appimage(
         self,

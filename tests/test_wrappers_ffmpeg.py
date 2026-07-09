@@ -80,7 +80,7 @@ class TestWrappersFFmpeg:
             input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--audio-track", audio_file],
             expected_opts=[
-                {"-i", str(Path(audio_file).absolute())},
+                {"-i", f"{Path(audio_file).absolute()!s}"},
                 {"-map", "2:a"},
             ],
         ),
@@ -102,7 +102,7 @@ class TestWrappersFFmpeg:
                     "-ac",
                     "2",
                     "-i",
-                    str(Path(audio_file).absolute()),
+                    f"{Path(audio_file).absolute()!s}",
                 },
                 {"-map", "2:a"},
                 {"-metadata:s:a:0", "title=Test"},

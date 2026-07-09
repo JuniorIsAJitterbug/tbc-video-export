@@ -168,7 +168,7 @@ class Wrapper(ABC, Generic[PipeInputGeneric, PipeOutputGeneric]):
             pipes_str = ""
 
             for pipe in self.pipes:
-                pipes_str += str(pipe)
+                pipes_str += f"{pipe!s}"
 
             raise exceptions.PipeError(
                 f"{self.tool_type} unable to use pipe types.\n{pipes_str}"

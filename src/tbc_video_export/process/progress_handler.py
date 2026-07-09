@@ -34,7 +34,7 @@ class ProgressHandler(Generic[PipeInputGeneric, PipeOutputGeneric]):
     ) -> None:
         self._state = state
         self._procs = procs
-        self._state_str = str(self._state)
+        self._state_str = f"{self._state!s}"
         self._stop_event = stop_event
 
         self._col_w: dict[str, int] = {

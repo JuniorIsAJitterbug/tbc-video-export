@@ -42,7 +42,7 @@ class FlatList:
                 self.append(values.data)
 
             case v if v is not Sequence:
-                self.data.append(str(values))
+                self.data.append(f"{values!s}")
 
             case _:
                 pass

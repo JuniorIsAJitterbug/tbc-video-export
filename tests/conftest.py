@@ -192,7 +192,7 @@ def get_path(path: str):
 
 
 def get_path_str(path: str):
-    return str(get_path(path))
+    return f"{get_path(path)}"
 
 
 @pytest.fixture

@@ -53,7 +53,7 @@ class TBCType(Flag):
     @override
     def __str__(self) -> str:
         """Return enum name as string."""
-        return str(self.name)
+        return f"{self.name!s}"
 
 
 class ExportMode(Enum):
@@ -85,7 +85,7 @@ class VideoSystem(Enum):
         """Check if formatted string is in enum."""
         if isinstance(value, str):
             for member in cls:
-                if str(member.value) == value:
+                if f"{member.value!s}" == value:
                     return member
         return None
 
@@ -150,7 +150,7 @@ class ToolType(Flag):
     @override
     def __str__(self) -> str:
         """Return formatted enum name as string."""
-        return str(self.name).replace("_", "-").lower()
+        return f"{self.name!s}".replace("_", "-").lower()
 
 
 class ToolName(Enum):
@@ -208,7 +208,7 @@ class PipeType(Flag):
     @override
     def __str__(self) -> str:
         """Return formatted enum name as string."""
-        return str(self.name).upper()
+        return f"{self.name!s}".upper()
 
 
 class VideoBitDepthType(Enum):

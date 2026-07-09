@@ -47,7 +47,7 @@ class Config:
                 with Path.open(file_name, mode="r", encoding="utf-8") as file:
                     self._data = json.load(file)
             except (FileNotFoundError, PermissionError, json.JSONDecodeError) as e:
-                raise exceptions.InvalidProfileError(str(e), file_name) from e
+                raise exceptions.InvalidProfileError(f"{e!s}", file_name) from e
 
         # use default config
         # not going to check for decode errors on embedded json
@@ -103,7 +103,9 @@ class Config:
                 "Could not load profiles.", self.get_config_file()
             ) from e
         except exceptions.InvalidProfileError as e:
-            raise exceptions.InvalidProfileError(str(e), self.get_config_file()) from e
+            raise exceptions.InvalidProfileError(
+                f"{e!s}", self.get_config_file()
+            ) from e
         else:
             return profile
 
@@ -116,7 +118,9 @@ class Config:
                 "Could not load audio profiles.", self.get_config_file()
             ) from e
         except exceptions.InvalidProfileError as e:
-            raise exceptions.InvalidProfileError(str(e), self.get_config_file()) from e
+            raise exceptions.InvalidProfileError(
+                f"{e!s}", self.get_config_file()
+            ) from e
         else:
             return profile
 

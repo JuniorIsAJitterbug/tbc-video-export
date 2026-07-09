@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 def _print_exception(e: BaseException) -> None:
     """Print formatted exception with exception name and message."""
-    if len(message := getattr(e, "message", str(e))) > 1:
+    if len(message := getattr(e, "message", f"{e!s}")) > 1:
         logging.getLogger("console").exception(
             ansi.error_color(f"{e.__class__.__name__}: {message}"),
             exc_info=False,

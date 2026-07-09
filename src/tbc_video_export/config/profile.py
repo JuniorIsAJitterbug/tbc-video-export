@@ -73,10 +73,10 @@ class Profile:
     def __str__(self) -> str:
         data = f"--{self.name} {'(default)' if self.is_default else ''}\n"
 
-        data += str(self.video_profile)
+        data += f"{self.video_profile!s}"
 
         if self.audio_profile is not None:
-            data += str(self.audio_profile)
+            data += f"{self.audio_profile!s}"
 
         if self.include_vbi:
             data += f"  {ansi.dim('Include VBI')}\t{self.include_vbi}\n"
