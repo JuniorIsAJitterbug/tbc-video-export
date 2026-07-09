@@ -406,7 +406,7 @@ class WrapperFFmpeg(
 
     def _get_timecode_opt(self) -> FlatList:
         """Return opts for timecode."""
-        return FlatList(("-timecode", self._state.file_helper.tbc_json.timecode))
+        return FlatList(("-timecode", self._state.file_helper.tbc_metadata.timecode))
 
     def _get_framerate(self) -> str:
         """Return rate based on video system."""
@@ -498,7 +498,7 @@ class WrapperFFmpeg(
             metadata_opts.append(
                 (
                     "-attach",
-                    self._state.file_helper.tbc_json.file_name,
+                    self._state.file_helper.tbc_metadata.json_file_name,
                     "-metadata:s:t:0",
                     "mimetype=application/json",
                 )

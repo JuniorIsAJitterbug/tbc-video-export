@@ -41,7 +41,7 @@ class WrapperMetadataExport(Wrapper[None, None]):
                 self._state.file_helper.ffmetadata_file,
                 "--closed-captions",
                 self._state.file_helper.cc_file,
-                self._state.file_helper.tbc_json.file_name,
+                self.metadata_input_file,
             ),
         )
 

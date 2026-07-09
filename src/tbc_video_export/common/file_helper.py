@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts, exceptions
 from tbc_video_export.common.enums import FlagHelper, TBCType, ToolType
-from tbc_video_export.common.tbc_json_helper import TBCJsonHelper
+from tbc_video_export.common.metadata_helper import MetadataHelper
 from tbc_video_export.common.toolsets import toolsets
 from tbc_video_export.common.utils import files
 from tbc_video_export.config.config import GetProfileFilter
@@ -102,31 +102,31 @@ class FileHelper:
         return types
 
     @property
-    def tbc_json(self) -> TBCJsonHelper:
-        """Returns TBCJson helper.
+    def tbc_metadata(self) -> MetadataHelper:
+        """Returns metadata helper.
 
         This will create the helper if it does not exist.
         """
         if not getattr(
             self,
-            "_tbc_json",
+            "_tbc_metadata",
             False,
         ):
-            self._tbc_json = TBCJsonHelper(
+            self._tbc_metadata = MetadataHelper(
                 Path(self._opts.input_tbc_json)
                 if self._opts.input_tbc_json is not None
-                else Path(f"{self.input_name}.tbc.json")
+                else self.input_name.with_suffix(".tbc.json")
             )
 
-        return self._tbc_json
+        return self._tbc_metadata
 
-    @tbc_json.setter
-    def tbc_json(self, file_name: Path) -> None:
-        """Set the TBCJson Helper.
+    @tbc_metadata.setter
+    def tbc_metadata(self, file_name: Path) -> None:
+        """Set the metadata Helper.
 
-        This can be used when ld-process-vbi generates a new JSON file.
+        This can be used when vbi-process generates a new metadata file.
         """
-        self._tbc_json = TBCJsonHelper(file_name)
+        self._tbc_metadata = MetadataHelper(file_name)
 
     @cached_property
     def tbc_luma(self) -> Path:

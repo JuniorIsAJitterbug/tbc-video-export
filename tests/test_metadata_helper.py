@@ -10,23 +10,23 @@ import pytest
 
 from tbc_video_export.common import exceptions
 from tbc_video_export.common.enums import VideoSystem
-from tbc_video_export.common.tbc_json_helper import TBCJsonHelper
+from tbc_video_export.common.metadata_helper import MetadataHelper
 
 
-class TestTBCJson:
-    """Tests for tbc json helper."""
+class TestMetadataHelper:
+    """Tests for metadata helper."""
 
     def test_open_json(self) -> None:
         with pytest.raises(
             exceptions.TBCError,
             match=escape("TBC json not found (tests/files/non_existent_file)."),
         ):
-            _ = TBCJsonHelper(Path("tests/files/non_existent_file"))
+            _ = MetadataHelper(Path("tests/files/non_existent_file"))
 
         with pytest.raises(
             json.JSONDecodeError,
         ):
-            _ = TBCJsonHelper(None, "blah")
+            _ = MetadataHelper(None, "blah")
 
         with (
             NamedTemporaryFile(suffix="_chroma.tbc") as file,
@@ -35,59 +35,59 @@ class TestTBCJson:
                 match=escape(f"Unable to parse TBC json ({file.name})."),
             ),
         ):
-            _ = TBCJsonHelper(Path(file.name))
+            _ = MetadataHelper(Path(file.name))
 
         json_path = Path("tests/files/pal_svideo.tbc.json")
-        tbc_json = TBCJsonHelper(json_path)
-        assert tbc_json.file_name == json_path
+        metadata_helper = MetadataHelper(json_path)
+        assert metadata_helper.json_file_name == json_path
 
     def test_video_system(self) -> None:
         json_data = '{"videoParameters":{"system":"PAL"}}'
-        tbc_json = TBCJsonHelper(None, json_data)
-        assert tbc_json.video_system == VideoSystem.PAL
+        metadata_helper = MetadataHelper(None, json_data)
+        assert metadata_helper.video_system == VideoSystem.PAL
 
         json_data = '{"videoParameters":{"system":"PAL-M"}}'
-        tbc_json = TBCJsonHelper(None, json_data)
-        assert tbc_json.video_system == VideoSystem.PAL_M
+        metadata_helper = MetadataHelper(None, json_data)
+        assert metadata_helper.video_system == VideoSystem.PAL_M
 
         json_data = '{"videoParameters":{"system":"NTSC"}}'
-        tbc_json = TBCJsonHelper(None, json_data)
-        assert tbc_json.video_system == VideoSystem.NTSC
+        metadata_helper = MetadataHelper(None, json_data)
+        assert metadata_helper.video_system == VideoSystem.NTSC
 
         json_data = '{"videoParameters":{}}'
-        tbc_json = TBCJsonHelper(None, json_data)
+        metadata_helper = MetadataHelper(None, json_data)
 
         with pytest.raises(
             exceptions.TBCError,
             match=escape("Unable to read video system from TBC json."),
         ):
-            _ = tbc_json.video_system
+            _ = metadata_helper.video_system
 
         json_data = '{"videoParameters":{"system":"INVALID"}}'
-        tbc_json = TBCJsonHelper(None, json_data)
+        metadata_helper = MetadataHelper(None, json_data)
 
         with pytest.raises(
             exceptions.TBCError, match=escape("System unsupported (INVALID).")
         ):
-            _ = tbc_json.video_system
+            _ = metadata_helper.video_system
 
     def test_field_count(self) -> None:
-        tbc_json = TBCJsonHelper(Path("tests/files/pal_svideo.tbc.json"))
-        assert tbc_json.field_count == 2
-        assert tbc_json.frame_count == 1
+        metadata_helper = MetadataHelper(Path("tests/files/pal_svideo.tbc.json"))
+        assert metadata_helper.field_count == 2
+        assert metadata_helper.frame_count == 1
 
     def test_check_widescreen(self) -> None:
         json_data = '{"videoParameters":{}}'
-        tbc_json = TBCJsonHelper(None, json_data)
-        assert not tbc_json.is_widescreen
+        metadata_helper = MetadataHelper(None, json_data)
+        assert not metadata_helper.is_widescreen
 
         json_data = '{"videoParameters":{"isWidescreen":false}}'
-        tbc_json = TBCJsonHelper(None, json_data)
-        assert not tbc_json.is_widescreen
+        metadata_helper = MetadataHelper(None, json_data)
+        assert not metadata_helper.is_widescreen
 
         json_data = '{"videoParameters":{"isWidescreen":true}}'
-        tbc_json = TBCJsonHelper(None, json_data)
-        assert tbc_json.is_widescreen
+        metadata_helper = MetadataHelper(None, json_data)
+        assert metadata_helper.is_widescreen
 
     vitc_data: ClassVar[list[tuple[str, str, str]]] = [
         ("[1,8,7,8,1,0,1,0]", "NTSC", "01:01:07:01"),
@@ -106,5 +106,5 @@ class TestTBCJson:
             + vitc_data
             + "}}]}"
         )
-        tbc_json = TBCJsonHelper(None, json_data)
-        assert tbc_json.timecode == expected
+        metadata_helper = MetadataHelper(None, json_data)
+        assert metadata_helper.timecode == expected

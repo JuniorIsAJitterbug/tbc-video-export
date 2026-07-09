@@ -42,9 +42,9 @@ class WrapperDropoutCorrect(Wrapper[None, Pipe]):
                 self._get_thread_opts(),
                 self._state.file_helper.tbcs[self._config.tbc_type],
                 None if self.dropout_interfield_correction else "-i",
-                "--input-json",
-                self._state.file_helper.tbc_json.file_name,
-                "--output-json",
+                self.metadata_input_opt,
+                self.metadata_input_file,
+                self.metadata_output_opt,
                 os.devnull,
                 self._config.output_pipes.out_path,
             )

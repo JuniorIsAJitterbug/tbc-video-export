@@ -52,8 +52,8 @@ class WrapperChromaDecode(Wrapper[Pipe, Pipe]):
                 self._get_active_line_opts(),
                 self._get_padding_opt(),
                 self._get_misc_opts(),
-                "--input-json",
-                self._state.file_helper.tbc_json.file_name,
+                self.metadata_input_opt,
+                self.metadata_input_file,
                 self._config.input_pipes.in_path,
                 self._config.output_pipes.out_path,
             )

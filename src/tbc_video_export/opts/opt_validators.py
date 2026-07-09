@@ -16,6 +16,7 @@ from tbc_video_export.common.enums import (
     ToolsetType,
     VideoSystem,
 )
+from tbc_video_export.common.toolsets import toolsets
 from tbc_video_export.common.utils import ansi
 from tbc_video_export.opts.opts import AudioTrackOpt, Opts
 
@@ -36,6 +37,7 @@ def validate_opts(
     _validate_luma_only_opts(parser, opts)
     _validate_video_format(parser, opts)
     _validate_decoder_opts(state, opts)
+    _validate_metadata_type_opts(opts)
 
 
 def validate_metadata_file_exists(value: str) -> Path:
@@ -238,3 +240,11 @@ def _validate_metadata_type_opts(opts: Opts) -> None:
         raise exceptions.ToolUnsupportedError(
             f"Unable to use {opts.metadata_type!s} metadata with toolset {opts.toolset!s}."  # noqa: E501
         )
+
+    # if unset, use default for selected toolset
+    if not getattr(
+        opts,
+        "metadata_type",
+        False,
+    ):
+        opts.metadata_type = toolsets[opts.toolset].default_metadata_type

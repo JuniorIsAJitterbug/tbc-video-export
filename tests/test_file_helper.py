@@ -98,12 +98,12 @@ class TestTBCJson:
         state = program_state([], Path("tests/files/pal_svideo.tbc"))
         helper = FileHelper(state.opts, state.config)
 
-        tbc_json_helper = helper.tbc_json
-        assert tbc_json_helper.video_system == VideoSystem.PAL
+        metadata_helper = helper.tbc_metadata
+        assert metadata_helper.video_system == VideoSystem.PAL
 
-        helper.tbc_json = Path("tests/files/ntsc_svideo.tbc.json")
-        tbc_json_helper = helper.tbc_json
-        assert tbc_json_helper.video_system == VideoSystem.NTSC
+        helper.tbc_metadata = Path("tests/files/ntsc_svideo.tbc.json")
+        metadata_helper = helper.tbc_metadata
+        assert metadata_helper.video_system == VideoSystem.NTSC
 
     def test_missing_tbc(
         self,

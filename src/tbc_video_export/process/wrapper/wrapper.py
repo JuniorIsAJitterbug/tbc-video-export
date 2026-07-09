@@ -5,7 +5,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING, Generic
 
 from tbc_video_export.common import exceptions
-from tbc_video_export.common.enums import FlagHelper, PipeType
+from tbc_video_export.common.enums import FlagHelper, MetadataType, PipeType
 from tbc_video_export.common.utils import FlatList
 from tbc_video_export.process.wrapper.pipe import Pipe
 from tbc_video_export.process.wrapper.pipe.pipe import (
@@ -14,6 +14,8 @@ from tbc_video_export.process.wrapper.pipe.pipe import (
 )
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from tbc_video_export.common.enums import TBCType, ToolType
     from tbc_video_export.process.wrapper.wrapper_config import WrapperConfig
     from tbc_video_export.program_state import ProgramState
@@ -31,7 +33,7 @@ class Wrapper(ABC, Generic[PipeInputGeneric, PipeOutputGeneric]):
         self._config = config
 
         # trigger any wrapper exceptions early
-        _ = self.command
+        # _ = self.command
         self._check_pipes()
 
     @property
@@ -62,6 +64,36 @@ class Wrapper(ABC, Generic[PipeInputGeneric, PipeOutputGeneric]):
             pipes = [*pipes, out_pipe]
 
         return pipes
+
+    @property
+    def metadata_input_file(self) -> Path:
+        """Return metadata input file."""
+        match self._state.opts.metadata_type:
+            case MetadataType.JSON:
+                return self._state.file_helper.tbc_metadata.json_file_name
+
+            case MetadataType.SQLITE:
+                return self._state.file_helper.tbc_metadata.sqlite_file_name
+
+    @cached_property
+    def metadata_input_opt(self) -> str:
+        """Return standard metadata input opt."""
+        match self._state.opts.metadata_type:
+            case MetadataType.JSON:
+                return "--input-json"
+
+            case MetadataType.SQLITE:
+                return "--input-metadata"
+
+    @cached_property
+    def metadata_output_opt(self) -> str:
+        """Return standard metadata output opt."""
+        match self._state.opts.metadata_type:
+            case MetadataType.JSON:
+                return "--output-json"
+
+            case MetadataType.SQLITE:
+                return "--output-metadata"
 
     @abstractmethod
     def post_fn(self) -> None:

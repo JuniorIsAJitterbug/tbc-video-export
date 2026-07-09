@@ -35,7 +35,7 @@ class TestWrappersProcessVBI:
             input_opts=["--process-vbi"],
             expected_opts=[
                 {"--input-json", get_path_str("pal_svideo.tbc.json")},
-                {"--output-json", get_path_str("pal_svideo.vbi.json")},
+                {"--output-json", get_path_str("pal_svideo.tbc.vbi.json")},
                 {get_path_str("pal_svideo.tbc")},
             ],
         ),
@@ -49,7 +49,7 @@ class TestWrappersProcessVBI:
             ],
             expected_opts=[
                 {"--input-json", get_path_str("ntsc_svideo.tbc.json")},
-                {"--output-json", get_path_str("pal_svideo.vbi.json")},
+                {"--output-json", get_path_str("ntsc_svideo.tbc.vbi.json")},
                 {get_path_str("pal_svideo.tbc")},
             ],
         ),
@@ -171,13 +171,23 @@ class TestWrappersProcessVBI:
             [ProgramState, TBCType], WrapperVBIProcess
         ],
     ) -> None:
-        state = program_state(["--process-vbi"], get_path_str("pal_svideo.tbc"))
+        state = program_state(
+            [
+                "--dry-run",
+                "--process-vbi",
+            ],
+            get_path_str("pal_svideo.tbc"),
+        )
         process_vbi_wrapper = ldtools_process_vbi_wrapper(state, TBCType.LUMA)
 
-        assert state.file_helper.tbc_json.file_name == get_path("pal_svideo.tbc.json")
+        assert state.file_helper.tbc_metadata.json_file_name == get_path(
+            "pal_svideo.tbc.json"
+        )
 
         process_vbi_wrapper.post_fn()
-        assert state.file_helper.tbc_json.file_name == get_path("pal_svideo.vbi.json")
+        assert state.file_helper.tbc_metadata.json_file_name == get_path(
+            "pal_svideo.tbc.vbi.json"
+        )
 
         state = program_state(
             [
@@ -188,10 +198,14 @@ class TestWrappersProcessVBI:
         )
         process_vbi_wrapper = ldtools_process_vbi_wrapper(state, TBCType.LUMA)
 
-        assert state.file_helper.tbc_json.file_name == get_path("pal_svideo.tbc.json")
+        assert state.file_helper.tbc_metadata.json_file_name == get_path(
+            "pal_svideo.tbc.json"
+        )
 
         process_vbi_wrapper.post_fn()
-        assert state.file_helper.tbc_json.file_name == get_path("pal_svideo.vbi.json")
+        assert state.file_helper.tbc_metadata.json_file_name == get_path(
+            "pal_svideo.tbc.vbi.json"
+        )
 
 
 class TestWrappersDropoutCorrect:

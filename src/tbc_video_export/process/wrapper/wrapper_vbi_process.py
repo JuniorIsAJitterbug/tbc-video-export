@@ -3,14 +3,15 @@ from __future__ import annotations
 import asyncio
 import sys
 from functools import cached_property
-from pathlib import Path
 from typing import TYPE_CHECKING
 
-from tbc_video_export.common.enums import PipeType, TBCType, ToolType
+from tbc_video_export.common.enums import MetadataType, PipeType, TBCType, ToolType
 from tbc_video_export.common.utils import FlatList
 from tbc_video_export.process.wrapper.wrapper import Wrapper
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from tbc_video_export.process.wrapper.wrapper_config import WrapperConfig
     from tbc_video_export.program_state import ProgramState
 
@@ -25,19 +26,30 @@ class WrapperVBIProcess(Wrapper[None, None]):
 
     @override
     def __init__(self, state: ProgramState, config: WrapperConfig[None, None]) -> None:
-        self._tbc_json_vbi = Path(f"{state.file_helper.input_name}.vbi.json")
-
         super().__init__(state, config)
-        self._config = config
+        self._tbc_metadata = state.file_helper.tbc_metadata
+        self._metadata_vbi_file = self.metadata_input_file.with_suffix(
+            f".vbi{self.metadata_input_file.suffix}"
+        )
 
     @override
     def post_fn(self) -> None:
-        # if dry run, just update the file name
-        if self._state.dry_run:
-            self._state.file_helper.tbc_json.file_name = self._tbc_json_vbi
-        elif Path(self._tbc_json_vbi).is_file():
-            # load the new tbc json
-            self._state.file_helper.tbc_json = self._tbc_json_vbi
+        match self._state.opts.metadata_type:
+            case MetadataType.JSON:
+                if self._state.dry_run:
+                    # if dry run, just update the file name
+                    self._state.file_helper.tbc_metadata.json_file_name = (
+                        self._metadata_vbi_file
+                    )
+                else:
+                    # reload json metadata
+                    self._state.file_helper.tbc_metadata = self._metadata_vbi_file
+
+            case MetadataType.SQLITE:
+                # assign to new sqlite metadata file
+                self._state.file_helper.tbc_metadata.sqlite_file_name = (
+                    self._metadata_vbi_file
+                )
 
     @override
     @property
@@ -46,10 +58,10 @@ class WrapperVBIProcess(Wrapper[None, None]):
             (
                 self.binary,
                 self._get_thread_opts(),
-                "--input-json",
-                self._state.file_helper.tbc_json.file_name,
-                "--output-json",
-                self._tbc_json_vbi,
+                self.metadata_input_opt,
+                self.metadata_input_file,
+                self.metadata_output_opt,
+                self._metadata_vbi_file,
                 self._get_tbc(),
             ),
         )
