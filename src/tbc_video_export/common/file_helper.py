@@ -6,9 +6,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts, exceptions
-from tbc_video_export.common.enums import FlagHelper, TBCType, ToolName, ToolType
+from tbc_video_export.common.enums import FlagHelper, TBCType, ToolType
 from tbc_video_export.common.tbc_json_helper import TBCJsonHelper
-from tbc_video_export.common.toolsets import get_tool_name
+from tbc_video_export.common.toolsets import toolsets
 from tbc_video_export.common.utils import files
 from tbc_video_export.config.config import GetProfileFilter
 
@@ -237,9 +237,9 @@ class FileHelper:
 
         return tbcs
 
-    def _get_tool_paths(self) -> dict[ToolType, Path | list[Path | str]]:
+    def _get_tool_paths(self) -> dict[ToolType, list[Path]]:
         """Get required tool paths from PATH or script path."""
-        tools: dict[ToolType, Path | list[Path | str]] = {}
+        tools: dict[ToolType, list[Path]] = {}
         required_tools: list[ToolType] = [
             ToolType.FFMPEG,
         ]
@@ -257,21 +257,27 @@ class FileHelper:
             required_tools.append(ToolType.METADATA_EXPORT)
 
         for tool in required_tools:
-            name = get_tool_name(self._opts.toolset, tool)
-            tools[tool] = self._get_tool_path(name)
+            tools[tool] = self._get_tool_path(tool)
 
         return tools
 
-    def _get_tool_path(self, tool_name: ToolName) -> Path:
+    def _get_tool_path(self, tool_type: ToolType) -> list[Path]:
+        """Return path for tool."""
+        toolset = toolsets[self._opts.toolset]
+
         if os.name == "nt":
             # append .exe on NT
-            return files.find_binary(f"{tool_name}.exe")
+            return [files.find_binary(f"{toolset.get_tool_name(tool_type)!s}.exe")]
 
-        return files.find_binary(str(tool_name))
+        paths = [
+            files.find_binary(f"{toolset.get_tool_name(tool_type)!s}"),
+        ]
 
-    def _get_tbc_tool_path(self, tool_name: ToolName) -> Path | list[Path | str]:
-        if self._opts.tbc_tools_appimage:
-            # return list with appimage file and tool name
-            return [files.find_binary(self._opts.tbc_tools_appimage), str(tool_name)]
+        if self._opts.tbc_tools_appimage and toolset.supports_appimage(tool_type):
+            # prepend list with appimage file
+            paths.insert(
+                0,
+                files.find_binary(self._opts.tbc_tools_appimage),
+            )
 
-        return self._get_tool_path(tool_name)
+        return paths

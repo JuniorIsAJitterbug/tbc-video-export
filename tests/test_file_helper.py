@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, ClassVar
 
 import pytest
 
-from tbc_video_export.common import exceptions
-from tbc_video_export.common.enums import TBCType, ToolType, VideoSystem
+from tbc_video_export.common import exceptions, toolsets
+from tbc_video_export.common.enums import TBCType, ToolsetType, ToolType, VideoSystem
 from tbc_video_export.common.file_helper import FileHelper
 
 from .conftest import FileHelperTestCase
@@ -174,19 +174,15 @@ class TestTBCJson:
             [
                 "--process-vbi",
                 "--export-metadata",
+                "--toolset",
+                f"{ToolsetType.LEGACY_TOOLS!s}",
             ],
             Path("tests/files/pal_svideo.tbc"),
         )
         helper = FileHelper(state.opts, state.config)
+        toolset = toolsets.toolsets[ToolsetType.LEGACY_TOOLS]
 
-        assert helper.tools[tool] == Path(str(tool))
-
-    appimage_tbc_tools_procs: ClassVar[list[ToolType]] = [
-        ToolType.CHROMA_DECODE,
-        ToolType.DROPOUT_CORRECT,
-        ToolType.METADATA_EXPORT,
-        ToolType.VBI_PROCESS,
-    ]
+        assert helper.tools[tool] == [Path(str(toolset.get_tool_name(tool)))]
 
     def test_tools_appimage(
         self,
@@ -200,19 +196,23 @@ class TestTBCJson:
                 [
                     "--process-vbi",
                     "--export-metadata",
+                    "--toolset",
+                    f"{ToolsetType.LEGACY_TOOLS!s}",
                     "--tbc-tools-appimage",
                     file.name,
                 ],
                 Path("tests/files/pal_svideo.tbc"),
             )
             helper = FileHelper(state.opts, state.config)
+            toolset = toolsets.toolsets[ToolsetType.LEGACY_TOOLS]
 
             # ensure appimage only used for tbc-tools
-            for k, v in helper.tools.items():
-                if k in self.appimage_tbc_tools_procs:
-                    assert v == [Path(file.name), str(k)]
+            for tool_type, tool_path in helper.tools.items():
+                tool_name = toolset.get_tool_name(tool_type)
+                if tool_type in self.tools and toolset.supports_appimage(tool_type):
+                    assert tool_path == [Path(file.name), Path(f"{tool_name!s}")]
                 else:
-                    assert v == Path(str(k))
+                    assert tool_path == [Path(f"{tool_name!s}")]
 
     def test_out_file_dir(
         self,

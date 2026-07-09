@@ -112,13 +112,22 @@ class TypeToolset:
 
     @override
     def __call__(self, value: str) -> ToolsetType:
-        try:
-            return ToolsetType[value.replace("-", "_").upper()]
-        except KeyError:
+        toolset_type = next(
+            (
+                toolset_type
+                for toolset_type in ToolsetType
+                if f"{toolset_type!s}" == value.replace("-", "_").lower()
+            ),
+            None,
+        )
+
+        if toolset_type is None:
             self._parser.error(
                 f"argument --toolset: invalid Toolset value: '{value}', "
                 f"check --help for available options."
             )
+
+        return toolset_type
 
 
 class TypeMetadataType:
