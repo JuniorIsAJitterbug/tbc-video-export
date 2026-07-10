@@ -76,15 +76,14 @@ in
               default = true;
               package = inputs'.jitterbug.packages.vhs-decode-legacy;
             }
-            # unsupported for now
-            # {
-            #   name = "ld-decode-tools";
-            #   toolPackage = inputs'.jitterbug.packages.ld-decode-ools;
-            # }
-            # {
-            #   name = "legacy-tools";
-            #   toolPackage = inputs'.jitterbug.packages.tbc-tools;
-            # }
+            {
+              name = "ld-decode-tools";
+              package = inputs'.jitterbug.packages.ld-decode-tools;
+            }
+            {
+              name = "tbc-tools";
+              package = inputs'.jitterbug.packages.tbc-tools;
+            }
           ];
 
           pyEnvs = map (pkgSet: { inherit (pkgSet) name; } // mkPyEnv { inherit pkgSet; }) pkgSets;

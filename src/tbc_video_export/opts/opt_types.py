@@ -116,7 +116,7 @@ class TypeToolset:
             (
                 toolset_type
                 for toolset_type in ToolsetType
-                if f"{toolset_type!s}" == value.replace("-", "_").lower()
+                if f"{toolset_type!s}" == value.lower()
             ),
             None,
         )
