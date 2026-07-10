@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-import argparse
+from typing import TYPE_CHECKING
 
 from tbc_video_export.common.enums import FieldOrder
-from tbc_video_export.opts import opt_types, opt_validators
+from tbc_video_export.opts import opt_actions, opt_types, opt_validators
+
+if TYPE_CHECKING:
+    import argparse
 
 
 def add_ffmpeg_opts(parent: argparse.ArgumentParser) -> None:
@@ -25,44 +28,11 @@ def add_ffmpeg_opts(parent: argparse.ArgumentParser) -> None:
     ffmpeg_opts.add_argument(
         "--audio-track",
         dest="audio_track",
-        action="append",
+        type=str,
+        action=opt_actions.ActionAddAudioTrack,
         default=[],
-        type=opt_validators.validate_audio_track_opts,
         metavar="file_name",
         help="Audio track to mux.\n  - You can use this option multiple times.\n\n",
-    )
-
-    ffmpeg_opts.add_argument(
-        "--audio-track-advanced",
-        dest="audio_track",
-        action="append",
-        default=[],
-        type=opt_validators.validate_audio_track_advanced_opts,
-        metavar=(
-            "["
-            "file_name, "
-            "title, "
-            "language, "
-            "rate, "
-            "sample_format, "
-            "channels, "
-            "channel_layout, "
-            "offset"
-            "]"
-        ),
-        help=argparse.SUPPRESS,
-        # help=(
-        #    "Audio track to mux (advanced).\n"
-        #    "  - You can use this option multiple times.\n"
-        #    "  - Only file_name is required. None must be used when skipping an arg."
-        #    "\n\n"
-        #    "Examples:\n"
-        #    '  \'["/path/file.flac", "HiFi", "eng", 192000]\'\n'
-        #    '  \'["/path/file.flac", "Linear", "eng", None, None, None, None, 0.15]\'\n'  # noqa: E501
-        #    '  \'["/path/file.pcm", "Analog Audio", None, 44100, "s16le", 2]\'\n'
-        #    '  \'["/path/file.dts", "PCM Surround", "eng", 44100, "s16le", 6, "5.1"]\''
-        #    "\n\n"
-        # ),
     )
 
     ffmpeg_opts.add_argument(

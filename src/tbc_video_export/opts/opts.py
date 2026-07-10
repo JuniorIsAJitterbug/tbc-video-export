@@ -98,7 +98,7 @@ class Opts(argparse.Namespace):
 
     # ffmpeg
     ffmpeg_threads: int | None
-    audio_track: list[AudioTrackOpt]
+    audio_track: list[Path]
     metadata: list[list[str]]
     metadata_file: list[Path]
     field_order: FieldOrder
@@ -147,21 +147,6 @@ class Opts(argparse.Namespace):
                 "last_active_frame_line",
             ]
         )
-
-
-@dataclass
-class AudioTrackOpt:
-    """Container class for audio track data."""
-
-    file_name: Path
-    title: str | None = None
-    language: str | None = None
-
-    rate: str | int | None = None
-    sample_format: str | None = None
-    channels: int | None = None
-    layout: str | None = None
-    offset: int | float | None = None
 
 
 @dataclass

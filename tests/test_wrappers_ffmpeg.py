@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from contextlib import nullcontext
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
@@ -82,32 +83,6 @@ class TestWrappersFFmpeg:
             expected_opts=[
                 {"-i", f"{Path(audio_file).absolute()!s}"},
                 {"-map", "2:a"},
-            ],
-        ),
-        WrapperTestCase(
-            id="advanced audio track",
-            input_tbc=get_path_str("pal_svideo.tbc"),
-            input_opts=[
-                "--audio-track-advanced",
-                f"['{audio_file}','Test','eng',44100,'s16le',2,'2.1',0.15]",
-            ],
-            expected_opts=[
-                {
-                    "-itsoffset",
-                    "0.15",
-                    "-f",
-                    "s16le",
-                    "-ar",
-                    "44100",
-                    "-ac",
-                    "2",
-                    "-i",
-                    f"{Path(audio_file).absolute()!s}",
-                },
-                {"-map", "2:a"},
-                {"-metadata:s:a:0", "title=Test"},
-                {"-metadata:s:a:0", "language=eng"},
-                {"-channel_layout:a:0", "2.1"},
             ],
         ),
         WrapperTestCase(
@@ -654,10 +629,11 @@ class TestWrappersFFmpeg:
             WrapperFFmpeg[tuple[Pipe, ...], None],
         ],
     ) -> None:
-        state = program_state(
-            ["--audio-track", "tests/files/invalid"],
-            "tests/files/pal_svideo.tbc",
-            "out_file",
-        )
-        with pytest.RaisesExc(exceptions.MissingAudioTrackError):
-            _ = ffmpeg_wrapper_chroma(state, TBCType.CHROMA, ExportMode.CHROMA_MERGE)
+        with pytest.RaisesExc(SystemExit) as e:
+            program_state(
+                ["--audio-track", "tests/files/invalid"],
+                "tests/files/pal_svideo.tbc",
+                "out_file",
+            )
+
+        assert e.value.code == os.EX_NOINPUT

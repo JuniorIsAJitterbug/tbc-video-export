@@ -1321,50 +1321,6 @@ class TestOutput:
                 ),
             ],
         ),
-        OutputTestCase(
-            id="mux audio tracks with advanced settings",
-            input_opts=[
-                "--quiet",
-                "--overwrite",
-                "--audio-track",
-                "tests/files/audio.flac",
-                "--audio-track-advanced",
-                '["tests/files/audio_192_24.wav", "test 1", "eng", 192000, "s24le", 2]',
-                "--audio-track-advanced",
-                '["tests/files/audio_48_16.wav", "test 2", "eng", 48000, "s16le", 6, "5.1"]',
-            ],
-            input_tbc="pal_svideo",
-            output_file="pal_svideo.mkv",
-            output_video_codec=codec_ffv1,
-            output_video_base=VideoBasePAL(),
-            output_video_color=VideoColorPAL(
-                bit_depth=10,
-                chroma_subsampling="4:2:2",
-            ),
-            output_audio_base=[
-                AudioBase(
-                    format="FLAC",
-                    bit_depth=16,
-                    sampling_rate=44100,
-                ),
-                AudioBase(
-                    title="test 1",
-                    format="FLAC",
-                    bit_depth=24,
-                    sampling_rate=192000,
-                    language="en",
-                ),
-                AudioBase(
-                    title="test 2",
-                    format="FLAC",
-                    bit_depth=16,
-                    sampling_rate=48000,
-                    channel_s=6,
-                    channel_layout="L R C LFE Lb Rb",
-                    language="en",
-                ),
-            ],
-        ),
     ]
 
     metadata_test_cases: ClassVar[list[OutputTestCase]] = [

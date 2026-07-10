@@ -4,7 +4,6 @@ import asyncio
 import sys
 from fractions import Fraction
 from functools import cached_property
-from pathlib import Path
 from typing import TYPE_CHECKING, Generic
 
 from tbc_video_export.common import consts, exceptions
@@ -225,34 +224,15 @@ class WrapperFFmpeg(
         input_opts = FlatList()
         audio_ss, audio_t = self._get_audio_trim_opts()
 
-        # audio
         for track in self._state.opts.audio_track:
             if audio_ss is not None:
                 input_opts.append(("-ss", audio_ss))
             if audio_t is not None:
                 input_opts.append(("-t", audio_t))
 
-            if (offset := track.offset) is not None:
-                input_opts.append(("-itsoffset", offset))
+            input_opts.append(("-i", track))
 
-            if (sample_format := track.sample_format) is not None:
-                input_opts.append(("-f", sample_format))
-
-            if (rate := track.rate) is not None:
-                input_opts.append(("-ar", rate))
-
-            if (channels := track.channels) is not None:
-                input_opts.append(("-ac", channels))
-
-            input_opts.append(("-i", track.file_name))
-
-            # ensure track exists
-            if not Path(track.file_name).is_file():
-                raise exceptions.MissingAudioTrackError(
-                    "Audio track {track.file_name} does not exist."
-                )
-
-        return input_opts
+        return FlatList(("-i", track) for track in self._state.opts.audio_track)
 
     def _get_metadata_input_opts(self) -> FlatList:
         """Return opts for metadata input."""
@@ -483,17 +463,6 @@ class WrapperFFmpeg(
         metadata_opts = FlatList(
             ("-metadata", f"{data[0]}={data[1]}") for data in self._state.opts.metadata
         )
-
-        # audio
-        for idx, track in enumerate(self._state.opts.audio_track):
-            if (title := track.title) is not None:
-                metadata_opts.append((f"-metadata:s:a:{idx}", f"title={title}"))
-
-            if (language := track.language) is not None:
-                metadata_opts.append((f"-metadata:s:a:{idx}", f"language={language}"))
-
-            if (layout := track.layout) is not None:
-                metadata_opts.append((f"-channel_layout:a:{idx}", f"{layout}"))
 
         # attachment
         if self._get_supports_attachments() and not self._state.opts.no_attach_json:

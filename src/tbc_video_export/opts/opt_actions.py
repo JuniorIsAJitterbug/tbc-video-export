@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
+from functools import partial
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts
@@ -21,6 +24,7 @@ if TYPE_CHECKING:
     from typing import Any
 
     from tbc_video_export.config import Config
+    from tbc_video_export.opts import Opts
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -234,6 +238,33 @@ class ActionSetAudioOverride(argparse.Action):
         **kwargs: Any,
     ) -> None:
         namespace.audio_profile = str(option_string)[2:].lower()
+
+
+class ActionAddAudioTrack(argparse.Action):
+    """Add audio track if file exists."""
+
+    def __init__(self, nargs: int = 1, **kwargs: Any) -> None:
+        super().__init__(nargs=nargs, **kwargs)
+
+    @override
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: Opts,
+        values: list[str],
+        option_string: str | None = None,
+        **kwargs: Any,
+    ) -> None:
+        for value in values:
+            if not (track := Path(value).absolute()).is_file():
+                if namespace.dry_run:
+                    missing_fn = partial(logging.getLogger("console").warning)
+                else:
+                    missing_fn = partial(parser.exit, os.EX_NOINPUT)
+
+                missing_fn(f"Audio track '{track}' not found.")
+
+            namespace.audio_track.append(track)
 
 
 class ActionListToolsets(argparse.Action):
