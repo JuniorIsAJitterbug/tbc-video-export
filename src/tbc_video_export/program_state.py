@@ -15,14 +15,13 @@ from tbc_video_export.common.enums import (
     VideoSystem,
 )
 from tbc_video_export.common.utils import ansi
-from tbc_video_export.config.config import GetProfileFilter
+from tbc_video_export.files import ConfigFile
 from tbc_video_export.process.parser.export_state import ExportState
 
 if TYPE_CHECKING:
     from tbc_video_export.common.file_helper import FileHelper
-    from tbc_video_export.common.metadata_helper import MetadataHelper
-    from tbc_video_export.config.config import Config
     from tbc_video_export.config.profile import Profile
+    from tbc_video_export.files import MetadataFile
     from tbc_video_export.opts import Opts
 
 if sys.version_info >= (3, 12):
@@ -36,7 +35,7 @@ class ProgramState:
     """Stores the program state."""
 
     opts: Opts
-    config: Config
+    config: ConfigFile
     file_helper: FileHelper
     export = ExportState()
 
@@ -61,7 +60,7 @@ class ProgramState:
         self._current_export_mode = export_mode
 
     @property
-    def tbc_metadata(self) -> MetadataHelper:
+    def tbc_metadata(self) -> MetadataFile:
         """Return metadata helper."""
         return self.file_helper.tbc_metadata
 
@@ -92,7 +91,7 @@ class ProgramState:
                     ExportMode.LUMA_EXTRACTED
                     if self.opts.luma_only
                     else ExportMode.CHROMA_COMBINED_LD
-                    if self.file_helper.is_combined_ld
+                    if self.file_helper.input_file.is_combined_ld
                     else ExportMode.CHROMA_COMBINED
                 )
 
@@ -104,7 +103,7 @@ class ProgramState:
     @cached_property
     def tbc_types(self) -> TBCType:
         """List of TBC types detected."""
-        return self.file_helper.tbc_types
+        return self.file_helper.input_file.tbc_types
 
     @cached_property
     def video_system(self) -> VideoSystem:
@@ -177,7 +176,7 @@ class ProgramState:
     def profile(self) -> Profile:
         """Return selected profile."""
         return self.config.get_profile(
-            GetProfileFilter(
+            ConfigFile.ProfileFilter(
                 self.opts.profile,
                 self.opts.hwaccel_type,
                 self.video_system,
@@ -271,7 +270,7 @@ class ProgramState:
 
         return (
             f"{ansi.dim('Input TBC:'):<{col_w['k1']}s} "
-            f"{self.file_helper.tbc_luma}\n"
+            f"{self.file_helper.input_file.tbc_luma}\n"
             f"{ansi.dim('Output Files:'):<{col_w['k1']}s} "
             f"{output_files}\n"
             f"{ansi.dim('Log Files:'):<{col_w['k1']}s} "

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 import logging
 from dataclasses import dataclass
@@ -22,11 +23,10 @@ if TYPE_CHECKING:
         HardwareAccelType,
         VideoSystem,
     )
-    from tbc_video_export.config.json import JsonConfig
 
 
-class Config:
-    """Profile helper.
+class ConfigFile:
+    """Container for config file data.
 
     Uses a default json if not given a valid json file.
     Currently only contains profiles but can be extended to contain other
@@ -34,7 +34,6 @@ class Config:
     """
 
     def __init__(self, config_file: str | None = None) -> None:
-        self._data: JsonConfig
         self._additional_filters: list[str] = []
 
         # attempt loading user file if set, or exported file from default location
@@ -48,10 +47,7 @@ class Config:
                     self._data = json.load(file)
             except (FileNotFoundError, PermissionError, json.JSONDecodeError) as e:
                 raise exceptions.InvalidProfileError(f"{e!s}", file_name) from e
-
-        # use default config
-        # not going to check for decode errors on embedded json
-        if not getattr(self, "_data", False):
+        else:
             self._data = DEFAULT_CONFIG
 
         self.profiles: list[Profile] = []
@@ -64,6 +60,14 @@ class Config:
             raise exceptions.InvalidProfileError(
                 "Configuration file missing required fields.", self.get_config_file()
             ) from e
+
+    @classmethod
+    def from_opt(cls, value: str) -> ConfigFile:
+        """Return metadata file from opt."""
+        if Path(value).is_file():
+            return ConfigFile(value)
+
+        raise argparse.ArgumentError(None, f"Metadata file '{value}' not found.")
 
     @cached_property
     def audio_profiles(self) -> list[ProfileAudio]:
@@ -94,7 +98,7 @@ class Config:
         """Append a filter to use."""
         self._additional_filters.append(filter_name)
 
-    def get_profile(self, profile_filter: GetProfileFilter) -> Profile:
+    def get_profile(self, profile_filter: ConfigFile.ProfileFilter) -> Profile:
         """Return a profile from a filter."""
         try:
             profile = self._get_filtered_profile(profile_filter)
@@ -260,7 +264,9 @@ class Config:
 
         return profile
 
-    def _get_filtered_profile(self, profile_filter: GetProfileFilter) -> Profile:
+    def _get_filtered_profile(
+        self, profile_filter: ConfigFile.ProfileFilter
+    ) -> Profile:
         profile = next(
             (profile for profile in self.profiles if profile_filter.match(profile)),
             None,
@@ -345,29 +351,31 @@ class Config:
         else:
             return profiles
 
+    @dataclass
+    class ProfileFilter:
+        """Container class for profile filter params."""
 
-@dataclass
-class GetProfileFilter:
-    """Container class for get profile filter params."""
+        name: str
+        hwaccel_type: HardwareAccelType | None = None
+        video_system: VideoSystem | None = None
 
-    name: str
-    hwaccel_type: HardwareAccelType | None = None
-    video_system: VideoSystem | None = None
+        def match(self, profile: Profile) -> bool:
+            """Returns true if profile matches filter."""
+            video_profile = profile.video_profile
 
-    def match(self, profile: Profile) -> bool:
-        """Returns true if profile matches filter."""
-        video_profile = profile.video_profile
+            if profile.name != self.name:
+                return False
 
-        if profile.name != self.name:
-            return False
+            if (
+                self.hwaccel_type is not None
+                and video_profile.hardware_accel is not self.hwaccel_type
+            ):
+                return False
 
-        if (
-            self.hwaccel_type is not None
-            and video_profile.hardware_accel is not self.hwaccel_type
-        ):
-            return False
-
-        return not (
-            (self.video_system is not None and video_profile.video_system is not None)
-            and video_profile.video_system is not self.video_system
-        )
+            return not (
+                (
+                    self.video_system is not None
+                    and video_profile.video_system is not None
+                )
+                and video_profile.video_system is not self.video_system
+            )

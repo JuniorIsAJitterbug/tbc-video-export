@@ -26,10 +26,11 @@ class TestTBCJson:
     test_cases: ClassVar[list[FileHelperTestCase]] = [
         FileHelperTestCase(
             id="pal svideo",
-            input_tbc=Path("tests/files/pal_svideo.tbc"),
-            input_name=Path("tests/files/pal_svideo"),
+            input_name="pal_svideo",
+            input_path=Path("tests/files/pal_svideo"),
             luma_tbc=Path("tests/files/pal_svideo.tbc"),
-            output_name=Path("out_file"),
+            output_name="out_file",
+            output_path=Path("out_file"),
             output_container="mkv",
             output_video_file=Path("out_file.mkv"),
             output_video_file_luma=Path("out_file.luma.mkv"),
@@ -40,10 +41,11 @@ class TestTBCJson:
         ),
         FileHelperTestCase(
             id="pal composite",
-            input_tbc=Path("tests/files/pal_composite.tbc"),
-            input_name=Path("tests/files/pal_composite"),
+            input_name="pal_composite",
+            input_path=Path("tests/files/pal_composite"),
             luma_tbc=Path("tests/files/pal_composite.tbc"),
-            output_name=Path("out_file"),
+            output_name="out_file",
+            output_path=Path("out_file"),
             output_container="mkv",
             output_video_file=Path("out_file.mkv"),
             output_video_file_luma=Path("out_file.luma.mkv"),
@@ -54,10 +56,11 @@ class TestTBCJson:
         ),
         FileHelperTestCase(
             id="pal composite (ld)",
-            input_tbc=Path("tests/files/pal_composite_ld.tbc"),
-            input_name=Path("tests/files/pal_composite_ld"),
+            input_name="pal_composite_ld",
+            input_path=Path("tests/files/pal_composite_ld"),
             luma_tbc=Path("tests/files/pal_composite_ld.tbc"),
-            output_name=Path("out_file"),
+            output_name="out_file",
+            output_path=Path("out_file"),
             output_container="mkv",
             output_video_file=Path("out_file.mkv"),
             output_video_file_luma=Path("out_file.luma.mkv"),
@@ -77,19 +80,25 @@ class TestTBCJson:
         program_state: Callable[[list[str], Path], ProgramState],
         test_case: FileHelperTestCase,
     ) -> None:
-        state = program_state([], test_case.input_tbc)
+        state = program_state([], test_case.input_path)
         helper = FileHelper(state.opts, state.config)
 
-        assert test_case.input_name == helper.input_name
-        assert test_case.luma_tbc == helper.tbc_luma
-        assert test_case.output_name == helper.output_name
+        assert test_case.input_name == helper.input_file.name
+        assert test_case.input_path.absolute() == helper.input_file.path
+        assert test_case.luma_tbc.absolute() == helper.input_file.tbc_luma
+        assert test_case.output_name == helper.output_file.name
+        assert test_case.output_path.absolute() == helper.output_file.path
         assert test_case.output_container == helper.output_container
-        assert test_case.output_video_file == helper.output_video_file
-        assert test_case.output_video_file_luma == helper.output_video_file_luma
-        assert test_case.is_ld == helper.is_combined_ld
-        assert test_case.ffmetadata_file == helper.ffmetadata_file
-        assert test_case.cc_file == helper.cc_file
-        assert test_case.tbc_types == helper.tbc_types
+        assert test_case.output_video_file.absolute() == helper.output_video_file
+        assert (
+            test_case.output_video_file_luma.absolute() == helper.output_video_file_luma
+        )
+        assert test_case.is_ld == helper.input_file.is_combined_ld
+        assert (
+            test_case.ffmetadata_file.absolute() == helper.output_file.ffmetadata_file
+        )
+        assert test_case.cc_file.absolute() == helper.output_file.cc_file
+        assert test_case.tbc_types == helper.input_file.tbc_types
 
     def test_setting_json(
         self,
@@ -113,11 +122,11 @@ class TestTBCJson:
         helper = FileHelper(state.opts, state.config)
 
         # Clear tbc locations to cause exception
-        helper.tbcs.clear()
+        helper.input_file.tbcs.clear()
         with pytest.raises(
             exceptions.TBCError, match=escape("Unable to find luma TBC.")
         ):
-            _ = helper.tbc_luma
+            _ = helper.input_file.tbc_luma
 
         with (
             NamedTemporaryFile(suffix="_chroma.tbc") as file,
@@ -160,8 +169,11 @@ class TestTBCJson:
 
         timestamp = "__timestamp__"
 
-        assert helper.get_log_file(tool, tbc_type, timestamp) == Path(
-            f"__timestamp___{helper.input_name.stem}_{tool}_{tbc_type}.log"
+        assert (
+            helper.get_log_file(tool, tbc_type, timestamp)
+            == Path(
+                f"__timestamp___{helper.input_file.name}_{tool}_{tbc_type}.log"
+            ).absolute()
         )
 
     @pytest.mark.parametrize("tool", tuple(tools))
@@ -218,19 +230,23 @@ class TestTBCJson:
         self,
         program_state: Callable[[list[str], Path, str], ProgramState],
     ) -> None:
+        out_name = "invalid_dir/test"
+        out_path = Path(out_name)
         state = program_state(
             [
                 "--process-vbi",
                 "--export-metadata",
             ],
             Path("tests/files/pal_svideo.tbc"),
-            "invalid_dir/test",
+            out_name,
         )
         helper = FileHelper(state.opts, state.config)
 
         with pytest.raises(
             exceptions.FileIOError,
-            match=escape("Output directory does not exist (invalid_dir)."),
+            match=escape(
+                f"Output directory does not exist ({out_path.parent.absolute()})."
+            ),
         ):
             helper.check_output_dir()
 

@@ -10,7 +10,7 @@ import pytest
 
 from tbc_video_export.common import exceptions
 from tbc_video_export.common.enums import VideoSystem
-from tbc_video_export.common.metadata_helper import MetadataHelper
+from tbc_video_export.files import MetadataFile
 
 
 class TestMetadataHelper:
@@ -21,12 +21,12 @@ class TestMetadataHelper:
             exceptions.TBCError,
             match=escape("TBC json not found (tests/files/non_existent_file)."),
         ):
-            _ = MetadataHelper(Path("tests/files/non_existent_file"))
+            _ = MetadataFile(Path("tests/files/non_existent_file"))
 
         with pytest.raises(
             json.JSONDecodeError,
         ):
-            _ = MetadataHelper(None, "blah")
+            _ = MetadataFile(None, "blah")
 
         with (
             NamedTemporaryFile(suffix="_chroma.tbc") as file,
@@ -35,27 +35,27 @@ class TestMetadataHelper:
                 match=escape(f"Unable to parse TBC json ({file.name})."),
             ),
         ):
-            _ = MetadataHelper(Path(file.name))
+            _ = MetadataFile(Path(file.name))
 
         json_path = Path("tests/files/pal_svideo.tbc.json")
-        metadata_helper = MetadataHelper(json_path)
+        metadata_helper = MetadataFile(json_path)
         assert metadata_helper.json_file_name == json_path
 
     def test_video_system(self) -> None:
         json_data = '{"videoParameters":{"system":"PAL"}}'
-        metadata_helper = MetadataHelper(None, json_data)
+        metadata_helper = MetadataFile(None, json_data)
         assert metadata_helper.video_system == VideoSystem.PAL
 
         json_data = '{"videoParameters":{"system":"PAL-M"}}'
-        metadata_helper = MetadataHelper(None, json_data)
+        metadata_helper = MetadataFile(None, json_data)
         assert metadata_helper.video_system == VideoSystem.PAL_M
 
         json_data = '{"videoParameters":{"system":"NTSC"}}'
-        metadata_helper = MetadataHelper(None, json_data)
+        metadata_helper = MetadataFile(None, json_data)
         assert metadata_helper.video_system == VideoSystem.NTSC
 
         json_data = '{"videoParameters":{}}'
-        metadata_helper = MetadataHelper(None, json_data)
+        metadata_helper = MetadataFile(None, json_data)
 
         with pytest.raises(
             exceptions.TBCError,
@@ -64,7 +64,7 @@ class TestMetadataHelper:
             _ = metadata_helper.video_system
 
         json_data = '{"videoParameters":{"system":"INVALID"}}'
-        metadata_helper = MetadataHelper(None, json_data)
+        metadata_helper = MetadataFile(None, json_data)
 
         with pytest.raises(
             exceptions.TBCError, match=escape("System unsupported (INVALID).")
@@ -72,21 +72,21 @@ class TestMetadataHelper:
             _ = metadata_helper.video_system
 
     def test_field_count(self) -> None:
-        metadata_helper = MetadataHelper(Path("tests/files/pal_svideo.tbc.json"))
+        metadata_helper = MetadataFile(Path("tests/files/pal_svideo.tbc.json"))
         assert metadata_helper.field_count == 2
         assert metadata_helper.frame_count == 1
 
     def test_check_widescreen(self) -> None:
         json_data = '{"videoParameters":{}}'
-        metadata_helper = MetadataHelper(None, json_data)
+        metadata_helper = MetadataFile(None, json_data)
         assert not metadata_helper.is_widescreen
 
         json_data = '{"videoParameters":{"isWidescreen":false}}'
-        metadata_helper = MetadataHelper(None, json_data)
+        metadata_helper = MetadataFile(None, json_data)
         assert not metadata_helper.is_widescreen
 
         json_data = '{"videoParameters":{"isWidescreen":true}}'
-        metadata_helper = MetadataHelper(None, json_data)
+        metadata_helper = MetadataFile(None, json_data)
         assert metadata_helper.is_widescreen
 
     vitc_data: ClassVar[list[tuple[str, str, str]]] = [
@@ -106,5 +106,5 @@ class TestMetadataHelper:
             + vitc_data
             + "}}]}"
         )
-        metadata_helper = MetadataHelper(None, json_data)
+        metadata_helper = MetadataFile(None, json_data)
         assert metadata_helper.timecode == expected

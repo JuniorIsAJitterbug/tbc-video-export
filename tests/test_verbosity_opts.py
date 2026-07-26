@@ -8,7 +8,7 @@ import pytest
 
 from tbc_video_export.common.file_helper import FileHelper
 from tbc_video_export.common.utils import log
-from tbc_video_export.config import Config as ProgramConfig
+from tbc_video_export.files import ConfigFile
 from tbc_video_export.opts import opts_parser
 
 
@@ -24,7 +24,7 @@ class TestVerbosityOpts:
 
         self.path = Path.joinpath(Path(__file__).parent, "files", "pal_svideo")
 
-        self.config = ProgramConfig()
+        self.config = ConfigFile()
         self.parse_opts = partial(opts_parser.parse_opts, self.config)
 
     @pytest.fixture

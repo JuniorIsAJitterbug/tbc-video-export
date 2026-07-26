@@ -206,7 +206,7 @@ class WrapperChromaDecode(Wrapper[Pipe, Pipe]):
 
         if self._state.video_system is VideoSystem.NTSC:
             # True unless ld detected
-            add_phase_check = not self._state.file_helper.is_combined_ld
+            add_phase_check = not self._state.file_helper.input_file.is_combined_ld
 
             # override if user has set
             if self._state.opts.ntsc_phase_comp is not None:

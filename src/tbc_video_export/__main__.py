@@ -9,7 +9,7 @@ from importlib import import_module
 
 from tbc_video_export.common import FileHelper, exceptions
 from tbc_video_export.common.utils import interrupts, log, strings
-from tbc_video_export.config.config import Config
+from tbc_video_export.files import ConfigFile
 from tbc_video_export.opts import opt_validators, opts_parser
 from tbc_video_export.process.process_handler import ProcessHandler
 from tbc_video_export.program_state import ProgramState
@@ -30,7 +30,7 @@ async def _run(argv: list[str]) -> None:
 
     try:
         pre_opts, args = opts_parser.parse_pre_opts(argv)
-        config = Config(pre_opts.config_file)
+        config = ConfigFile(pre_opts.config_file)
         parser, opts = opts_parser.parse_opts(config, args, pre_opts)
 
         log.set_verbosity(opts)

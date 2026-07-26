@@ -241,13 +241,15 @@ class WrapperFFmpeg(
             # subtitles
             if self._state.opts.dry_run:
                 input_opts.append(("{-i", "[SUBTITLE_FILE]}"))
-            elif (cc_file := self._state.file_helper.cc_file).is_file():
+            elif (cc_file := self._state.file_helper.output_file.cc_file).is_file():
                 input_opts.append(("-i", cc_file))
 
             # metadata
             if self._state.opts.dry_run:
                 input_opts.append(("{-i", "[METADATA_FILE]}"))
-            elif (ffmetadata := self._state.file_helper.ffmetadata_file).is_file():
+            elif (
+                ffmetadata := self._state.file_helper.output_file.ffmetadata_file
+            ).is_file():
                 input_opts.append(("-i", ffmetadata))
 
         for ffmetadata in self._state.opts.metadata_file:
@@ -369,14 +371,14 @@ class WrapperFFmpeg(
             # subtitles
             if self._state.opts.dry_run:
                 input_opts.append(("{-map", "[SUBTITLE_INDEX]:s}"))
-            elif self._state.file_helper.cc_file.is_file():
+            elif self._state.file_helper.output_file.cc_file.is_file():
                 input_opts.append(("-map", f"{input_count}:s"))
                 input_count += 1
 
             # metadata
             if self._state.opts.dry_run:
                 input_opts.append(("{-map_metadata", "[METADATA_INDEX]}"))
-            elif self._state.file_helper.ffmetadata_file.is_file():
+            elif self._state.file_helper.output_file.ffmetadata_file.is_file():
                 input_opts.append(("-map_metadata", input_count))
                 input_count += 1
 
@@ -451,7 +453,7 @@ class WrapperFFmpeg(
                     codec_opts.append(("{-c:s", self._get_subtitle_format() + "}"))
                 elif (
                     self._state.opts.export_metadata
-                    and self._state.file_helper.cc_file.is_file()
+                    and self._state.file_helper.output_file.cc_file.is_file()
                 ):
                     codec_opts.append(("-c:s", self._get_subtitle_format()))
 

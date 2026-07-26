@@ -134,7 +134,7 @@ class WrapperGroup:
                             tbc_type,
                             ToolType.CHROMA_DECODE,
                             PipeFactory.create_dummy_pipe(
-                                self._state.file_helper.tbcs[tbc_type]
+                                self._state.file_helper.input_file.tbcs[tbc_type]
                             ),
                         )
                     )
@@ -180,7 +180,9 @@ class WrapperGroup:
                     ConsumablePipe(
                         self._tbc_types,
                         ToolType.FFMPEG,
-                        PipeFactory.create_dummy_pipe(self._state.file_helper.tbc_luma),
+                        PipeFactory.create_dummy_pipe(
+                            self._state.file_helper.input_file.tbc_luma
+                        ),
                     )
                 )
 

@@ -40,7 +40,7 @@ class WrapperDropoutCorrect(Wrapper[None, Pipe]):
             (
                 self.binary,
                 self._get_thread_opts(),
-                self._state.file_helper.tbcs[self._config.tbc_type],
+                self._state.file_helper.input_file.tbcs[self._config.tbc_type],
                 None if self.dropout_interfield_correction else "-i",
                 self.metadata_input_opt,
                 self.metadata_input_file,

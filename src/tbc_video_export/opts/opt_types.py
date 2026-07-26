@@ -15,7 +15,7 @@ from tbc_video_export.common.enums import (
 if TYPE_CHECKING:
     import argparse
 
-    from tbc_video_export.config import Config
+    from tbc_video_export.files import ConfigFile
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -60,7 +60,7 @@ class TypeFieldOrder:
 class TypeAdditionalFilter:
     """Return ProfileFilter if it exists."""
 
-    def __init__(self, config: Config) -> None:
+    def __init__(self, config: ConfigFile) -> None:
         self._config = config
 
     @override

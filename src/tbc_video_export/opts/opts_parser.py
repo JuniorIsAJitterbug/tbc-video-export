@@ -23,7 +23,7 @@ from tbc_video_export.opts import (
 from tbc_video_export.opts.opts import Opts
 
 if TYPE_CHECKING:
-    from tbc_video_export.config import Config
+    from tbc_video_export.files import ConfigFile
 
 
 def parse_pre_opts(argv: list[str]) -> tuple[Opts, list[str]]:
@@ -40,7 +40,7 @@ def parse_pre_opts(argv: list[str]) -> tuple[Opts, list[str]]:
 
 
 def parse_opts(
-    config: Config, argv: list[str], pre_opts: Opts | None = None
+    config: ConfigFile, argv: list[str], pre_opts: Opts | None = None
 ) -> tuple[argparse.ArgumentParser, Opts]:
     """Parse program opts."""
     parser = argparse.ArgumentParser(

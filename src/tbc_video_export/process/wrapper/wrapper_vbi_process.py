@@ -68,9 +68,9 @@ class WrapperVBIProcess(Wrapper[None, None]):
 
     def _get_tbc(self) -> Path:
         return (
-            self._state.file_helper.tbcs[TBCType.LUMA]
-            if TBCType.LUMA in self._state.file_helper.tbcs
-            else self._state.file_helper.tbcs[TBCType.COMBINED]
+            self._state.file_helper.input_file.tbcs[TBCType.LUMA]
+            if TBCType.LUMA in self._state.file_helper.input_file.tbcs
+            else self._state.file_helper.input_file.tbcs[TBCType.COMBINED]
         )
 
     def _get_thread_opts(self) -> FlatList | None:

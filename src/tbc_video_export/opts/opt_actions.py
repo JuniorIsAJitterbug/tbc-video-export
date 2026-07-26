@@ -17,13 +17,12 @@ from tbc_video_export.common.enums import (
 )
 from tbc_video_export.common.toolsets import toolsets
 from tbc_video_export.common.utils import ansi
-from tbc_video_export.config.config import GetProfileFilter
+from tbc_video_export.files import ConfigFile
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Any
 
-    from tbc_video_export.config import Config
     from tbc_video_export.opts import Opts
 
 if sys.version_info >= (3, 12):
@@ -35,7 +34,7 @@ else:
 class ActionDumpConfig(argparse.Action):
     """Dump configuration and exit action."""
 
-    def __init__(self, config: Config, nargs: int = 0, **kwargs: Any) -> None:
+    def __init__(self, config: ConfigFile, nargs: int = 0, **kwargs: Any) -> None:
         self._config = config
         super().__init__(nargs=nargs, **kwargs)
 
@@ -87,7 +86,7 @@ class ActionListProfiles(argparse.Action):
     This exits the application after use.
     """
 
-    def __init__(self, config: Config, nargs: int = 0, **kwargs: Any) -> None:
+    def __init__(self, config: ConfigFile, nargs: int = 0, **kwargs: Any) -> None:
         self._config = config
         self._profile_names = config.get_profile_names()
         self._profiles_filters = config.filter_profiles
@@ -109,7 +108,7 @@ class ActionListProfiles(argparse.Action):
         logging.getLogger("console").info(ansi.underlined("Profiles\n"))
 
         for profile_name in self._profile_names:
-            profile = self._config.get_profile(GetProfileFilter(profile_name))
+            profile = self._config.get_profile(ConfigFile.ProfileFilter(profile_name))
 
             # skip deprecated
             if profile.deprecated:

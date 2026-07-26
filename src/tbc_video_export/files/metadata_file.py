@@ -9,31 +9,31 @@ from tbc_video_export.common import exceptions
 from tbc_video_export.common.enums import VideoSystem
 
 
-class MetadataHelper:
-    """Handles parsing the TBC metadata.
+class MetadataFile:
+    """Container for metadata file data.
 
     This only supports reading JSON metadata.
     """
 
-    def __init__(self, json_file_name: Path | None, json_data: Any = None) -> None:
-        if json_file_name is not None:
-            self.json_file_name = json_file_name
-            self.sqlite_file_name = json_file_name.with_suffix(".db")
+    def __init__(self, metadata_file: Path | None, json_data: Any = None) -> None:
+        if metadata_file is not None:
+            self.json_file_name = metadata_file
+            self.sqlite_file_name = metadata_file.with_suffix(".db")
 
             try:
-                with Path.open(json_file_name, mode="r", encoding="utf-8") as json_file:
+                with Path.open(metadata_file, mode="r", encoding="utf-8") as json_file:
                     self._json_data = json.load(json_file)
             except FileNotFoundError as e:
                 raise exceptions.TBCError(
-                    f"TBC json not found ({json_file_name})."
+                    f"TBC json not found ({metadata_file})."
                 ) from e
             except PermissionError as e:
                 raise exceptions.TBCError(
-                    f"Permission denied opening TBC json ({json_file_name})."
+                    f"Permission denied opening TBC json ({metadata_file})."
                 ) from e
             except json.JSONDecodeError as e:
                 raise exceptions.TBCError(
-                    f"Unable to parse TBC json ({json_file_name})."
+                    f"Unable to parse TBC json ({metadata_file})."
                 ) from e
         else:
             self._json_data = json.loads(json_data)
@@ -68,7 +68,7 @@ class MetadataHelper:
     def video_system(self) -> VideoSystem:
         """Return VideoSystem from TBC json."""
         if "system" in self._json_data["videoParameters"]:
-            system = self._json_data["videoParameters"]["system"]
+            system: str = self._json_data["videoParameters"]["system"]
 
             # search for PAL* or NTSC* in videoParameters.system
             # isSourcePal and isSourceNtsc sometimes used, but not
@@ -114,7 +114,7 @@ class MetadataHelper:
 
         is_valid = True
         is_30_frame = self.video_system is not VideoSystem.PAL
-        vitc_data = self._json_data["fields"][0]["vitc"]["vitcData"]
+        vitc_data: list[int] = self._json_data["fields"][0]["vitc"]["vitcData"]
 
         def decode_bcd(tens: int, units: int) -> int:
             nonlocal is_valid

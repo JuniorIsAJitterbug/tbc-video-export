@@ -8,7 +8,7 @@ import pytest
 
 from tbc_video_export.common.enums import ExportMode, TBCType, ToolType
 from tbc_video_export.common.file_helper import FileHelper
-from tbc_video_export.config import Config as ProgramConfig
+from tbc_video_export.files import ConfigFile
 from tbc_video_export.opts import opt_validators, opts_parser
 from tbc_video_export.process.wrapper import WrapperConfig
 from tbc_video_export.process.wrapper.pipe import Pipe, PipeFactory
@@ -53,10 +53,11 @@ class WrapperGroupTestCase:
 @dataclass
 class FileHelperTestCase:
     id: str
-    input_tbc: Path
-    input_name: Path
+    input_name: str
+    input_path: Path
     luma_tbc: Path
-    output_name: Path
+    output_name: str
+    output_path: Path
     output_container: str
     output_video_file: Path
     output_video_file_luma: Path
@@ -214,7 +215,7 @@ def force_ansi_support_off(mocker: MockFixture) -> None:
 @pytest.fixture
 def program_state():
     def _inner(test_opts: list[str], path: Path, out_file: str | None = "out_file"):
-        config = ProgramConfig()
+        config = ConfigFile()
 
         in_opts = [str(path), *test_opts] + ([out_file] if out_file is not None else [])
         parser, opts = opts_parser.parse_opts(config, in_opts)

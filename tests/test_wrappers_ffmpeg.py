@@ -174,8 +174,9 @@ class TestWrappersFFmpeg:
             id="two-step luma input",
             input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--two-step"],
+            out_file="",  # use default path
             export_mode=ExportMode.CHROMA_MERGE,
-            expected_opts=[{"-i", "out_file.luma.mkv"}],
+            expected_opts=[{"-i", get_path_str("pal_svideo.luma.mkv")}],
         ),
         WrapperTestCase(
             id="luma-only filters (svideo)",
@@ -232,7 +233,8 @@ class TestWrappersFFmpeg:
             id="override container",
             input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--profile", "h264", "--profile-container", "mkv"],
-            expected_opts=[{"out_file.mkv"}],
+            out_file="",  # use default path
+            expected_opts=[{get_path_str("pal_svideo.mkv")}],
         ),
         WrapperTestCase(
             id="verbosity (std)",
@@ -255,19 +257,25 @@ class TestWrappersFFmpeg:
             id="checksum",
             input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--checksum"],
+            out_file="",  # use default path
             expected_opts=[
-                {"-f", "tee", "[f=streamhash]out_file.mkv.sha256|out_file.mkv"},
+                {
+                    "-f",
+                    "tee",
+                    f"[f=streamhash]{get_path_str('pal_svideo.mkv.sha256')}|{get_path_str('pal_svideo.mkv')}",
+                },
             ],
         ),
         WrapperTestCase(
             id="checksum (output format set)",
             input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--checksum", "--d10"],
+            out_file="",  # use default path
             expected_opts=[
                 {
                     "-f",
                     "tee",
-                    "[f=streamhash]out_file.mxf.sha256|[f=mxf_d10]out_file.mxf",
+                    f"[f=streamhash]{get_path_str('pal_svideo.mxf.sha256')}|[f=mxf_d10]{get_path_str('pal_svideo.mxf')}",
                 },
             ],
         ),

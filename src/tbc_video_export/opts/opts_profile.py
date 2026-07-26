@@ -12,10 +12,10 @@ from tbc_video_export.common.enums import (
 from tbc_video_export.opts import opt_actions, opt_types
 
 if TYPE_CHECKING:
-    from tbc_video_export.config import Config
+    from tbc_video_export.files import ConfigFile
 
 
-def add_profile_opts(config: Config, parent: argparse.ArgumentParser) -> None:
+def add_profile_opts(config: ConfigFile, parent: argparse.ArgumentParser) -> None:
     """Add profile opts to the parent arg parser."""
     # chroma/combined profiles
     profile_default = config.get_default_profile().name
