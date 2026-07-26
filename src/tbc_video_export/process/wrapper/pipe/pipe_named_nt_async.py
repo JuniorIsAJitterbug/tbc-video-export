@@ -593,7 +593,7 @@ class AsyncNamedPipeBridge:
                 continue
 
             wait_idx -= win32event.WAIT_OBJECT_0
-            pipe = pipe_events[wait_idx]
+            pipe: PipeInstance = pipe_events[wait_idx]
 
             if self._stop_queued:
                 logging.getLogger("console").debug(
