@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts
 from tbc_video_export.common.enums import (
+    FFmpegBitDepth,
+    FFmpegPixelFormat,
     MetadataType,
     ToolsetType,
-    VideoBitDepthType,
-    VideoFormatType,
     VideoSystem,
 )
-from tbc_video_export.common.toolsets import toolsets
+from tbc_video_export.data import ToolsetData
 from tbc_video_export.opts import (
     opt_actions,
     opt_types,
@@ -104,7 +104,7 @@ def parse_opts(
             "\n\n"
             "Available options:\n"
             + "\n".join(
-                f"  {t!s}{' (default)' if toolsets[t].default else ''}"
+                f"  {t!s}{' (default)' if ToolsetData.get(t).default else ''}"
                 for t in ToolsetType
             )
             + "\n\n"
@@ -314,10 +314,10 @@ def parse_opts(
 
 
 def _get_opt_aliases() -> str:
-    pix_fmts = ", ".join([f"--{t.name.lower()}" for t in VideoFormatType])
+    pix_fmts = ", ".join([f"--{pix_fmt!s}" for pix_fmt in FFmpegPixelFormat])
     out_str = f"  Pixel Formats:\n    {pix_fmts}\n\n"
 
-    bitdepths = ", ".join([f"--{t.value}" for t in VideoBitDepthType])
+    bitdepths = ", ".join([f"--{bit_depth!s}bit" for bit_depth in FFmpegBitDepth])
     out_str += f"  Bit Depths:\n    {bitdepths}\n\n"
 
     return out_str

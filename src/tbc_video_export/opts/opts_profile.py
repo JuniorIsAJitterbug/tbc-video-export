@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts
 from tbc_video_export.common.enums import (
+    FFmpegBitDepth,
+    FFmpegPixelFormat,
     HardwareAccelType,
-    VideoBitDepthType,
-    VideoFormatType,
 )
 from tbc_video_export.opts import opt_actions, opt_types
 
@@ -122,9 +122,9 @@ def add_profile_opts(config: ConfigFile, parent: argparse.ArgumentParser) -> Non
 
     # video bit depth alias
     video_bitdepth_opts = parent.add_argument_group("video bitdepth aliases")
-    for bitdepth in VideoBitDepthType:
+    for bitdepth in FFmpegBitDepth:
         video_bitdepth_opts.add_argument(
-            f"--{bitdepth.value}",
+            f"--{bitdepth!s}bit",
             dest="video_bitdepth",
             action=opt_actions.ActionSetVideoBitDepthType,
             help=argparse.SUPPRESS,
@@ -133,9 +133,9 @@ def add_profile_opts(config: ConfigFile, parent: argparse.ArgumentParser) -> Non
     # video format aliases
     video_format_opts = parent.add_argument_group("video format aliases")
 
-    for video_format in VideoFormatType:
+    for pix_format in FFmpegPixelFormat:
         video_format_opts.add_argument(
-            f"--{video_format.name.lower()}",
+            f"--{pix_format!s}",
             dest="video_format",
             action=opt_actions.ActionSetVideoFormatType,
             help=argparse.SUPPRESS,

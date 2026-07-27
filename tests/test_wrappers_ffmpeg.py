@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, ClassVar
 import pytest
 
 from tbc_video_export.common import exceptions
-from tbc_video_export.common.enums import ExportMode, TBCType
-from tbc_video_export.common.video_system import video_system_pal
+from tbc_video_export.common.enums import ExportMode, TBCType, VideoSystem
+from tbc_video_export.data import VideoSystemData
 from tests.conftest import WrapperTestCase, get_path_str
 
 if TYPE_CHECKING:
@@ -25,10 +25,10 @@ class TestWrappersFFmpeg:
 
     pal_setparams = (
         f"setparams="
-        f"range={video_system_pal.ffmpeg_config.color_range}:"
-        f"colorspace={video_system_pal.ffmpeg_config.color_space}:"
-        f"color_primaries={video_system_pal.ffmpeg_config.color_primaries}:"
-        f"color_trc={video_system_pal.ffmpeg_config.color_trc}"
+        f"range={VideoSystemData.get(VideoSystem.PAL).ffmpeg_config.color_range}:"
+        f"colorspace={VideoSystemData.get(VideoSystem.PAL).ffmpeg_config.color_space}:"
+        f"color_primaries={VideoSystemData.get(VideoSystem.PAL).ffmpeg_config.color_primaries}:"
+        f"color_trc={VideoSystemData.get(VideoSystem.PAL).ffmpeg_config.color_trc}"
     )
 
     audio_file = "tests/files/audio.flac"
@@ -347,24 +347,6 @@ class TestWrappersFFmpeg:
 
     bitdepth_cases: ClassVar[list[WrapperTestCase]] = [
         WrapperTestCase(
-            id="8bit",
-            input_tbc=get_path_str("pal_svideo.tbc"),
-            input_opts=["--8bit"],
-            expected_str=[f"format=yuv422p,{pal_setparams}[v_output]"],
-        ),
-        WrapperTestCase(
-            id="10bit",
-            input_tbc=get_path_str("pal_svideo.tbc"),
-            input_opts=["--10bit"],
-            expected_str=[f"format=yuv422p10le,{pal_setparams}[v_output]"],
-        ),
-        WrapperTestCase(
-            id="16bit",
-            input_tbc=get_path_str("pal_svideo.tbc"),
-            input_opts=["--16bit"],
-            expected_str=[f"format=yuv422p16le,{pal_setparams}[v_output]"],
-        ),
-        WrapperTestCase(
             id="8bit yuv420p",
             input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--8bit", "--yuv420"],
@@ -461,9 +443,15 @@ class TestWrappersFFmpeg:
             expected_str=[f"format=gray16le,{pal_setparams}[v_output]"],
         ),
         WrapperTestCase(
-            id="format without bitdepth (exception)",
+            id="format without bit depth (exception)",
             input_tbc=get_path_str("pal_svideo.tbc"),
             input_opts=["--yuv420"],
+            expected_exc=SystemExit,
+        ),
+        WrapperTestCase(
+            id="bit depth without format (exception)",
+            input_tbc=get_path_str("pal_svideo.tbc"),
+            input_opts=["--8bit"],
             expected_exc=SystemExit,
         ),
     ]

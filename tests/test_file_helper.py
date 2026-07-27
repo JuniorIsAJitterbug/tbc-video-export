@@ -8,9 +8,10 @@ from typing import TYPE_CHECKING, ClassVar
 
 import pytest
 
-from tbc_video_export.common import exceptions, toolsets
+from tbc_video_export.common import exceptions
 from tbc_video_export.common.enums import TBCType, ToolsetType, ToolType, VideoSystem
 from tbc_video_export.common.file_helper import FileHelper
+from tbc_video_export.data import ToolsetData
 
 from .conftest import FileHelperTestCase
 
@@ -192,7 +193,7 @@ class TestTBCJson:
             Path("tests/files/pal_svideo.tbc"),
         )
         helper = FileHelper(state.opts, state.config)
-        toolset = toolsets.toolsets[ToolsetType.LEGACY_TOOLS]
+        toolset = ToolsetData.get(ToolsetType.LEGACY_TOOLS)
 
         assert helper.tools[tool] == [Path(f"{toolset.get_tool_name(tool)!s}")]
 
@@ -216,7 +217,7 @@ class TestTBCJson:
                 Path("tests/files/pal_svideo.tbc"),
             )
             helper = FileHelper(state.opts, state.config)
-            toolset = toolsets.toolsets[ToolsetType.LEGACY_TOOLS]
+            toolset = ToolsetData.get(ToolsetType.LEGACY_TOOLS)
 
             # ensure appimage only used for tbc-tools
             for tool_type, tool_path in helper.tools.items():

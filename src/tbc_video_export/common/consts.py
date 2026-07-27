@@ -4,8 +4,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from tbc_video_export.common.enums import VideoFormatType
+from tbc_video_export.common.enums import FFmpegBitDepth, FFmpegPixelFormat
 from tbc_video_export.common.utils import metadata
+from tbc_video_export.data import PixelFormat
 
 if TYPE_CHECKING:
     from typing import Final
@@ -69,5 +70,9 @@ NT_TH32CS_SNAPPROCESS: Final = 0x2
 # Ubuntu 22.04 uses FFmpeg 4.4.1 which does not support the new format
 FFMPEG_USE_OLD_MERGEPLANES: Final = True
 FFMPEG_VIDEO_MAP: Final = "[v_output]"
-FFMPEG_DEFAULT_LUMA_FORMAT: Final = VideoFormatType.GRAY.value.get(16)
-FFMPEG_DEFAULT_CHROMA_FORMAT: Final = VideoFormatType.YUV444.value.get(16)
+FFMPEG_DEFAULT_LUMA_FORMAT: Final = PixelFormat.get_pix_format(
+    FFmpegPixelFormat.GRAY, FFmpegBitDepth.BIT_16
+)
+FFMPEG_DEFAULT_CHROMA_FORMAT: Final = PixelFormat.get_pix_format(
+    FFmpegPixelFormat.YUV444, FFmpegBitDepth.BIT_16
+)

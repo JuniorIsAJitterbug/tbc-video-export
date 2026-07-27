@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING
 
-from tbc_video_export.common import VideoSystemData, consts, exceptions
+from tbc_video_export.common import consts, exceptions
 from tbc_video_export.common.enums import (
     ChromaDecoder,
     ExportMode,
@@ -15,6 +15,7 @@ from tbc_video_export.common.enums import (
     VideoSystem,
 )
 from tbc_video_export.common.utils import ansi
+from tbc_video_export.data import VideoSystemData
 from tbc_video_export.files import ConfigFile
 from tbc_video_export.process.parser.export_state import ExportState
 

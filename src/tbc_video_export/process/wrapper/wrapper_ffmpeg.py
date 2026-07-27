@@ -9,13 +9,15 @@ from typing import TYPE_CHECKING, Generic
 from tbc_video_export.common import consts, exceptions
 from tbc_video_export.common.enums import (
     ExportMode,
+    FFmpegBitDepth,
+    FFmpegPixelFormat,
     HardwareAccelType,
     PipeType,
     TBCType,
     ToolType,
-    VideoFormatType,
 )
 from tbc_video_export.common.utils import FlatList
+from tbc_video_export.data import PixelFormat
 from tbc_video_export.process.wrapper.pipe import (
     Pipe,
     PipeInputGeneric,
@@ -179,7 +181,9 @@ class WrapperFFmpeg(
                     "-f",
                     "rawvideo",
                     "-pix_fmt",
-                    VideoFormatType.GRAY.value.get(16),
+                    PixelFormat.get_pix_format(
+                        FFmpegPixelFormat.GRAY, FFmpegBitDepth.BIT_16
+                    ),
                     "-framerate",
                     self._get_framerate(),
                     "-video_size",
@@ -534,26 +538,22 @@ class WrapperFFmpeg(
             ExportMode.LUMA_EXTRACTED,
         ):
             depth = (
-                16
+                FFmpegBitDepth.BIT_16
                 if self._state.opts.video_bitdepth is None
                 else self._state.opts.video_bitdepth
             )
 
-            if (new_format := VideoFormatType.GRAY.value.get(depth)) is not None:
+            if (
+                new_format := PixelFormat.get_pix_format(FFmpegPixelFormat.GRAY, depth)
+            ) is not None:
                 video_format = new_format
-
-        # check bitdepth override
-        if (depth := self._state.opts.video_bitdepth) is not None and (
-            new_format := VideoFormatType.get_new_format(video_format, depth)
-        ) is not None:
-            video_format = new_format
 
         # if override opts, ensure format for bitdepth and set
         # does not set the luma format when in two-step mode
         if (
             (vf := self._state.opts.video_format) is not None
-            and (depth := self._state.opts.video_bitdepth) is not None
-            and (new_format := vf.value.get(depth)) is not None
+            and (bit_depth := self._state.opts.video_bitdepth) is not None
+            and (new_format := PixelFormat.get_pix_format(vf, bit_depth)) is not None
             and not self._is_two_step_luma_mode()
         ):
             video_format = new_format

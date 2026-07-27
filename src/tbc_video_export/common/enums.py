@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 from enum import Enum, Flag, auto
 from functools import cache
-from typing import Final, TypeVar
+from typing import TypeVar
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -211,14 +211,6 @@ class PipeType(Flag):
         return f"{self.name!s}".upper()
 
 
-class VideoBitDepthType(Enum):
-    """Video bitdepth types for profiles."""
-
-    BIT8 = "8bit"
-    BIT10 = "10bit"
-    BIT16 = "16bit"
-
-
 class HardwareAccelType(Enum):
     """Hardware accel types for profiles."""
 
@@ -229,61 +221,28 @@ class HardwareAccelType(Enum):
     VIDEOTOOLBOX = "videotoolbox"
 
 
-_VideoFormatGRAY: Final[dict[int, str]] = {
-    8: "gray8",
-    10: "gray16le",
-    16: "gray16le",
-}
+class FFmpegPixelFormat(Enum):
+    """FFmpeg pixel format types for profiles."""
 
-_VideoFormatYUV420: Final[dict[int, str]] = {
-    8: "yuv420p",
-    10: "yuv420p10le",
-    16: "yuv420p16le",
-}
+    GRAY = auto()
+    YUV420 = auto()
+    YUV422 = auto()
+    YUV444 = auto()
 
-_VideoFormatYUV422: Final[dict[int, str]] = {
-    8: "yuv422p",
-    10: "yuv422p10le",
-    16: "yuv422p16le",
-}
-
-_VideoFormatYUV444: Final[dict[int, str]] = {
-    8: "yuv444p",
-    10: "yuv444p10le",
-    16: "yuv444p16le",
-}
+    @override
+    def __str__(self) -> str:
+        """Return formatted enum name as string."""
+        return self.name.lower()
 
 
-class VideoFormatType(Enum):
-    """Video format types for profiles."""
+class FFmpegBitDepth(Enum):
+    """FFmpeg bit depth types for profiles."""
 
-    GRAY = _VideoFormatGRAY
-    YUV420 = _VideoFormatYUV420
-    YUV422 = _VideoFormatYUV422
-    YUV444 = _VideoFormatYUV444
+    BIT_8 = 8
+    BIT_10 = 10
+    BIT_16 = 16
 
-    @classmethod
-    def get_new_format(cls, current_format: str, new_bitdepth: int) -> str | None:
-        """Return new format from current format and new bitdepth."""
-        return next(
-            (
-                member.value.get(new_bitdepth)
-                for member in cls
-                for _, v in member.value.items()
-                if current_format == v
-            ),
-            None,
-        )
-
-    @classmethod
-    def get_bitdepth(cls, current_format: str) -> int | None:
-        """Return bitdepth of current format."""
-        return next(
-            (
-                k
-                for member in cls
-                for k, v in member.value.items()
-                if current_format == v
-            ),
-            None,
-        )
+    @override
+    def __str__(self) -> str:
+        """Return formatted enum name as string."""
+        return f"{self.value!s}"

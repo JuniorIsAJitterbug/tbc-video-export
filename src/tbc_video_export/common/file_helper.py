@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts, exceptions
 from tbc_video_export.common.enums import FlagHelper, TBCType, ToolType
-from tbc_video_export.common.toolsets import toolsets
 from tbc_video_export.common.utils import files
+from tbc_video_export.data import ToolsetData
 from tbc_video_export.files import (
     ConfigFile,
     InputFile,
@@ -168,7 +168,7 @@ class FileHelper:
 
     def _get_tool_path(self, tool_type: ToolType) -> list[Path]:
         """Return path for tool."""
-        toolset = toolsets[self._opts.toolset]
+        toolset = ToolsetData.get(self._opts.toolset)
 
         if os.name == "nt":
             # append .exe on NT

@@ -9,12 +9,13 @@ if TYPE_CHECKING:
 
     from tbc_video_export.common.enums import (
         ChromaDecoder,
+        FFmpegBitDepth,
+        FFmpegPixelFormat,
         FieldOrder,
         HardwareAccelType,
         MetadataType,
         TBCType,
         ToolsetType,
-        VideoFormatType,
         VideoSystem,
     )
 
@@ -120,8 +121,8 @@ class Opts(argparse.Namespace):
     append_other_filter: str | None
 
     hwaccel_type: HardwareAccelType | None
-    video_format: VideoFormatType | None
-    video_bitdepth: int | None
+    video_format: FFmpegPixelFormat | None
+    video_bitdepth: FFmpegBitDepth | None
     audio_profile: str | None
 
     def convert_opt(

@@ -32,6 +32,11 @@ class ToolsetData:
     tools: dict[ToolType, ToolData]
     metadata_types: list[MetadataType]
 
+    @staticmethod
+    def get(toolset_type: ToolsetType) -> ToolsetData:
+        """Returns ToolsetData for the specified toolset type."""
+        return _toolsets[toolset_type]
+
     def get_tool_data(self, tool_type: ToolType) -> ToolData:  # noqa: D102
         try:
             return self.tools[tool_type]
@@ -45,7 +50,7 @@ class ToolsetData:
         return self.get_tool_data(tool_type).appimage_support
 
 
-toolsets: Final[dict[ToolsetType, ToolsetData]] = {
+_toolsets: Final[dict[ToolsetType, ToolsetData]] = {
     ToolsetType.LEGACY_TOOLS: ToolsetData(
         default=True,
         default_metadata_type=MetadataType.JSON,

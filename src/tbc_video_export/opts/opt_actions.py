@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import logging
 import os
+import re
 import sys
 from functools import partial
 from pathlib import Path
@@ -10,13 +11,13 @@ from typing import TYPE_CHECKING
 
 from tbc_video_export.common import consts
 from tbc_video_export.common.enums import (
+    FFmpegBitDepth,
+    FFmpegPixelFormat,
     HardwareAccelType,
     ToolsetType,
-    VideoBitDepthType,
-    VideoFormatType,
 )
-from tbc_video_export.common.toolsets import toolsets
 from tbc_video_export.common.utils import ansi
+from tbc_video_export.data import ToolsetData
 from tbc_video_export.files import ConfigFile
 
 if TYPE_CHECKING:
@@ -164,21 +165,15 @@ class ActionSetVideoBitDepthType(argparse.Action):
         self,
         parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
-        values: str | Sequence[Any] | None,
-        option_string: str | None = None,
+        values: None,
+        option_string: str,
         **kwargs: Any,
     ) -> None:
         # no need to check errors here, as option_string can only be
-        # VideoBitDepthType values
-        match VideoBitDepthType(str(option_string)[2:].lower()):
-            case VideoBitDepthType.BIT8:
-                namespace.video_bitdepth = 8
+        # yoink number from option e.g. --8bit = 8
+        bit_depth = int(re.findall(r"[0-9]+", option_string)[0])
 
-            case VideoBitDepthType.BIT10:
-                namespace.video_bitdepth = 10
-
-            case VideoBitDepthType.BIT16:
-                namespace.video_bitdepth = 16
+        namespace.video_bitdepth = FFmpegBitDepth(bit_depth)
 
 
 class ActionSetVideoFormatType(argparse.Action):
@@ -196,7 +191,7 @@ class ActionSetVideoFormatType(argparse.Action):
         option_string: str | None = None,
         **kwargs: Any,
     ) -> None:
-        for format_type in VideoFormatType:
+        for format_type in FFmpegPixelFormat:
             if format_type.name.lower() == str(option_string)[2:].lower():
                 namespace.video_format = format_type
 
@@ -289,7 +284,7 @@ class ActionListToolsets(argparse.Action):
         toolset_strings: list[str] = []
 
         for toolset_type in ToolsetType:
-            details = toolsets[toolset_type]
+            details = ToolsetData.get(toolset_type)
             toolset_strings.append(
                 ansi.bold(f"{toolset_type!s}{' (default)' if details.default else ''}")
                 + "\n\n"

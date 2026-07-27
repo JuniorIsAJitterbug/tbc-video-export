@@ -9,13 +9,15 @@ from tbc_video_export.common import exceptions
 from tbc_video_export.common.enums import (
     ChromaDecoder,
     ExportMode,
+    FFmpegBitDepth,
+    FFmpegPixelFormat,
     MetadataType,
     TBCType,
     ToolsetType,
     VideoSystem,
 )
-from tbc_video_export.common.toolsets import toolsets
 from tbc_video_export.common.utils import ansi
+from tbc_video_export.data import ToolsetData
 
 if TYPE_CHECKING:
     import argparse
@@ -112,9 +114,20 @@ def _validate_video_system(
 
 
 def _validate_video_format(parser: argparse.ArgumentParser, opts: Opts) -> None:
-    # require bitdepth if format set
+    # require both pix fmt and bit depth to be set
+    formats = " | ".join([f"--{f.name.lower()}" for f in FFmpegPixelFormat])
+    bit_depths = " | ".join([f"--{b.value}" for b in FFmpegBitDepth])
+
     if opts.video_format is not None and opts.video_bitdepth is None:
-        parser.error("setting a video format requires a bitdepth.\n")
+        parser.error(f"arguments [{formats}]: requires a bit depth [{bit_depths}]")
+
+    # ma
+    if opts.video_bitdepth is not None and (
+        opts.video_format is None and not opts.luma_only
+    ):
+        parser.error(
+            f"arguments [{bit_depths}]: requires a pixel format [--luma-only | {formats}]"  # noqa: E501
+        )
 
 
 def _validate_ansi_support(opts: Opts) -> None:
@@ -197,4 +210,4 @@ def _validate_metadata_type_opts(opts: Opts) -> None:
         "metadata_type",
         False,
     ):
-        opts.metadata_type = toolsets[opts.toolset].default_metadata_type
+        opts.metadata_type = ToolsetData.get(opts.toolset).default_metadata_type
